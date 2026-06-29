@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety Tips - ISHFADI</title>
+<meta name="description" content="ISHFADI Safety Tips - Stay safe when searching for or listing properties.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a365d;--primary-light:#2a4a7f;--accent:#e8913a;
+  --bg:#f7f8fa;--card:#fff;--text:#1a202c;--muted:#64748b;
+  --border:#e2e8f0;--radius:12px;--destructive:#dc2626;--amber:#d97706;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--primary);box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.navbar .container{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.8);font-size:.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#fff;text-decoration:none}
+
+.page-hero{padding:120px 24px 60px;text-align:center;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 50%,#1a365d 100%);
+  background-image:url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff}
+.page-hero .icon-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.15);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:2rem}
+.page-hero h1{font-size:2.5rem;font-weight:800;margin-bottom:8px}
+.page-hero p{color:rgba(255,255,255,.7);max-width:600px;margin:0 auto}
+
+.content{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+
+/* Checklist */
+.checklist-box{background:rgba(26,54,93,.04);border:1px solid rgba(26,54,93,.15);border-radius:var(--radius);padding:24px;margin-bottom:32px}
+.checklist-box h2{font-size:1.2rem;font-weight:700;margin-bottom:16px}
+.checklist-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.checklist-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border-radius:8px;font-size:.9rem;cursor:pointer;transition:background .2s}
+.checklist-item:hover{background:var(--bg)}
+.checklist-item input{width:18px;height:18px;accent-color:var(--primary)}
+
+.section-title{font-size:1.5rem;font-weight:700;margin:32px 0 20px;display:flex;align-items:center;gap:12px}
+.section-title .emoji{font-size:1.4rem}
+
+.tip-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;display:flex;gap:16px}
+.tip-card .tip-icon{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.tip-icon.blue{background:rgba(26,54,93,.1)}
+.tip-icon.amber{background:rgba(217,119,6,.1)}
+.tip-card h3{font-size:1.1rem;font-weight:600;margin-bottom:8px}
+.tip-card ul{list-style:none;padding:0}
+.tip-card ul li{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;color:var(--muted);font-size:.9rem}
+.tip-card ul li .dot{width:6px;height:6px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.dot.blue{background:var(--primary)}
+.dot.amber{background:var(--amber)}
+
+/* Red flags */
+.red-flags{background:rgba(220,38,38,.04);border:1px solid rgba(220,38,38,.15);border-radius:var(--radius);padding:28px;margin:32px 0}
+.red-flags h2{font-size:1.4rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.red-flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.red-flag-item{display:flex;align-items:flex-start;gap:8px;color:var(--muted);font-size:.9rem}
+.red-flag-item .warn{color:var(--destructive);font-weight:700;font-size:1rem}
+
+/* Report */
+.report-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center;margin-top:32px}
+.report-section h2{font-size:1.4rem;font-weight:700;margin-bottom:8px}
+.report-section p{color:var(--muted);font-size:.95rem;max-width:500px;margin:0 auto 20px}
+.report-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+.report-btn:hover{background:var(--primary-light);text-decoration:none}
+
+.footer{background:var(--primary);color:#fff;padding:48px 24px 24px}
+.footer .container{max-width:1200px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px}
+.footer h4{font-weight:600;margin-bottom:12px}
+.footer p,.footer a{color:rgba(255,255,255,.7);font-size:.9rem}
+.footer a:hover{color:#fff}
+.footer ul{list-style:none;padding:0}
+.footer ul li{margin-bottom:8px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.footer-bottom p{font-size:.85rem;color:rgba(255,255,255,.5)}
+.footer-bottom a{font-size:.85rem;color:rgba(255,255,255,.5);margin-left:20px}
+.footer-bottom a:hover{color:#fff}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .page-hero h1{font-size:1.8rem}
+  .checklist-grid,.red-flags-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">ISH<span>FADI</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#explore">Explore</a>
+      <a href="seller.html">Host Dashboard</a>
+      <a href="buyer.html">Seeker Dashboard</a>
+      <a href="help-center.html">Help</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="icon-circle">🛡️</div>
+  <h1>Safety Tips</h1>
+  <p>Your safety is our priority. Follow these guidelines to protect yourself when searching for or listing properties on ISHFADI.</p>
+</div>
+
+<div class="content">
+
+  <!-- Checklist -->
+  <div class="checklist-box">
+    <h2>Quick Safety Checklist</h2>
+    <div class="checklist-grid">
+      <label class="checklist-item"><input type="checkbox"> Verify host identity before meeting</label>
+      <label class="checklist-item"><input type="checkbox"> Meet in public places first</label>
+      <label class="checklist-item"><input type="checkbox"> Never pay before viewing</label>
+      <label class="checklist-item"><input type="checkbox"> Share plans with someone you trust</label>
+    </div>
+  </div>
+
+  <!-- For Seekers -->
+  <div class="section-title"><span class="emoji">👥</span> For Seekers (Buyers)</div>
+
+  <div class="tip-card">
+    <div class="tip-icon blue">📍</div>
+    <div>
+      <h3>Meeting Safely</h3>
+      <ul>
+        <li><span class="dot blue"></span> Always meet in public places for initial discussions</li>
+        <li><span class="dot blue"></span> Bring a friend or family member when viewing properties</li>
+        <li><span class="dot blue"></span> Schedule viewings during daylight hours</li>
+        <li><span class="dot blue"></span> Share your location and itinerary with someone you trust</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-icon blue">💬</div>
+    <div>
+      <h3>Communication Tips</h3>
+      <ul>
+        <li><span class="dot blue"></span> Keep communication within the ISHFADI platform initially</li>
+        <li><span class="dot blue"></span> Be wary of hosts who push to communicate off-platform quickly</li>
+        <li><span class="dot blue"></span> Ask detailed questions about the property and neighborhood</li>
+        <li><span class="dot blue"></span> Request video calls before in-person meetings if possible</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-icon amber">💳</div>
+    <div>
+      <h3>Payment Safety</h3>
+      <ul>
+        <li><span class="dot amber"></span> <strong>Never pay before viewing the property in person</strong></li>
+        <li><span class="dot amber"></span> Avoid wire transfers to unknown accounts</li>
+        <li><span class="dot amber"></span> Get all agreements in writing before making payments</li>
+        <li><span class="dot amber"></span> Be suspicious of deals that seem too good to be true</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- For Hosts -->
+  <div class="section-title"><span class="emoji">🏠</span> For Hosts (Sellers)</div>
+
+  <div class="tip-card">
+    <div class="tip-icon blue">📸</div>
+    <div>
+      <h3>Listing Safely</h3>
+      <ul>
+        <li><span class="dot blue"></span> Remove personal items and valuables from listing photos</li>
+        <li><span class="dot blue"></span> Don't include your exact address in the public listing</li>
+        <li><span class="dot blue"></span> Use ISHFADI's messaging system for initial contact</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip-card">
+    <div class="tip-icon blue">📞</div>
+    <div>
+      <h3>Conducting Viewings</h3>
+      <ul>
+        <li><span class="dot blue"></span> Screen potential seekers before sharing your address</li>
+        <li><span class="dot blue"></span> Have someone else present during viewings</li>
+        <li><span class="dot blue"></span> Keep viewings during daylight hours when possible</li>
+        <li><span class="dot blue"></span> Trust your instincts — decline if something feels wrong</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Red Flags -->
+  <div class="red-flags">
+    <h2><span>🚨</span> Red Flags to Watch For</h2>
+    <div class="red-flags-grid">
+      <div class="red-flag-item"><span class="warn">⚠</span> Pressure to pay or decide immediately</div>
+      <div class="red-flag-item"><span class="warn">⚠</span> Refusal to meet in person or video call</div>
+      <div class="red-flag-item"><span class="warn">⚠</span> Prices significantly below market rate</div>
+      <div class="red-flag-item"><span class="warn">⚠</span> Requests for unusual payment methods</div>
+      <div class="red-flag-item"><span class="warn">⚠</span> Vague or inconsistent property details</div>
+      <div class="red-flag-item"><span class="warn">⚠</span> Claims of being overseas or unavailable</div>
+    </div>
+  </div>
+
+  <!-- Report -->
+  <div class="report-section">
+    <h2>Report Suspicious Activity</h2>
+    <p>If you encounter suspicious behavior or believe you've been targeted by a scam, please report it immediately. Your report helps keep our community safe.</p>
+    <a href="mailto:safety@ishfadi.com" class="report-btn">Report to safety@ishfadi.com</a>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>ISHFADI</h4>
+        <p>Find your perfect place anywhere in the world. Trusted by thousands globally.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#explore">Explore Listings</a></li>
+          <li><a href="seller.html">Host Dashboard</a></li>
+          <li><a href="buyer.html">Seeker Dashboard</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="help-center.html">Help Center</a></li>
+          <li><a href="safety-tips.html">Safety Tips</a></li>
+          <li><a href="terms-of-service.html">Terms of Service</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>support@ishfadi.com</p>
+        <p>+1 (555) 123-4567</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 ISHFADI. All rights reserved.</p>
+      <div>
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="terms-of-service.html">Terms</a>
+        <a href="safety-tips.html">Safety</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

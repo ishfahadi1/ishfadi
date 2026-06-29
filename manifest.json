@@ -1,0 +1,43 @@
+{
+  "name": "ISHFADI - Find Your Perfect Home",
+  "short_name": "ISHFADI",
+  "description": "Connect with verified hosts and discover amazing properties. Safe, secure, and simple.",
+  "id": "/",
+  "start_url": "/index.html?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
+  "background_color": "#1e3a5f",
+  "theme_color": "#1e3a5f",
+  "lang": "en",
+  "dir": "auto",
+  "categories": ["travel", "lifestyle", "business", "shopping"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "icons/screenshot-mobile.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Browse verified properties on the go" },
+    { "src": "icons/screenshot-desktop.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide",   "label": "Discover homes from any device" }
+  ],
+  "shortcuts": [
+    { "name": "Home",            "short_name": "Home",      "description": "Open the ISHFADI homepage", "url": "/index.html?shortcut=home",      "icons": [{ "src": "icons/sc-home.png",      "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Search",          "short_name": "Search",    "description": "Search properties",         "url": "/index.html?shortcut=search#listings", "icons": [{ "src": "icons/sc-search.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Favorites",       "short_name": "Favorites", "description": "Your saved homes",          "url": "/index.html?shortcut=favorites", "icons": [{ "src": "icons/sc-fav.png",       "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Become a Host",   "short_name": "Host",      "description": "List your property",        "url": "/index.html?shortcut=host",      "icons": [{ "src": "icons/sc-host.png",      "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Become an Agent", "short_name": "Agent",     "description": "Join as an agent",          "url": "/index.html?shortcut=agent",     "icons": [{ "src": "icons/sc-agent.png",     "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Waiting List",    "short_name": "Waitlist",  "description": "Join the waiting list",     "url": "/index.html?shortcut=waitlist",  "icons": [{ "src": "icons/sc-wait.png",      "sizes": "96x96", "type": "image/png" }] }
+  ]
+}

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Center - ISHFADI</title>
+<meta name="description" content="ISHFADI Help Center - Find answers to common questions about using our platform.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a365d;--primary-light:#2a4a7f;--accent:#e8913a;
+  --bg:#f7f8fa;--card:#fff;--text:#1a202c;--muted:#64748b;
+  --border:#e2e8f0;--radius:12px;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--primary);box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.navbar .container{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.8);font-size:.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#fff;text-decoration:none}
+
+.page-hero{padding:120px 24px 60px;text-align:center;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 50%,#1a365d 100%);
+  background-image:url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff}
+.page-hero .icon-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.15);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:2rem}
+.page-hero h1{font-size:2.5rem;font-weight:800;margin-bottom:8px}
+.page-hero p{color:rgba(255,255,255,.7);max-width:600px;margin:0 auto}
+
+.content{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+
+/* Search */
+.search-wrap{position:relative;margin-bottom:32px}
+.search-wrap input{width:100%;padding:16px 16px 16px 48px;border:1px solid var(--border);border-radius:var(--radius);font-size:1.05rem;background:var(--card);outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--primary)}
+.search-wrap .search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.2rem;color:var(--muted)}
+
+/* FAQ */
+.faq-category{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.faq-category-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;cursor:pointer;transition:background .2s;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+.faq-category-header:hover{background:rgba(0,0,0,.02)}
+.faq-category-header .left{display:flex;align-items:center;gap:14px}
+.faq-category-header .cat-icon{width:36px;height:36px;background:rgba(26,54,93,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.faq-category-header .cat-title{font-size:1.1rem;font-weight:600;color:var(--text)}
+.faq-category-header .cat-count{font-size:.85rem;color:var(--muted);margin-left:8px}
+.faq-category-header .chevron{font-size:1.2rem;color:var(--muted);transition:transform .2s}
+.faq-category-header.open .chevron{transform:rotate(180deg)}
+.faq-list{border-top:1px solid var(--border);display:none}
+.faq-list.open{display:block}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item:last-child{border-bottom:none}
+.faq-question{display:flex;align-items:center;justify-content:space-between;padding:14px 24px 14px 60px;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:background .2s;font-size:.95rem;font-weight:500;color:var(--text)}
+.faq-question:hover{background:rgba(0,0,0,.02)}
+.faq-question .q-chevron{font-size:.9rem;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.faq-question.open .q-chevron{transform:rotate(180deg)}
+.faq-answer{padding:0 24px 16px 60px;color:var(--muted);font-size:.9rem;line-height:1.7;display:none}
+.faq-answer.open{display:block}
+
+/* No results */
+.no-results{text-align:center;padding:40px;color:var(--muted)}
+.no-results button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:.95rem;text-decoration:underline}
+
+/* Support CTA */
+.support-cta{margin-top:40px;background:rgba(26,54,93,.04);border:1px solid rgba(26,54,93,.15);border-radius:var(--radius);padding:32px;text-align:center}
+.support-cta h2{font-size:1.4rem;font-weight:700;margin-bottom:8px}
+.support-cta p{color:var(--muted);font-size:.95rem;max-width:500px;margin:0 auto 20px}
+.support-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+.support-btn:hover{background:var(--primary-light);text-decoration:none}
+
+.footer{background:var(--primary);color:#fff;padding:48px 24px 24px}
+.footer .container{max-width:1200px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px}
+.footer h4{font-weight:600;margin-bottom:12px}
+.footer p,.footer a{color:rgba(255,255,255,.7);font-size:.9rem}
+.footer a:hover{color:#fff}
+.footer ul{list-style:none;padding:0}
+.footer ul li{margin-bottom:8px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.footer-bottom p{font-size:.85rem;color:rgba(255,255,255,.5)}
+.footer-bottom a{font-size:.85rem;color:rgba(255,255,255,.5);margin-left:20px}
+.footer-bottom a:hover{color:#fff}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .page-hero h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">ISH<span>FADI</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#explore">Explore</a>
+      <a href="seller.html">Host Dashboard</a>
+      <a href="buyer.html">Seeker Dashboard</a>
+      <a href="help-center.html">Help</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="icon-circle">❓</div>
+  <h1>Help Center</h1>
+  <p>Find answers to common questions about using ISHFADI. Can't find what you're looking for? Contact our support team.</p>
+</div>
+
+<div class="content">
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="faqSearch" placeholder="Search for help..." oninput="filterFAQs()">
+  </div>
+
+  <!-- FAQ Categories -->
+  <div id="faqContainer">
+
+    <!-- Getting Started -->
+    <div class="faq-category" data-category="getting-started">
+      <button class="faq-category-header open" onclick="toggleCategory(this)">
+        <div class="left">
+          <div class="cat-icon">👤</div>
+          <span class="cat-title">Getting Started</span>
+          <span class="cat-count">(4 articles)</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-list open">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How do I create an account on ISHFADI?
+            <span class="q-chevron">▾</span>
+          </button>
+          <div class="faq-answer">Click the "Sign Up" button in the top right corner. Choose whether you want to find a place (seeker) or list a place (host), then fill in your details including name, email, password, and location. You'll receive a confirmation email to verify your account.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            What's the difference between a seeker and a host?
+            <span class="q-chevron">▾</span>
+          </button>
+          <div class="faq-answer">Seekers are users looking for accommodation — they can browse listings, save favorites, and contact hosts. Hosts are property owners or managers who can list their properties, manage inquiries, and connect with potential tenants or buyers.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Can I switch between seeker and host roles?
+            <span class="q-chevron">▾</span>
+          </button>
+          <div class="faq-answer">Yes! You can have both roles on the same account. Access your dashboard settings to enable the additional role. Many users are both seekers in one location and hosts in another.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Is ISHFADI available in my country?
+            <span class="q-chevron">▾</span>
+          </button>
+          <div class="faq-answer">ISHFADI is a global platform available in over 50 countries. During signup, you can select your country and city to see listings in your area.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Listings -->
+    <div class="faq-category" data-category="listings">
+      <button class="faq-category-header" onclick="toggleCategory(this)">
+        <div class="left">
+          <div class="cat-icon">🏠</div>
+          <span class="cat-title">Listings &amp; Properties</span>
+          <span class="cat-count">(4 articles)</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How do I list my property?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Go to your Seller Dashboard and click "Add Listing". Fill in the property details including title, description, location, price, property type, and upload photos. Once submitted, your listing will be reviewed before going live.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">What does "Verified" mean on a listing?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Verified listings have been reviewed by our team to confirm the property exists and the information is accurate. Verification may include document checks, photo verification, or property visits in some regions.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How long does verification take?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Most listings are verified within 24-48 hours. Complex verifications requiring additional documentation may take up to 5 business days.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">Can I edit my listing after publishing?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Yes, you can edit your listing anytime from your Seller Dashboard. Note that significant changes may trigger a re-verification process.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="faq-category" data-category="payments">
+      <button class="faq-category-header" onclick="toggleCategory(this)">
+        <div class="left">
+          <div class="cat-icon">💳</div>
+          <span class="cat-title">Payments &amp; Fees</span>
+          <span class="cat-count">(4 articles)</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">Is it free to list a property?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Basic listings are free. We offer Featured Listings for hosts who want increased visibility — these appear at the top of search results and include a "Featured" badge.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How does the Featured Listing work?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Featured Listings get priority placement in search results, appear on the homepage, and include a special badge. This increases your listing's visibility and helps you find tenants or buyers faster.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">Is it free to search for properties?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Yes, searching and browsing listings is completely free for seekers. You can view all listing details, save favorites, and contact hosts at no cost.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">Does ISHFADI handle rent or purchase payments?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Currently, ISHFADI connects seekers with hosts. Payment arrangements for rent or purchase are handled directly between parties. We recommend using secure payment methods and getting agreements in writing.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Safety -->
+    <div class="faq-category" data-category="safety">
+      <button class="faq-category-header" onclick="toggleCategory(this)">
+        <div class="left">
+          <div class="cat-icon">🛡️</div>
+          <span class="cat-title">Safety &amp; Security</span>
+          <span class="cat-count">(3 articles)</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How does ISHFADI verify hosts?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">We verify hosts through email confirmation, phone verification (optional), and document checks for verified listings. We also monitor for suspicious activity and user reports.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">What should I do if I encounter a scam?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Report it immediately using the "Report" button on the listing or contact safety@ishfadi.com. Never send money before viewing a property in person, and be wary of deals that seem too good to be true.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How is my personal data protected?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">We use industry-standard encryption and security measures. Your personal information is only shared with other users when you initiate contact. See our Privacy Policy for full details.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Communication -->
+    <div class="faq-category" data-category="communication">
+      <button class="faq-category-header" onclick="toggleCategory(this)">
+        <div class="left">
+          <div class="cat-icon">💬</div>
+          <span class="cat-title">Communication</span>
+          <span class="cat-count">(3 articles)</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How do I contact a host?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Click the "Contact Host" button on any listing. You'll need to be signed in to send a message. We recommend keeping initial communication within the platform.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">Will hosts see my personal information?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Hosts can see your name and location when you contact them. Your email and phone number are only shared if you choose to include them in your message.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How do I respond to inquiries as a host?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">You'll receive email notifications for new inquiries. You can also check your Seller Dashboard for all messages. We recommend responding within 24 hours for the best experience.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account -->
+    <div class="faq-category" data-category="account">
+      <button class="faq-category-header" onclick="toggleCategory(this)">
+        <div class="left">
+          <div class="cat-icon">⚙️</div>
+          <span class="cat-title">Account Settings</span>
+          <span class="cat-count">(3 articles)</span>
+        </div>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How do I change my password?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Go to your Dashboard, click on Settings, and select "Change Password". You'll need to enter your current password and then your new password twice to confirm.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">How do I delete my account?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Contact support@ishfadi.com to request account deletion. Note that this will remove all your listings and data permanently. Active listings should be deactivated first.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">Can I change my email address?<span class="q-chevron">▾</span></button>
+          <div class="faq-answer">Yes, you can update your email in Dashboard Settings. You'll need to verify the new email address before the change takes effect.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- No Results -->
+  <div class="no-results" id="noResults" style="display:none">
+    <p>No results found for "<span id="noResultsQuery"></span>"</p>
+    <button onclick="clearSearch()">Clear search</button>
+  </div>
+
+  <!-- Support CTA -->
+  <div class="support-cta">
+    <h2>Still need help?</h2>
+    <p>Our support team is here to help. Reach out and we'll get back to you within 24 hours.</p>
+    <a href="mailto:support@ishfadi.com" class="support-btn">Contact Support</a>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>ISHFADI</h4>
+        <p>Find your perfect place anywhere in the world. Trusted by thousands globally.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#explore">Explore Listings</a></li>
+          <li><a href="seller.html">Host Dashboard</a></li>
+          <li><a href="buyer.html">Seeker Dashboard</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="help-center.html">Help Center</a></li>
+          <li><a href="safety-tips.html">Safety Tips</a></li>
+          <li><a href="terms-of-service.html">Terms of Service</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>support@ishfadi.com</p>
+        <p>+1 (555) 123-4567</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 ISHFADI. All rights reserved.</p>
+      <div>
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="terms-of-service.html">Terms</a>
+        <a href="safety-tips.html">Safety</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleCategory(btn) {
+  btn.classList.toggle('open');
+  const list = btn.nextElementSibling;
+  list.classList.toggle('open');
+}
+
+function toggleFaq(btn) {
+  btn.classList.toggle('open');
+  const answer = btn.nextElementSibling;
+  answer.classList.toggle('open');
+}
+
+function filterFAQs() {
+  const query = document.getElementById('faqSearch').value.toLowerCase();
+  const categories = document.querySelectorAll('.faq-category');
+  let anyVisible = false;
+
+  categories.forEach(cat => {
+    const items = cat.querySelectorAll('.faq-item');
+    let catHasMatch = false;
+    items.forEach(item => {
+      const q = item.querySelector('.faq-question').textContent.toLowerCase();
+      const a = item.querySelector('.faq-answer').textContent.toLowerCase();
+      const match = !query || q.includes(query) || a.includes(query);
+      item.style.display = match ? '' : 'none';
+      if (match) catHasMatch = true;
+    });
+    cat.style.display = catHasMatch ? '' : 'none';
+    if (catHasMatch) anyVisible = true;
+
+    // Auto-expand when searching
+    if (query && catHasMatch) {
+      cat.querySelector('.faq-category-header').classList.add('open');
+      cat.querySelector('.faq-list').classList.add('open');
+    }
+  });
+
+  const noResults = document.getElementById('noResults');
+  if (query && !anyVisible) {
+    noResults.style.display = '';
+    document.getElementById('noResultsQuery').textContent = query;
+  } else {
+    noResults.style.display = 'none';
+  }
+}
+
+function clearSearch() {
+  document.getElementById('faqSearch').value = '';
+  filterFAQs();
+}
+</script>
+
+</body>
+</html>

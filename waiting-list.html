@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISHFADI - Join the Waiting List</title>
+  <meta name="description" content="Be among the first to access ISHFADI — the verified real-estate marketplace.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      primary: '#1e3a5f', secondary: '#d4a574',
+      success: '#22c55e', warning: '#f59e0b', muted: '#64748b'
+    } } } }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .hero-bg {
+      background:
+        linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(45,74,111,0.9) 50%, rgba(30,58,95,0.95) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .card-hover { transition: all 0.3s; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .float { animation: float 6s ease-in-out infinite; }
+    .success-pop { animation: pop .6s cubic-bezier(.2,1.4,.4,1) both; }
+    @keyframes pop { 0% { transform: scale(.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 inset-x-0 z-50 bg-primary/95 backdrop-blur-md shadow-md">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-extrabold text-white">ISHFADI</a>
+      <div class="hidden md:flex items-center gap-6 text-sm text-white/80">
+        <a href="index.html" class="hover:text-white">Home</a>
+        <a href="help-center.html" class="hover:text-white">Help</a>
+        <a href="#join" class="px-4 py-2 bg-secondary text-primary rounded-xl font-bold hover:scale-105 transition">Join Now</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero-bg text-white pt-28 pb-20 px-4">
+    <div class="max-w-5xl mx-auto text-center">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-secondary/20 text-secondary text-xs font-bold uppercase tracking-widest mb-4">Pre-Launch · Limited Spots</span>
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">Be first to find your <span class="text-secondary">verified home</span></h1>
+      <p class="text-white/80 max-w-2xl mx-auto text-lg mb-8">Join 24,000+ seekers, hosts and agents on the ISHFADI waiting list. Early access · exclusive perks · zero spam.</p>
+
+      <!-- Countdown -->
+      <div class="grid grid-cols-4 gap-3 max-w-2xl mx-auto mb-8">
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-days">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Days</div></div>
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-hours">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Hours</div></div>
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-mins">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Min</div></div>
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-secs">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Sec</div></div>
+      </div>
+
+      <a href="#join" class="inline-block px-8 py-4 bg-secondary text-primary rounded-xl font-bold hover:shadow-2xl hover:scale-105 transition-all">Reserve My Spot →</a>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <section class="-mt-12 px-4">
+    <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">24,827</div><div class="text-xs text-muted uppercase tracking-wider mt-1">On the list</div></div>
+      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">62</div><div class="text-xs text-muted uppercase tracking-wider mt-1">Countries</div></div>
+      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">3,420</div><div class="text-xs text-muted uppercase tracking-wider mt-1">Agents joining</div></div>
+      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">73d</div><div class="text-xs text-muted uppercase tracking-wider mt-1">Until launch</div></div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section id="join" class="py-20 px-4">
+    <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8 md:p-10 border border-slate-100">
+      <div id="formWrap">
+        <h2 class="text-2xl md:text-3xl font-bold text-primary mb-1">Claim your early access</h2>
+        <p class="text-muted mb-8">Takes 30 seconds. We'll email you when your city goes live.</p>
+        <form id="waitlistForm" class="space-y-5">
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">First name</label><input required name="firstName" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Last name</label><input required name="lastName" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
+          </div>
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Email</label><input required type="email" name="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" placeholder="you@example.com" /></div>
+          <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">I'm joining as</label>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="role-card cursor-pointer"><input type="radio" name="role" value="buyer" class="hidden peer" checked><div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 text-center"><div class="text-2xl mb-1">🔍</div><div class="text-sm font-semibold text-slate-700">Seeker</div></div></label>
+              <label class="role-card cursor-pointer"><input type="radio" name="role" value="seller" class="hidden peer"><div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 text-center"><div class="text-2xl mb-1">🏠</div><div class="text-sm font-semibold text-slate-700">Host</div></div></label>
+              <label class="role-card cursor-pointer"><input type="radio" name="role" value="agent" class="hidden peer"><div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 text-center"><div class="text-2xl mb-1">🤝</div><div class="text-sm font-semibold text-slate-700">Agent</div></div></label>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Country</label>
+              <select required name="country" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white">
+                <option value="">Select…</option><option>United Arab Emirates</option><option>Saudi Arabia</option><option>Egypt</option><option>Jordan</option><option>Qatar</option><option>Kuwait</option><option>Oman</option><option>Bahrain</option><option>Morocco</option><option>Turkey</option><option>United Kingdom</option><option>United States</option><option>Other</option>
+              </select>
+            </div>
+            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">City</label><input required name="city" placeholder="e.g. Dubai" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Referral code <span class="text-muted normal-case">(optional)</span></label><input name="referral" placeholder="ISHFADI2024" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">How did you hear?</label>
+              <select name="source" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white">
+                <option value="">Choose one…</option><option>Friend / Family</option><option>Instagram</option><option>TikTok</option><option>Twitter / X</option><option>LinkedIn</option><option>Google Search</option><option>Podcast / News</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <label class="flex items-start gap-2 text-sm text-slate-600"><input type="checkbox" required class="mt-1"> I agree to the <a href="terms-of-service.html" class="text-secondary underline">Terms</a> and <a href="privacy-policy.html" class="text-secondary underline">Privacy Policy</a>.</label>
+          <button class="w-full py-4 bg-primary text-white rounded-xl font-bold hover:bg-[#2d4a6f] hover:scale-[1.01] transition-all text-lg">Join the Waiting List</button>
+        </form>
+      </div>
+      <div id="successWrap" class="hidden text-center py-6">
+        <div class="success-pop w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-5"><svg class="w-10 h-10 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
+        <h3 class="text-2xl font-bold text-primary mb-2">You're on the list! 🎉</h3>
+        <p class="text-muted mb-6">Position <span class="font-bold text-primary" id="position">#24,828</span>. We'll email you the moment your city goes live.</p>
+        <div class="bg-slate-50 rounded-xl p-4 mb-4"><div class="text-xs text-muted uppercase tracking-wider font-semibold">Your referral code</div><div class="flex items-center justify-between gap-3 mt-2"><code class="font-mono font-bold text-primary text-lg" id="refCode">ISHFADI-XXXX</code><button onclick="navigator.clipboard.writeText(document.getElementById('refCode').textContent); this.textContent='Copied ✓'" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold">Copy</button></div></div>
+        <p class="text-xs text-muted">Refer 3 friends and skip 1,000 spots in the queue.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold text-primary">Early-bird perks</h2><p class="text-muted mt-2">Exclusive to waiting-list members.</p></div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🚀</div><h3 class="font-bold text-primary mb-1">Day-one access</h3><p class="text-sm text-muted">Skip the queue and use ISHFADI before the public.</p></div>
+        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">💎</div><h3 class="font-bold text-primary mb-1">Founder badge</h3><p class="text-sm text-muted">A permanent profile badge that says you were here first.</p></div>
+        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🎁</div><h3 class="font-bold text-primary mb-1">3 free verifications</h3><p class="text-sm text-muted">Verify your first listings on the house.</p></div>
+        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">📈</div><h3 class="font-bold text-primary mb-1">2x referral rewards</h3><p class="text-sm text-muted">Double credits for everyone you bring on board.</p></div>
+        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🛎️</div><h3 class="font-bold text-primary mb-1">Priority support</h3><p class="text-sm text-muted">Direct line to the founding team for the first year.</p></div>
+        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🌍</div><h3 class="font-bold text-primary mb-1">Vote on cities</h3><p class="text-sm text-muted">Help us prioritize the next launch markets.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section class="py-16 bg-slate-50">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="text-center mb-10"><h2 class="text-3xl md:text-4xl font-bold text-primary">Launch roadmap</h2></div>
+      <ol class="relative border-l-2 border-secondary/30 pl-8 space-y-8">
+        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-success border-4 border-white shadow"></div><div class="text-xs font-bold text-success uppercase tracking-widest">✓ Done</div><h3 class="font-bold text-primary mt-1">Waiting list open</h3><p class="text-sm text-muted">24k+ joined.</p></li>
+        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-secondary border-4 border-white shadow"></div><div class="text-xs font-bold text-secondary uppercase tracking-widest">Now</div><h3 class="font-bold text-primary mt-1">Agent onboarding</h3><p class="text-sm text-muted">Certifying agents in 12 markets.</p></li>
+        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-slate-300 border-4 border-white shadow"></div><div class="text-xs font-bold text-muted uppercase tracking-widest">+30 days</div><h3 class="font-bold text-primary mt-1">Closed beta</h3><p class="text-sm text-muted">Invitations roll out by city.</p></li>
+        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-slate-300 border-4 border-white shadow"></div><div class="text-xs font-bold text-muted uppercase tracking-widest">+73 days</div><h3 class="font-bold text-primary mt-1">Public launch</h3><p class="text-sm text-muted">Global access, mobile apps, referral payouts.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-10"><h2 class="text-3xl md:text-4xl font-bold text-primary">From early members</h2></div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100"><div class="text-secondary mb-3">★★★★★</div><p class="text-slate-700 text-sm">"The verification idea alone made me sign up — finally a fraud-free platform."</p><div class="mt-4 text-xs"><div class="font-bold text-primary">Noor A.</div><div class="text-muted">Seeker · Cairo</div></div></div>
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100"><div class="text-secondary mb-3">★★★★★</div><p class="text-slate-700 text-sm">"Excited to list my properties on a network where every lead is real."</p><div class="mt-4 text-xs"><div class="font-bold text-primary">Hassan M.</div><div class="text-muted">Host · Dubai</div></div></div>
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100"><div class="text-secondary mb-3">★★★★★</div><p class="text-slate-700 text-sm">"The commission and referral model is the cleanest I've seen in the industry."</p><div class="mt-4 text-xs"><div class="font-bold text-primary">Reem S.</div><div class="text-muted">Agent · Riyadh</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="py-16 bg-slate-50">
+    <div class="max-w-3xl mx-auto px-4">
+      <div class="text-center mb-8"><h2 class="text-3xl md:text-4xl font-bold text-primary">Frequently asked</h2></div>
+      <div class="space-y-3">
+        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">Is the waiting list free?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">100% free, with no payment required at any step.</p></details>
+        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">How do I move up the queue?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">Share your referral code — each signup moves you up by 333 spots.</p></details>
+        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">When will my city launch?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">We open city by city based on member demand — you'll get an email the day we go live.</p></details>
+        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">Can I unsubscribe?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">Yes, one click in any email.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community / Footer -->
+  <footer class="bg-primary text-white py-12 px-4">
+    <div class="max-w-6xl mx-auto text-center">
+      <h3 class="text-2xl font-bold mb-3">Join the community</h3>
+      <p class="text-white/70 mb-6">Follow us for launch updates and behind-the-scenes.</p>
+      <div class="flex justify-center gap-4 mb-8">
+        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">𝕏</a>
+        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">IG</a>
+        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">in</a>
+        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">TT</a>
+      </div>
+      <div class="text-xs text-white/50">© 2026 ISHFADI · <a href="privacy-policy.html" class="hover:text-white">Privacy</a> · <a href="terms-of-service.html" class="hover:text-white">Terms</a> · <a href="safety-tips.html" class="hover:text-white">Safety</a></div>
+    </div>
+  </footer>
+
+  <script>
+    // Countdown
+    (function(){
+      const target = new Date(); target.setDate(target.getDate() + 73); target.setHours(0,0,0,0);
+      function tick(){
+        const diff = Math.max(0, target - new Date());
+        const d = Math.floor(diff/86400000), h = Math.floor(diff/3600000)%24, m = Math.floor(diff/60000)%60, s = Math.floor(diff/1000)%60;
+        const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=String(v).padStart(2,'0');};
+        set('cd-days',d); set('cd-hours',h); set('cd-mins',m); set('cd-secs',s);
+      }
+      tick(); setInterval(tick, 1000);
+    })();
+    // Form
+    document.getElementById('waitlistForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const code = 'ISHFADI-' + Math.random().toString(36).slice(2,6).toUpperCase();
+      document.getElementById('refCode').textContent = code;
+      document.getElementById('formWrap').classList.add('hidden');
+      document.getElementById('successWrap').classList.remove('hidden');
+      window.scrollTo({ top: document.getElementById('successWrap').offsetTop - 100, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

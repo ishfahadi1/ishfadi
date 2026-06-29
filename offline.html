@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e3a5f">
+<title>You're Offline · ISHFADI</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<style>
+  :root { --primary:#1e3a5f; --secondary:#d4a574; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff;
+    background:radial-gradient(circle at 20% 10%,#2d4a6f 0%,#1e3a5f 45%,#0f1f36 100%)}
+  body{display:flex;align-items:center;justify-content:center;padding:24px;padding-top:calc(24px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom));text-align:center}
+  .wrap{max-width:480px;width:100%}
+  .logo{font-size:1.5rem;font-weight:800;letter-spacing:.18em;color:#fff;margin-bottom:32px}
+  .logo span{color:var(--secondary)}
+  .art{width:180px;height:180px;margin:0 auto 24px;border-radius:50%;background:rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.08);
+    animation:float 5s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .art svg{width:96px;height:96px;color:var(--secondary)}
+  h1{font-size:1.75rem;margin:0 0 12px;font-weight:700}
+  p{margin:0 0 28px;color:#cbd5e1;line-height:1.6;font-size:1rem}
+  .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  button{appearance:none;border:0;cursor:pointer;font-weight:600;font-size:.95rem;border-radius:12px;padding:12px 22px;transition:transform .15s,box-shadow .2s}
+  .btn-primary{background:var(--secondary);color:#1e293b;box-shadow:0 8px 24px rgba(212,165,116,.35)}
+  .btn-primary:hover{transform:translateY(-2px)}
+  .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.18)}
+  .btn-ghost:hover{background:rgba(255,255,255,.14)}
+  .status{margin-top:24px;font-size:.85rem;color:#94a3b8}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:8px;vertical-align:middle;animation:pulse 1.4s infinite}
+  .online .dot{background:#22c55e}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">ISH<span>FADI</span></div>
+    <div class="art" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>
+      </svg>
+    </div>
+    <h1>You're offline</h1>
+    <p>It looks like you've lost your connection. Check your network and try again — we'll bring you back to ISHFADI as soon as you're reconnected.</p>
+    <div class="actions">
+      <button class="btn-primary" onclick="tryReload()">Retry</button>
+      <button class="btn-ghost" onclick="goHome()">Go Home</button>
+    </div>
+    <div id="status" class="status"><span class="dot"></span><span id="statusText">Offline</span></div>
+  </div>
+<script>
+  function tryReload(){ if(navigator.onLine){ location.replace('/index.html'); } else { location.reload(); } }
+  function goHome(){ location.replace('/index.html'); }
+  function refreshStatus(){
+    var s=document.getElementById('status'), t=document.getElementById('statusText');
+    if(navigator.onLine){ s.classList.add('online'); t.textContent='Back online — reloading…'; setTimeout(()=>location.replace('/index.html'), 800); }
+    else { s.classList.remove('online'); t.textContent='Offline'; }
+  }
+  window.addEventListener('online', refreshStatus);
+  window.addEventListener('offline', refreshStatus);
+  refreshStatus();
+</script>
+</body>
+</html>

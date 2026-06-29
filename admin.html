@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISHFADI - Admin Dashboard</title>
+<meta name="description" content="ISHFADI enterprise admin control center.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  tailwind.config = { theme: { extend: { colors: {
+    primary: '#1e3a5f', 'primary-light': '#2a4a7f',
+    secondary: '#d4a574', accent: '#e8913a',
+    success: '#22c55e', warning: '#f59e0b',
+    danger: '#ef4444', muted: '#64748b'
+  } } } }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; }
+  .card-hover { transition: all 0.3s; }
+  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+
+  .sidebar { transition: transform 0.3s ease, width 0.3s ease; }
+  @media (max-width: 1024px) {
+    .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; }
+    .sidebar.open { transform: translateX(0); }
+  }
+  .sidebar-bg {
+    background:
+      linear-gradient(180deg, rgba(30,58,95,1) 0%, rgba(25,48,78,1) 100%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .page-bg { background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); }
+  .welcome-bg {
+    background:
+      linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(45,74,111,0.9) 50%, rgba(212,165,116,0.35) 100%);
+  }
+  .glass { background: rgba(255,255,255,0.75); backdrop-filter: blur(12px); }
+
+  .fade-in { animation: fadeIn .4s ease forwards; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform: translateY(0);} }
+  .count-up { font-variant-numeric: tabular-nums; }
+
+  /* Sidebar nav */
+  .nav-link { display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-radius:.75rem;
+    color: rgba(255,255,255,.7); transition: background .2s, color .2s; font-size:.9rem; }
+  .nav-link:hover { background: rgba(255,255,255,.08); color:#fff; }
+  .nav-link.active { background: rgba(255,255,255,.12); color:#fff; box-shadow: inset 3px 0 0 #d4a574; }
+  .nav-link .nav-emoji { width:1.5rem; text-align:center; font-size: 1.05rem; }
+  .nav-group-label { padding: 1rem 1rem .35rem; font-size:.68rem; letter-spacing:.08em;
+    text-transform: uppercase; color: rgba(255,255,255,.4); font-weight:600; }
+
+  /* Topbar pill */
+  .topbar-icon-btn { position:relative; width:40px; height:40px; border-radius:.75rem;
+    display:flex; align-items:center; justify-content:center; color:#475569;
+    transition: background .2s, color .2s; }
+  .topbar-icon-btn:hover { background:#f1f5f9; color:#1e3a5f; }
+  .topbar-icon-btn .dot { position:absolute; top:8px; right:9px; width:8px; height:8px;
+    background:#ef4444; border-radius:50%; box-shadow: 0 0 0 2px #fff; }
+
+  /* Tables */
+  table.enterprise { width:100%; font-size:.875rem; }
+  table.enterprise thead th { text-align:left; font-weight:600; color:#64748b;
+    text-transform:uppercase; font-size:.7rem; letter-spacing:.06em;
+    padding: .75rem 1rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+  table.enterprise tbody td { padding: .9rem 1rem; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  table.enterprise tbody tr:hover { background:#f8fafc; }
+
+  /* Badges */
+  .badge { display:inline-flex; align-items:center; gap:.3rem; padding: .2rem .6rem;
+    border-radius:999px; font-size:.72rem; font-weight:600; }
+  .badge-success { background:#dcfce7; color:#166534; }
+  .badge-warning { background:#fef3c7; color:#92400e; }
+  .badge-danger  { background:#fee2e2; color:#991b1b; }
+  .badge-info    { background:#dbeafe; color:#1e40af; }
+  .badge-muted   { background:#f1f5f9; color:#475569; }
+  .badge-primary { background:rgba(30,58,95,.1); color:#1e3a5f; }
+  .badge-gold    { background: linear-gradient(135deg,#fde68a,#fcd34d); color:#78350f; }
+
+  /* Pane switching */
+  [data-pane] { display:none; }
+  [data-pane].active { display:block; animation: fadeIn .35s ease forwards; }
+
+  /* Avatar generator */
+  .avatar { display:inline-flex; align-items:center; justify-content:center;
+    font-weight:600; color:#fff; border-radius:50%;
+    background: linear-gradient(135deg,#1e3a5f,#2a4a7f); font-size:.8rem; flex-shrink:0; }
+
+  /* Progress */
+  .progress { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; }
+  .progress > span { display:block; height:100%; background: linear-gradient(90deg,#1e3a5f,#d4a574); }
+
+  /* KPI deco */
+  .kpi-icon { width:44px; height:44px; border-radius:.85rem; display:flex; align-items:center;
+    justify-content:center; font-size:1.25rem; }
+
+  /* Modal */
+  .modal { display:none; position:fixed; inset:0; background:rgba(15,23,42,.55);
+    backdrop-filter: blur(6px); z-index:200; align-items:center; justify-content:center; padding:1rem; }
+  .modal.active { display:flex; }
+  .modal-card { background:#fff; border-radius:1.25rem; max-width:560px; width:100%;
+    max-height:90vh; overflow:auto; box-shadow: 0 30px 80px rgba(2,6,23,.35); }
+
+  /* Toast */
+  #toastWrap { position:fixed; top:1rem; right:1rem; z-index:300; display:flex;
+    flex-direction:column; gap:.5rem; }
+  .toast { background:#0f172a; color:#fff; padding:.75rem 1rem; border-radius:.75rem;
+    box-shadow:0 10px 25px rgba(0,0,0,.2); font-size:.85rem;
+    animation: fadeIn .25s ease forwards; }
+  .toast.success { background:#166534; }
+  .toast.error { background:#991b1b; }
+
+  /* Skeleton */
+  .skel { background: linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9);
+    background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius:.5rem; }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+  /* Scrollbar polish */
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* Dark mode */
+  body.dark { background: #0b1220; color:#e2e8f0; }
+  body.dark .page-bg { background: linear-gradient(180deg,#0b1220 0%, #0f172a 100%); }
+  body.dark .bg-white, body.dark .glass { background:#111a2e !important; color:#e2e8f0; }
+  body.dark .border, body.dark .border-b, body.dark .border-t { border-color:#1f2a44 !important; }
+  body.dark table.enterprise thead th { background:#0f172a; color:#94a3b8; border-color:#1f2a44; }
+  body.dark table.enterprise tbody td { border-color:#1f2a44; }
+  body.dark table.enterprise tbody tr:hover { background:#162038; }
+  body.dark .text-gray-800 { color:#e2e8f0 !important; }
+  body.dark .text-gray-700 { color:#cbd5e1 !important; }
+  body.dark .text-gray-500, body.dark .text-gray-600 { color:#94a3b8 !important; }
+  body.dark .topbar-icon-btn { color:#cbd5e1; }
+  body.dark .topbar-icon-btn:hover { background:#1f2a44; color:#fff; }
+  body.dark .progress { background:#1f2a44; }
+  body.dark .badge-muted { background:#1f2a44; color:#cbd5e1; }
+  body.dark input, body.dark select { background:#0f172a; color:#e2e8f0; border-color:#1f2a44; }
+</style>
+</head>
+<body class="page-bg text-gray-800">
+
+<!-- ============ SIDEBAR ============ -->
+<aside id="sidebar" class="sidebar sidebar-bg fixed left-0 top-0 h-full w-64 text-white flex flex-col z-40">
+  <div class="flex items-center justify-between px-6 h-16 border-b border-white/10">
+    <a href="index.html" class="text-2xl font-extrabold tracking-tight">ISHFADI</a>
+    <button onclick="toggleSidebar()" class="lg:hidden text-white/70 hover:text-white">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+  </div>
+
+  <nav class="flex-1 overflow-y-auto px-3 py-3">
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-link active" data-section="dashboard"><span class="nav-emoji">🏠</span>Dashboard</a>
+    <a class="nav-link" data-section="analytics"><span class="nav-emoji">📊</span>Analytics</a>
+
+    <div class="nav-group-label">People</div>
+    <a class="nav-link" data-section="users"><span class="nav-emoji">👥</span>Users</a>
+    <a class="nav-link" data-section="agents"><span class="nav-emoji">🤝</span>Agents</a>
+    <a class="nav-link" data-section="waiting"><span class="nav-emoji">⏳</span>Waiting List <span class="ml-auto badge badge-gold">312</span></a>
+    <a class="nav-link" data-section="referrals"><span class="nav-emoji">🎯</span>Referral Center</a>
+
+    <div class="nav-group-label">Inventory</div>
+    <a class="nav-link" data-section="properties"><span class="nav-emoji">🏡</span>Properties</a>
+    <a class="nav-link" data-section="verification"><span class="nav-emoji">✅</span>Verification</a>
+    <a class="nav-link" data-section="countries"><span class="nav-emoji">🌍</span>Countries</a>
+    <a class="nav-link" data-section="rankings"><span class="nav-emoji">🏆</span>Rankings</a>
+
+    <div class="nav-group-label">Operations</div>
+    <a class="nav-link" data-section="revenue"><span class="nav-emoji">💰</span>Revenue</a>
+    <a class="nav-link" data-section="reports"><span class="nav-emoji">📝</span>Reports <span class="ml-auto badge badge-danger">7</span></a>
+    <a class="nav-link" data-section="communication"><span class="nav-emoji">💬</span>Communication</a>
+    <a class="nav-link" data-section="notifications"><span class="nav-emoji">📢</span>Notifications</a>
+    <a class="nav-link" data-section="export"><span class="nav-emoji">📤</span>Export Center</a>
+
+    <div class="nav-group-label">System</div>
+    <a class="nav-link" data-section="cms"><span class="nav-emoji">📰</span>CMS</a>
+    <a class="nav-link" data-section="security"><span class="nav-emoji">🔐</span>Security</a>
+    <a class="nav-link" data-section="settings"><span class="nav-emoji">⚙️</span>Settings</a>
+  </nav>
+
+  <div class="px-4 py-3 border-t border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="avatar w-10 h-10 bg-gradient-to-br from-secondary to-accent">RS</div>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold truncate">Rashid Saeed</p>
+        <p class="text-xs text-white/60 truncate">Super Admin</p>
+      </div>
+      <a href="index.html" class="ml-auto text-white/60 hover:text-white" title="Sign out">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main class="lg:ml-64 min-h-screen">
+
+  <!-- Topbar -->
+  <header class="glass border-b sticky top-0 z-30">
+    <div class="flex items-center justify-between gap-3 px-4 sm:px-6 h-16">
+      <div class="flex items-center gap-3 min-w-0">
+        <button onclick="toggleSidebar()" class="lg:hidden topbar-icon-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <nav class="hidden md:flex items-center text-sm text-gray-500 gap-2 min-w-0">
+          <span>Admin</span>
+          <span class="text-gray-300">/</span>
+          <span id="crumb" class="text-gray-800 font-medium truncate">Dashboard</span>
+        </nav>
+      </div>
+
+      <div class="flex-1 max-w-md hidden md:block">
+        <div class="relative">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+          <input id="globalSearch" placeholder="Search users, properties, agents, reports…"
+            class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm" />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button class="topbar-icon-btn" title="Quick action" onclick="openQuickActions()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </button>
+        <button class="topbar-icon-btn" title="Messages" onclick="goto('communication')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 21l1.6-4.4C3.6 15.2 3 13.7 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="topbar-icon-btn" title="Notifications" onclick="toggleNotifPanel()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="topbar-icon-btn" title="Toggle theme" onclick="toggleTheme()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+        <button class="topbar-icon-btn" title="Language">
+          <span class="text-xs font-semibold">EN</span>
+        </button>
+
+        <div class="hidden sm:block w-px h-8 bg-slate-200 mx-2"></div>
+
+        <div class="hidden sm:flex flex-col items-end leading-tight mr-2">
+          <span class="text-xs text-gray-500" id="todayDate"></span>
+          <span class="text-xs font-semibold text-gray-700">Rashid Saeed</span>
+        </div>
+        <div class="avatar w-10 h-10 bg-gradient-to-br from-secondary to-accent">RS</div>
+      </div>
+    </div>
+
+    <!-- Notification panel -->
+    <div id="notifPanel" class="hidden absolute right-4 top-16 mt-2 w-80 bg-white rounded-xl shadow-2xl border z-40 overflow-hidden">
+      <div class="px-4 py-3 border-b flex items-center justify-between">
+        <p class="font-semibold text-gray-800">Notifications</p>
+        <button class="text-xs text-primary hover:underline" onclick="toast('Marked all as read','success')">Mark all read</button>
+      </div>
+      <div id="notifList" class="max-h-80 overflow-auto divide-y"></div>
+      <button class="block w-full text-center py-2 text-sm text-primary hover:bg-slate-50" onclick="goto('notifications')">View all</button>
+    </div>
+  </header>
+
+  <!-- ============ PANES ============ -->
+
+  <!-- DASHBOARD -->
+  <section data-pane="dashboard" class="active p-4 sm:p-6">
+    <div class="welcome-bg rounded-2xl p-6 md:p-8 text-white mb-6 shadow-lg">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="text-white/70 text-sm">Welcome back,</p>
+          <h2 class="text-2xl md:text-3xl font-bold">Rashid Saeed</h2>
+          <p class="text-white/80 mt-1">Platform health is <span class="font-semibold">excellent</span>. 23 new signups in the last 24h.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="openQuickActions()" class="px-5 py-2.5 bg-white text-primary rounded-xl font-semibold hover:bg-white/90 transition">Quick actions</button>
+          <button onclick="goto('export')" class="px-5 py-2.5 bg-white/10 border border-white/30 rounded-xl font-semibold hover:bg-white/20 transition">Export report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div id="kpiGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
+
+    <div class="grid lg:grid-cols-3 gap-6 mb-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl p-6 border">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-semibold text-gray-800">Platform growth</h3>
+            <p class="text-xs text-gray-500">Users, properties & revenue · last 12 months</p>
+          </div>
+          <select class="text-sm border rounded-lg px-2 py-1 bg-white">
+            <option>Last 12 months</option><option>Last 6 months</option><option>This year</option>
+          </select>
+        </div>
+        <canvas id="growthChart" height="120"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold text-gray-800 mb-4">User mix</h3>
+        <canvas id="userMixChart" height="180"></canvas>
+        <div id="userMixLegend" class="mt-4 space-y-2 text-sm"></div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl border overflow-hidden">
+        <div class="p-5 border-b flex items-center justify-between">
+          <h3 class="font-semibold text-gray-800">Recent activity</h3>
+          <button class="text-sm text-primary hover:underline" onclick="goto('security')">View audit log →</button>
+        </div>
+        <div id="activityFeed" class="divide-y"></div>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold text-gray-800 mb-4">Pending queue</h3>
+        <div id="pendingQueue" class="space-y-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANALYTICS -->
+  <section data-pane="analytics" class="p-4 sm:p-6">
+    <div class="grid lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Monthly revenue</h3><canvas id="revChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">User acquisition</h3><canvas id="acqChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Properties by country</h3><canvas id="countryChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Agent performance</h3><canvas id="agentChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Referral funnel</h3><canvas id="funnelChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">System health</h3>
+        <div class="space-y-4">
+          <div><div class="flex justify-between text-sm mb-1"><span>API uptime</span><span class="font-semibold text-success">99.98%</span></div><div class="progress"><span style="width:99.98%"></span></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span>Avg response</span><span class="font-semibold">142ms</span></div><div class="progress"><span style="width:72%"></span></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span>Database load</span><span class="font-semibold text-warning">63%</span></div><div class="progress"><span style="width:63%"></span></div></div>
+          <div><div class="flex justify-between text-sm mb-1"><span>Storage used</span><span class="font-semibold">412 GB / 1 TB</span></div><div class="progress"><span style="width:41%"></span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USERS -->
+  <section data-pane="users" class="p-4 sm:p-6">
+    <div class="bg-white rounded-2xl border">
+      <div class="p-5 border-b flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+        <div>
+          <h3 class="font-semibold text-gray-800">All users</h3>
+          <p class="text-xs text-gray-500">Manage every account on the platform.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <input id="userSearch" placeholder="Search…" class="px-3 py-2 border rounded-lg text-sm w-44" />
+          <select id="userFilter" class="px-3 py-2 border rounded-lg text-sm">
+            <option value="">All roles</option><option>Buyer</option><option>Seller</option><option>Agent</option>
+          </select>
+          <select id="userStatus" class="px-3 py-2 border rounded-lg text-sm">
+            <option value="">All status</option><option>Active</option><option>Pending</option><option>Suspended</option>
+          </select>
+          <button class="px-3 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-light">+ Invite user</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="enterprise">
+          <thead><tr><th>User</th><th>Role</th><th>Country</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t flex items-center justify-between text-sm text-gray-500">
+        <span id="usersCount"></span>
+        <div class="flex gap-1">
+          <button class="px-3 py-1 border rounded">Prev</button>
+          <button class="px-3 py-1 bg-primary text-white rounded">1</button>
+          <button class="px-3 py-1 border rounded">2</button>
+          <button class="px-3 py-1 border rounded">3</button>
+          <button class="px-3 py-1 border rounded">Next</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROPERTIES -->
+  <section data-pane="properties" class="p-4 sm:p-6">
+    <div class="flex flex-wrap gap-2 mb-4" id="propTabs"></div>
+    <div id="propGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  </section>
+
+  <!-- AGENTS -->
+  <section data-pane="agents" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="agentKpis"></div>
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl border overflow-hidden">
+        <div class="p-5 border-b flex items-center justify-between">
+          <h3 class="font-semibold">Agent directory</h3>
+          <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-light">Approve all pending</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="enterprise">
+            <thead><tr><th>Agent</th><th>Rank</th><th>Sales</th><th>Commission</th><th>Verified</th><th>Status</th></tr></thead>
+            <tbody id="agentsTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-4">Top leaderboard</h3>
+        <div id="leaderboard" class="space-y-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITING LIST -->
+  <section data-pane="waiting" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-4 gap-4 mb-6" id="waitKpis"></div>
+    <div class="grid lg:grid-cols-3 gap-6 mb-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-3">Joins over time</h3>
+        <canvas id="waitChart" height="120"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-3">By role</h3>
+        <canvas id="waitRoleChart" height="180"></canvas>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border">
+      <div class="p-5 border-b flex justify-between items-center">
+        <h3 class="font-semibold">Waiting list entries</h3>
+        <button class="px-3 py-1.5 border rounded-lg text-sm hover:bg-slate-50">⤓ Export CSV</button>
+      </div>
+      <div class="overflow-x-auto"><table class="enterprise">
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Country</th><th>Source</th><th>Joined</th></tr></thead>
+        <tbody id="waitTable"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- VERIFICATION -->
+  <section data-pane="verification" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-3 gap-4 mb-6" id="verifKpis"></div>
+    <div class="bg-white rounded-2xl border">
+      <div class="p-5 border-b"><h3 class="font-semibold">Verification queue</h3></div>
+      <div id="verifList" class="divide-y"></div>
+    </div>
+  </section>
+
+  <!-- REVENUE -->
+  <section data-pane="revenue" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-4 gap-4 mb-6" id="revKpis"></div>
+    <div class="grid lg:grid-cols-3 gap-6 mb-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-3">Revenue trend</h3>
+        <canvas id="revTrend" height="120"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-3">Revenue mix</h3>
+        <canvas id="revMix" height="180"></canvas>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border overflow-hidden">
+      <div class="p-5 border-b"><h3 class="font-semibold">Latest transactions</h3></div>
+      <div class="overflow-x-auto"><table class="enterprise">
+        <thead><tr><th>ID</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody id="txTable"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- REFERRALS -->
+  <section data-pane="referrals" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-4 gap-4 mb-6" id="refKpis"></div>
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-3">Conversion funnel</h3>
+        <div id="refFunnel" class="space-y-3"></div>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-3">Top referrers</h3>
+        <div id="topReferrers" class="space-y-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COUNTRIES -->
+  <section data-pane="countries" class="p-4 sm:p-6">
+    <div class="bg-white rounded-2xl border overflow-hidden">
+      <div class="p-5 border-b flex justify-between items-center">
+        <h3 class="font-semibold">Active countries</h3>
+        <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg">+ Add country</button>
+      </div>
+      <div class="overflow-x-auto"><table class="enterprise">
+        <thead><tr><th>Country</th><th>Users</th><th>Properties</th><th>Revenue</th><th>Growth</th><th>Status</th></tr></thead>
+        <tbody id="countriesTable"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- RANKINGS -->
+  <section data-pane="rankings" class="p-4 sm:p-6">
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-4">Agent ranking tiers</h3>
+        <div id="rankTiers" class="space-y-3"></div>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-4">Top properties</h3>
+        <div id="topProps" class="space-y-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORTS -->
+  <section data-pane="reports" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-4 gap-4 mb-6" id="reportKpis"></div>
+    <div class="bg-white rounded-2xl border overflow-hidden">
+      <div class="p-5 border-b flex flex-wrap justify-between items-center gap-3">
+        <h3 class="font-semibold">Open reports</h3>
+        <div class="flex gap-2">
+          <select class="px-3 py-2 border rounded-lg text-sm"><option>All types</option><option>Fraud</option><option>Property</option><option>User</option><option>Agent</option></select>
+        </div>
+      </div>
+      <div class="overflow-x-auto"><table class="enterprise">
+        <thead><tr><th>ID</th><th>Type</th><th>Subject</th><th>Reporter</th><th>Severity</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="reportTable"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- CMS -->
+  <section data-pane="cms" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="cmsGrid"></div>
+  </section>
+
+  <!-- NOTIFICATIONS -->
+  <section data-pane="notifications" class="p-4 sm:p-6">
+    <div class="bg-white rounded-2xl border">
+      <div class="p-5 border-b flex justify-between items-center">
+        <h3 class="font-semibold">Broadcast composer</h3>
+        <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="toast('Notification queued','success')">Send</button>
+      </div>
+      <div class="p-5 grid md:grid-cols-2 gap-4">
+        <div><label class="text-sm font-medium">Audience</label>
+          <select class="mt-1 w-full px-3 py-2 border rounded-lg text-sm"><option>All users</option><option>Buyers</option><option>Sellers</option><option>Agents</option><option>Waiting list</option></select></div>
+        <div><label class="text-sm font-medium">Channel</label>
+          <select class="mt-1 w-full px-3 py-2 border rounded-lg text-sm"><option>In-app</option><option>Email</option><option>SMS</option><option>Push</option></select></div>
+        <div class="md:col-span-2"><label class="text-sm font-medium">Title</label>
+          <input class="mt-1 w-full px-3 py-2 border rounded-lg text-sm" placeholder="A clear, concise title" /></div>
+        <div class="md:col-span-2"><label class="text-sm font-medium">Message</label>
+          <textarea rows="4" class="mt-1 w-full px-3 py-2 border rounded-lg text-sm" placeholder="Body…"></textarea></div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border mt-6">
+      <div class="p-5 border-b"><h3 class="font-semibold">Recent broadcasts</h3></div>
+      <div class="overflow-x-auto"><table class="enterprise">
+        <thead><tr><th>Title</th><th>Audience</th><th>Channel</th><th>Sent</th><th>Open rate</th></tr></thead>
+        <tbody id="broadcastTable"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- COMMUNICATION -->
+  <section data-pane="communication" class="p-4 sm:p-6">
+    <div class="bg-white rounded-2xl border grid md:grid-cols-3 min-h-[480px] overflow-hidden">
+      <div class="border-r">
+        <div class="p-4 border-b"><input placeholder="Search threads" class="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+        <div id="threadList" class="divide-y max-h-[460px] overflow-auto"></div>
+      </div>
+      <div class="md:col-span-2 flex flex-col">
+        <div class="p-4 border-b flex items-center gap-3">
+          <div class="avatar w-9 h-9">AM</div>
+          <div><p class="font-semibold text-sm">Amani Khalid</p><p class="text-xs text-gray-500">Agent · UAE</p></div>
+        </div>
+        <div id="chatBody" class="flex-1 p-5 space-y-3 overflow-auto bg-slate-50"></div>
+        <div class="p-3 border-t flex gap-2">
+          <input placeholder="Reply…" class="flex-1 px-3 py-2 border rounded-lg text-sm" />
+          <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold">Send</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPORT -->
+  <section data-pane="export" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="exportGrid"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section data-pane="settings" class="p-4 sm:p-6">
+    <div class="grid lg:grid-cols-4 gap-6">
+      <aside class="bg-white rounded-2xl border p-3 h-fit">
+        <ul id="settingsNav" class="space-y-1 text-sm"></ul>
+      </aside>
+      <div class="lg:col-span-3 bg-white rounded-2xl border p-6" id="settingsPanel"></div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section data-pane="security" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-4 gap-4 mb-6" id="secKpis"></div>
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl border overflow-hidden">
+        <div class="p-5 border-b"><h3 class="font-semibold">Audit log</h3></div>
+        <div class="overflow-x-auto"><table class="enterprise">
+          <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>IP</th></tr></thead>
+          <tbody id="auditTable"></tbody>
+        </table></div>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-4">Permission matrix</h3>
+        <div id="permMatrix" class="space-y-2 text-sm"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Quick action modal -->
+<div id="modalRoot" class="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card p-6" id="modalContent"></div>
+</div>
+
+<div id="toastWrap"></div>
+
+<script>
+/* ============================================================
+   ISHFADI ADMIN — Frontend only
+   Hardcoded enterprise demo data, structured so swapping to
+   Supabase later is a one-line change per loader function.
+   ============================================================ */
+const DATA = {
+  kpis: [
+    { label:'Total users',       value: 18432, delta:'+12.4%', color:'primary', icon:'👥' },
+    { label:'Buyers',            value: 11250, delta:'+8.1%',  color:'info',    icon:'🔎' },
+    { label:'Sellers',           value:  4820, delta:'+15.3%', color:'success', icon:'🏷️' },
+    { label:'Agents',            value:   942, delta:'+6.7%',  color:'gold',    icon:'🤝' },
+    { label:'Waiting list',      value:   312, delta:'+22%',   color:'warning', icon:'⏳' },
+    { label:'Verified users',    value: 14201, delta:'+9%',    color:'success', icon:'✅' },
+    { label:'Properties',        value:  7621, delta:'+11%',   color:'primary', icon:'🏡' },
+    { label:'Verified listings', value:  6480, delta:'+13%',   color:'info',    icon:'🛡️' },
+    { label:'Revenue (MTD)',     value: '$284k', delta:'+18%', color:'success', icon:'💰' },
+    { label:'Countries',         value:    27, delta:'+2',     color:'primary', icon:'🌍' },
+    { label:'Cities',            value:   312, delta:'+9',     color:'info',    icon:'📍' },
+    { label:'Growth rate',       value: '6.4%', delta:'+0.8',  color:'success', icon:'📈' },
+    { label:'Subscriptions',     value:  1820, delta:'+4.2%',  color:'primary', icon:'🎟️' },
+    { label:'Pending reviews',   value:    48, delta:'-12',    color:'warning', icon:'🕒' },
+    { label:'Open reports',      value:     7, delta:'+3',     color:'danger',  icon:'🚩' },
+    { label:'New today',         value:    23, delta:'+5',     color:'info',    icon:'🌟' },
+  ],
+  activity: [
+    { who:'Amani Khalid', action:'approved property', target:'Marina Heights #2104', t:'2m ago', tag:'approval' },
+    { who:'System',       action:'flagged user',      target:'jdoe@example.com',      t:'14m ago', tag:'security' },
+    { who:'Layla Hassan', action:'paid commission',   target:'$1,820 → Yusuf A.',     t:'1h ago',  tag:'revenue' },
+    { who:'Rashid Saeed', action:'updated CMS',       target:'Homepage hero',          t:'3h ago',  tag:'cms' },
+    { who:'Omar Idris',   action:'verified agent',    target:'Sara Lopez',             t:'5h ago',  tag:'verify' },
+    { who:'System',       action:'auto-rejected listing', target:'#9921 (low quality images)', t:'Yesterday', tag:'system' },
+  ],
+  pending: [
+    { label:'Verifications', n:24, to:'verification' },
+    { label:'Property listings', n:12, to:'properties' },
+    { label:'Agent applications', n:8, to:'agents' },
+    { label:'User reports', n:7, to:'reports' },
+    { label:'Refund requests', n:3, to:'revenue' },
+  ],
+  users: [
+    ['Amani Khalid','amani@ishfadi.com','Agent','UAE','Active','2024-11-12'],
+    ['John Doe','john.doe@example.com','Buyer','USA','Active','2025-02-04'],
+    ['Layla Hassan','layla@ishfadi.com','Seller','Egypt','Pending','2025-03-21'],
+    ['Yusuf Ahmed','yusuf@property.io','Agent','Saudi Arabia','Active','2024-08-09'],
+    ['Sara Lopez','sara@latam.co','Buyer','Spain','Suspended','2025-01-17'],
+    ['Omar Idris','omar.id@host.com','Seller','Morocco','Active','2025-04-02'],
+    ['Maya Chen','maya@homes.cn','Buyer','China','Active','2025-05-11'],
+    ['Kareem N.','kareem@brokers.qa','Agent','Qatar','Active','2024-12-29'],
+  ],
+  properties: [
+    { title:'Marina Heights #2104', city:'Dubai', price:'$1.2M', status:'Pending',  img:'🏙️', owner:'Layla H.' },
+    { title:'Palm Villa 14',         city:'Abu Dhabi', price:'$3.4M', status:'Approved', img:'🏝️', owner:'Yusuf A.' },
+    { title:'Cairo Loft 7B',         city:'Cairo', price:'$320K', status:'Featured', img:'🏢', owner:'Omar I.' },
+    { title:'Riyadh Tower 19',       city:'Riyadh', price:'$2.1M', status:'Rejected', img:'🌆', owner:'Kareem N.' },
+    { title:'Madrid Suite 3',        city:'Madrid', price:'$540K', status:'Approved', img:'🏘️', owner:'Sara L.' },
+    { title:'Beijing Skyhome',       city:'Beijing', price:'$1.8M', status:'Expired',  img:'🌇', owner:'Maya C.' },
+    { title:'Casablanca Estate',     city:'Casablanca', price:'$760K', status:'Hidden',   img:'🏛️', owner:'Omar I.' },
+    { title:'Doha Pearl 88',         city:'Doha', price:'$2.6M', status:'Approved', img:'🌉', owner:'Kareem N.' },
+    { title:'Alex Coast Villa',      city:'Alexandria', price:'$890K', status:'Pending',  img:'🏖️', owner:'Layla H.' },
+  ],
+  propTabs: ['All','Pending','Approved','Rejected','Featured','Expired','Hidden'],
+  agents: [
+    ['Amani Khalid','UAE','Gold',  48,'$28,400', 'Yes','Active'],
+    ['Yusuf Ahmed','Saudi Arabia','Platinum', 62,'$41,200','Yes','Active'],
+    ['Kareem N.','Qatar','Silver', 21,'$11,800','Yes','Active'],
+    ['Sara Lopez','Spain','Bronze',  8,'$3,600','No', 'Pending'],
+    ['Hassan Ali','Egypt','Gold',   37,'$22,500','Yes','Active'],
+    ['Nadia M.','Morocco','Silver', 19,'$9,400','Yes','Active'],
+  ],
+  waiting: [
+    ['Ali Mansour','ali@m.com','Buyer','UAE','Instagram','2025-06-12'],
+    ['Fatma Y.','fatma@y.com','Seller','Egypt','Referral','2025-06-15'],
+    ['George Park','gp@p.io','Agent','Korea','Google','2025-06-17'],
+    ['Aisha B.','aisha@b.com','Buyer','Nigeria','TikTok','2025-06-19'],
+    ['Carlos R.','carlos@r.es','Buyer','Spain','Friend','2025-06-21'],
+    ['Mei Wong','mei@w.cn','Seller','China','LinkedIn','2025-06-23'],
+  ],
+  verif: [
+    { user:'Sara Lopez', type:'National ID',  country:'Spain',  submitted:'2 days ago' },
+    { user:'Layla Hassan', type:'Property deed', country:'Egypt', submitted:'5 hours ago' },
+    { user:'Maya Chen',  type:'Business license', country:'China', submitted:'Yesterday' },
+    { user:'Ali Mansour', type:'GPS location',  country:'UAE',    submitted:'1 hour ago' },
+  ],
+  transactions: [
+    ['TX-10231','Amani Khalid','Commission','$1,820','Paid','2026-06-20'],
+    ['TX-10232','Yusuf Ahmed','Subscription','$49','Paid','2026-06-21'],
+    ['TX-10233','Layla Hassan','Listing fee','$120','Pending','2026-06-22'],
+    ['TX-10234','Sara Lopez','Refund','-$49','Refunded','2026-06-23'],
+    ['TX-10235','Kareem N.','Commission','$840','Paid','2026-06-24'],
+  ],
+  countries: [
+    ['🇦🇪 UAE',5420,1820,'$120k','+18%','Active'],
+    ['🇸🇦 Saudi Arabia',3210,1402,'$98k','+22%','Active'],
+    ['🇪🇬 Egypt',2840,940,'$42k','+11%','Active'],
+    ['🇶🇦 Qatar',1820,610,'$54k','+8%','Active'],
+    ['🇪🇸 Spain',1240,420,'$31k','+14%','Active'],
+    ['🇲🇦 Morocco',780,260,'$12k','+6%','Active'],
+    ['🇨🇳 China',640,180,'$22k','+9%','Pilot'],
+  ],
+  reports: [
+    ['RP-501','Fraud','Suspicious listing #9921','Maya Chen','High','Open'],
+    ['RP-502','Property','Wrong location','John Doe','Medium','In review'],
+    ['RP-503','User','Spam messages','Sara Lopez','Low','Open'],
+    ['RP-504','Agent','Misrepresentation','Layla Hassan','High','Open'],
+    ['RP-505','Fraud','Duplicate account','System','Medium','Resolved'],
+    ['RP-506','Property','Outdated price','Omar Idris','Low','Open'],
+    ['RP-507','User','Harassment','Ali Mansour','High','In review'],
+  ],
+  notifs: [
+    { t:'New agent application', d:'Sara Lopez applied to become an agent.', when:'2m', tag:'agent' },
+    { t:'Property flagged',      d:'Listing #9921 was flagged for fraud.',     when:'14m', tag:'report' },
+    { t:'Payout processed',      d:'$1,820 paid to Amani Khalid.',             when:'1h',  tag:'revenue' },
+    { t:'Verification queued',   d:'12 documents awaiting review.',            when:'3h',  tag:'verify' },
+  ],
+  threads: [
+    { name:'Amani Khalid', role:'Agent · UAE', last:'Thanks for the quick approval!', unread:0, init:'AM' },
+    { name:'Layla Hassan', role:'Seller · Egypt', last:'When will the deed be reviewed?', unread:2, init:'LH' },
+    { name:'Sara Lopez',   role:'Buyer · Spain', last:'My account was suspended…', unread:1, init:'SL' },
+    { name:'Kareem N.',    role:'Agent · Qatar', last:'Sending updated commission report.', unread:0, init:'KN' },
+  ],
+  audit: [
+    ['09:42','Rashid Saeed','Approved property','#2104 Marina Heights','41.221.10.8'],
+    ['09:11','Layla Hassan','Updated profile','Self','89.21.4.66'],
+    ['08:50','System','Auto-flagged user','jdoe@example.com','—'],
+    ['08:20','Omar Idris','Verified agent','Sara Lopez','156.21.55.4'],
+    ['07:58','Rashid Saeed','Changed permission','Role: Moderator','41.221.10.8'],
+  ],
+  perms: [
+    ['Super Admin', 'Full access'],
+    ['Admin', 'Manage users, properties, reports'],
+    ['Moderator', 'Review listings & verifications'],
+    ['Finance', 'Revenue & payouts only'],
+    ['Support', 'Read-only + messaging'],
+  ],
+};
+
+/* ====== Helpers ====== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const fmt = n => typeof n==='number' ? n.toLocaleString() : n;
+
+function badgeFor(status){
+  const map = {
+    Active:'badge-success', Approved:'badge-success', Paid:'badge-success', Resolved:'badge-success', Verified:'badge-success',
+    Pending:'badge-warning', 'In review':'badge-warning', Featured:'badge-gold', Expired:'badge-muted', Hidden:'badge-muted',
+    Suspended:'badge-danger', Rejected:'badge-danger', Refunded:'badge-danger', Open:'badge-danger',
+    High:'badge-danger', Medium:'badge-warning', Low:'badge-muted', Pilot:'badge-info', Yes:'badge-success', No:'badge-muted'
+  };
+  return `<span class="badge ${map[status]||'badge-muted'}">${status}</span>`;
+}
+function colorBg(c){
+  return {primary:'bg-primary/10 text-primary',info:'bg-blue-50 text-blue-600',success:'bg-emerald-50 text-emerald-600',
+          warning:'bg-amber-50 text-amber-600',danger:'bg-red-50 text-red-600',gold:'bg-yellow-50 text-yellow-700'}[c]||'bg-slate-100 text-slate-700';
+}
+
+/* ====== Renderers ====== */
+function renderKpis(){
+  $('#kpiGrid').innerHTML = DATA.kpis.map(k=>`
+    <div class="bg-white rounded-2xl p-5 border card-hover">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-xs text-gray-500">${k.label}</p>
+          <p class="text-2xl font-bold mt-1 count-up">${fmt(k.value)}</p>
+        </div>
+        <div class="kpi-icon ${colorBg(k.color)}">${k.icon}</div>
+      </div>
+      <p class="text-xs mt-2 ${k.delta.startsWith('-')?'text-danger':'text-success'}">${k.delta.startsWith('-')?'▼':'▲'} ${k.delta.replace(/^[-+]/,'')} vs last period</p>
+    </div>`).join('');
+}
+
+function renderActivity(){
+  $('#activityFeed').innerHTML = DATA.activity.map(a=>`
+    <div class="p-4 flex items-start gap-3">
+      <div class="avatar w-9 h-9">${initials(a.who)}</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm"><span class="font-semibold">${a.who}</span> ${a.action} <span class="text-gray-500">${a.target}</span></p>
+        <p class="text-xs text-gray-400 mt-0.5">${a.t} · <span class="badge badge-muted">${a.tag}</span></p>
+      </div>
+    </div>`).join('');
+}
+
+function renderPending(){
+  $('#pendingQueue').innerHTML = DATA.pending.map(p=>`
+    <button class="w-full flex items-center justify-between p-3 rounded-xl border hover:bg-slate-50" onclick="goto('${p.to}')">
+      <span class="text-sm font-medium">${p.label}</span>
+      <span class="badge badge-warning">${p.n}</span>
+    </button>`).join('');
+}
+
+function renderUsers(){
+  const q = ($('#userSearch')?.value||'').toLowerCase();
+  const role = $('#userFilter')?.value||'';
+  const status = $('#userStatus')?.value||'';
+  const rows = DATA.users.filter(r=>{
+    const [n,e,ro,c,st]=r;
+    return (!q||n.toLowerCase().includes(q)||e.toLowerCase().includes(q))
+      && (!role||ro===role) && (!status||st===status);
+  });
+  $('#usersTable').innerHTML = rows.map(r=>`
+    <tr>
+      <td>
+        <div class="flex items-center gap-3">
+          <div class="avatar w-9 h-9">${initials(r[0])}</div>
+          <div><p class="font-medium">${r[0]}</p><p class="text-xs text-gray-500">${r[1]}</p></div>
+        </div>
+      </td>
+      <td>${badgeFor(r[2])}</td>
+      <td>${r[3]}</td>
+      <td>${badgeFor(r[4])}</td>
+      <td class="text-gray-500">${r[5]}</td>
+      <td>
+        <div class="flex gap-2">
+          <button class="text-primary hover:underline text-sm" onclick="openUser('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}')">View</button>
+          <button class="text-gray-500 hover:text-danger text-sm" onclick="toast('User suspended','success')">Suspend</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  $('#usersCount').textContent = `Showing ${rows.length} of ${DATA.users.length}`;
+}
+
+function renderProps(filter='All'){
+  $('#propTabs').innerHTML = DATA.propTabs.map(t=>`
+    <button onclick="renderProps('${t}')" class="px-3 py-1.5 rounded-lg text-sm border ${t===filter?'bg-primary text-white border-primary':'bg-white hover:bg-slate-50'}">${t}</button>`).join('');
+  const list = filter==='All' ? DATA.properties : DATA.properties.filter(p=>p.status===filter);
+  $('#propGrid').innerHTML = list.map(p=>`
+    <div class="bg-white rounded-2xl border card-hover overflow-hidden">
+      <div class="h-36 flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-secondary/20">${p.img}</div>
+      <div class="p-4">
+        <div class="flex justify-between items-start gap-2">
+          <div><p class="font-semibold">${p.title}</p><p class="text-xs text-gray-500">${p.city} · ${p.owner}</p></div>
+          ${badgeFor(p.status)}
+        </div>
+        <div class="mt-3 flex items-center justify-between">
+          <p class="text-lg font-bold text-primary">${p.price}</p>
+          <div class="flex gap-1">
+            <button class="px-2.5 py-1 text-xs border rounded-lg hover:bg-slate-50">Preview</button>
+            <button class="px-2.5 py-1 text-xs bg-primary text-white rounded-lg hover:bg-primary-light">Approve</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAgents(){
+  $('#agentKpis').innerHTML = [
+    {l:'Total agents',v:942,c:'primary',i:'🤝'},
+    {l:'Active this month',v:618,c:'success',i:'⚡'},
+    {l:'Pending applications',v:23,c:'warning',i:'⏳'},
+    {l:'Commission paid',v:'$182k',c:'gold',i:'💰'},
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  $('#agentsTable').innerHTML = DATA.agents.map(a=>`
+    <tr>
+      <td><div class="flex items-center gap-3"><div class="avatar w-9 h-9">${initials(a[0])}</div>
+        <div><p class="font-medium">${a[0]}</p><p class="text-xs text-gray-500">${a[1]}</p></div></div></td>
+      <td>${badgeFor(a[2]==='Bronze'?'Pending':'Active').replace('Active',a[2]).replace('Pending',a[2])}<span class="badge badge-gold ml-1">${a[2]}</span></td>
+      <td>${a[3]}</td>
+      <td class="font-semibold">${a[4]}</td>
+      <td>${badgeFor(a[5])}</td>
+      <td>${badgeFor(a[6])}</td>
+    </tr>`).join('');
+  $('#leaderboard').innerHTML = [...DATA.agents].sort((a,b)=>b[3]-a[3]).slice(0,6).map((a,i)=>`
+    <div class="flex items-center gap-3 p-2 rounded-lg ${i===0?'bg-gradient-to-r from-yellow-50 to-amber-50':''}">
+      <span class="w-6 text-center font-bold ${i<3?'text-amber-600':'text-gray-400'}">${i+1}</span>
+      <div class="avatar w-9 h-9">${initials(a[0])}</div>
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${a[0]}</p><p class="text-xs text-gray-500">${a[1]}</p></div>
+      <span class="text-sm font-semibold">${a[4]}</span>
+    </div>`).join('');
+}
+
+function renderWaiting(){
+  $('#waitKpis').innerHTML = [
+    {l:'Total joined',v:312,c:'primary',i:'⏳'},{l:'This week',v:48,c:'success',i:'📅'},
+    {l:'Conversion %',v:'34%',c:'info',i:'🎯'},{l:'Top country',v:'UAE',c:'gold',i:'🌍'}
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  $('#waitTable').innerHTML = DATA.waiting.map(r=>`<tr>
+    <td><div class="flex items-center gap-3"><div class="avatar w-9 h-9">${initials(r[0])}</div><p class="font-medium">${r[0]}</p></div></td>
+    <td class="text-gray-500">${r[1]}</td><td>${badgeFor(r[2])}</td><td>${r[3]}</td>
+    <td><span class="badge badge-info">${r[4]}</span></td><td class="text-gray-500">${r[5]}</td></tr>`).join('');
+}
+
+function renderVerif(){
+  $('#verifKpis').innerHTML = [
+    {l:'In queue',v:48,c:'warning',i:'⏳'},{l:'Approved (30d)',v:1240,c:'success',i:'✅'},{l:'Rejected (30d)',v:62,c:'danger',i:'❌'}
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  $('#verifList').innerHTML = DATA.verif.map(v=>`
+    <div class="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <div class="avatar w-10 h-10">${initials(v.user)}</div>
+        <div><p class="font-semibold">${v.user}</p><p class="text-xs text-gray-500">${v.type} · ${v.country} · ${v.submitted}</p></div>
+      </div>
+      <div class="flex gap-2">
+        <button class="px-3 py-1.5 text-sm border rounded-lg hover:bg-slate-50">Preview</button>
+        <button class="px-3 py-1.5 text-sm bg-success text-white rounded-lg" onclick="toast('Approved','success')">Approve</button>
+        <button class="px-3 py-1.5 text-sm bg-danger text-white rounded-lg" onclick="toast('Rejected','error')">Reject</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderRevenue(){
+  $('#revKpis').innerHTML = [
+    {l:'Total revenue',v:'$2.84M',c:'success',i:'💰'},
+    {l:'MTD income',v:'$284k',c:'primary',i:'📈'},
+    {l:'Projected (mo)',v:'$320k',c:'info',i:'🎯'},
+    {l:'Refunds',v:'$1.2k',c:'danger',i:'↩️'},
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  $('#txTable').innerHTML = DATA.transactions.map(t=>`<tr>
+    <td class="font-mono text-xs">${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td>
+    <td class="font-semibold">${t[3]}</td><td>${badgeFor(t[4])}</td><td class="text-gray-500">${t[5]}</td></tr>`).join('');
+}
+
+function renderReferrals(){
+  $('#refKpis').innerHTML = [
+    {l:'Total clicks',v:'48,290',c:'info',i:'🖱️'},
+    {l:'Signups',v:'5,420',c:'primary',i:'📝'},
+    {l:'Verified',v:'3,180',c:'success',i:'✅'},
+    {l:'Conversion',v:'6.6%',c:'gold',i:'🎯'}
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  const funnel=[['Link clicks',48290,100],['Signups',5420,11.2],['Verified',3180,6.6],['Active users',2410,5.0],['Paying',820,1.7]];
+  $('#refFunnel').innerHTML = funnel.map(f=>`
+    <div><div class="flex justify-between text-sm mb-1"><span>${f[0]}</span><span class="text-gray-500">${fmt(f[1])} · ${f[2]}%</span></div>
+    <div class="progress"><span style="width:${f[2]}%"></span></div></div>`).join('');
+  $('#topReferrers').innerHTML = DATA.agents.slice(0,5).map((a,i)=>`
+    <div class="flex items-center gap-3"><span class="w-6 text-center font-bold ${i<3?'text-amber-600':'text-gray-400'}">${i+1}</span>
+      <div class="avatar w-9 h-9">${initials(a[0])}</div>
+      <div class="flex-1"><p class="text-sm font-medium">${a[0]}</p><p class="text-xs text-gray-500">${a[3]} referrals</p></div>
+      <span class="text-sm font-semibold">${a[4]}</span></div>`).join('');
+}
+
+function renderCountries(){
+  $('#countriesTable').innerHTML = DATA.countries.map(r=>`<tr>
+    <td class="font-semibold">${r[0]}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td>
+    <td class="font-semibold">${r[3]}</td><td class="text-success">${r[4]}</td><td>${badgeFor(r[5])}</td></tr>`).join('');
+}
+
+function renderRankings(){
+  const tiers=[['Platinum','🏆',95],['Gold','🥇',72],['Silver','🥈',55],['Bronze','🥉',30]];
+  $('#rankTiers').innerHTML = tiers.map(t=>`
+    <div class="p-3 border rounded-xl flex items-center gap-3">
+      <span class="text-2xl">${t[1]}</span>
+      <div class="flex-1"><p class="font-semibold">${t[0]}</p>
+        <div class="progress mt-1"><span style="width:${t[2]}%"></span></div></div>
+      <span class="text-sm text-gray-500">${t[2]}%</span></div>`).join('');
+  $('#topProps').innerHTML = DATA.properties.slice(0,6).map((p,i)=>`
+    <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+      <span class="w-6 text-center font-bold text-gray-400">${i+1}</span>
+      <span class="text-2xl">${p.img}</span>
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${p.title}</p><p class="text-xs text-gray-500">${p.city}</p></div>
+      <span class="font-semibold text-primary">${p.price}</span></div>`).join('');
+}
+
+function renderReports(){
+  $('#reportKpis').innerHTML = [
+    {l:'Open',v:7,c:'danger',i:'🚩'},{l:'In review',v:12,c:'warning',i:'🔍'},
+    {l:'Resolved (mo)',v:84,c:'success',i:'✅'},{l:'Avg response',v:'4.2h',c:'info',i:'⏱️'}
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  $('#reportTable').innerHTML = DATA.reports.map(r=>`<tr>
+    <td class="font-mono text-xs">${r[0]}</td><td>${badgeFor(r[1]==='Fraud'?'High':'Medium').replace(/High|Medium/,r[1])}</td>
+    <td>${r[2]}</td><td class="text-gray-500">${r[3]}</td><td>${badgeFor(r[4])}</td><td>${badgeFor(r[5])}</td>
+    <td><button class="text-primary hover:underline text-sm">Resolve</button></td></tr>`).join('');
+}
+
+function renderCMS(){
+  const cards=[
+    {t:'Homepage hero',d:'Edit hero copy, CTA & background.',i:'🎨'},
+    {t:'Testimonials',d:'Curate user testimonials.',i:'💬'},
+    {t:'FAQs',d:'Manage FAQ entries by category.',i:'❓'},
+    {t:'Announcements',d:'Site-wide announcement bar.',i:'📣'},
+    {t:'Newsletter',d:'Templates & subscriber list.',i:'📧'},
+    {t:'Community links',d:'Discord, Telegram, social.',i:'🌐'},
+    {t:'Footer editor',d:'Footer columns & links.',i:'📄'},
+    {t:'Blog posts',d:'Articles & SEO metadata.',i:'📝'},
+    {t:'Legal pages',d:'Terms, Privacy, Safety.',i:'⚖️'},
+  ];
+  $('#cmsGrid').innerHTML = cards.map(c=>`
+    <div class="bg-white rounded-2xl p-5 border card-hover">
+      <div class="kpi-icon ${colorBg('primary')} mb-3">${c.i}</div>
+      <p class="font-semibold">${c.t}</p>
+      <p class="text-sm text-gray-500 mt-1">${c.d}</p>
+      <button class="mt-4 text-primary text-sm font-semibold hover:underline">Edit →</button>
+    </div>`).join('');
+}
+
+function renderBroadcasts(){
+  const rows=[['Welcome to ISHFADI','All users','Email','2 days ago','42%'],
+              ['New verification system','Agents','In-app','5 days ago','68%'],
+              ['Holiday promo','Buyers','Push','1 week ago','31%']];
+  $('#broadcastTable').innerHTML = rows.map(r=>`<tr>
+    <td class="font-medium">${r[0]}</td><td>${r[1]}</td><td>${badgeFor('Active').replace('Active',r[2])}</td>
+    <td class="text-gray-500">${r[3]}</td><td class="font-semibold text-success">${r[4]}</td></tr>`).join('');
+}
+
+function renderThreads(){
+  $('#threadList').innerHTML = DATA.threads.map((t,i)=>`
+    <button class="w-full text-left p-4 flex items-center gap-3 ${i===0?'bg-slate-50':''} hover:bg-slate-50">
+      <div class="avatar w-10 h-10">${t.init}</div>
+      <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${t.name}</p>
+        <p class="text-xs text-gray-500 truncate">${t.last}</p></div>
+      ${t.unread?`<span class="badge badge-danger">${t.unread}</span>`:''}
+    </button>`).join('');
+  $('#chatBody').innerHTML = `
+    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">Hi! I wanted to thank you for the quick approval on the Marina listing.</div></div>
+    <div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-md text-sm">Glad to help, Amani. Let us know if anything else comes up.</div></div>
+    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">Will do! 🚀</div></div>`;
+}
+
+function renderExport(){
+  const items=[
+    {t:'Users export',d:'CSV · All users with status & country.',i:'👥'},
+    {t:'Properties',d:'CSV · Listings with status & price.',i:'🏡'},
+    {t:'Agents',d:'XLSX · Performance & commission.',i:'🤝'},
+    {t:'Revenue',d:'XLSX · Transactions for selected period.',i:'💰'},
+    {t:'Waiting list',d:'CSV · Pre-signup contacts.',i:'⏳'},
+    {t:'Audit log',d:'JSON · Admin activity & IPs.',i:'🔐'},
+  ];
+  $('#exportGrid').innerHTML = items.map(c=>`
+    <div class="bg-white rounded-2xl p-5 border card-hover">
+      <div class="kpi-icon ${colorBg('info')} mb-3">${c.i}</div>
+      <p class="font-semibold">${c.t}</p><p class="text-sm text-gray-500 mt-1">${c.d}</p>
+      <button class="mt-4 px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="toast('Export queued','success')">⤓ Download</button>
+    </div>`).join('');
+}
+
+const SETTINGS_TABS = [
+  ['General','Platform name, default language, timezone.'],
+  ['Brand','Logo, colors, OG image.'],
+  ['Theme','Light/dark default, accent.'],
+  ['Notifications','Default channels & throttle.'],
+  ['Email templates','Welcome, verify, payout.'],
+  ['Languages','Supported locales (EN, AR, FR…).'],
+  ['Currencies','USD, EUR, AED, SAR…'],
+  ['Countries','Active markets & taxes.'],
+  ['Maintenance','Toggle maintenance mode.'],
+];
+function renderSettings(active=0){
+  $('#settingsNav').innerHTML = SETTINGS_TABS.map((s,i)=>`
+    <li><button onclick="renderSettings(${i})" class="w-full text-left px-3 py-2 rounded-lg ${i===active?'bg-primary text-white':'hover:bg-slate-50'}">${s[0]}</button></li>`).join('');
+  const t = SETTINGS_TABS[active];
+  $('#settingsPanel').innerHTML = `
+    <h3 class="font-semibold text-lg">${t[0]}</h3>
+    <p class="text-sm text-gray-500 mb-5">${t[1]}</p>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div><label class="text-sm font-medium">Field A</label><input class="mt-1 w-full px-3 py-2 border rounded-lg text-sm" value="ISHFADI" /></div>
+      <div><label class="text-sm font-medium">Field B</label><input class="mt-1 w-full px-3 py-2 border rounded-lg text-sm" value="English" /></div>
+      <div><label class="text-sm font-medium">Field C</label><select class="mt-1 w-full px-3 py-2 border rounded-lg text-sm"><option>UTC</option><option>GMT+4</option></select></div>
+      <div class="flex items-center justify-between border rounded-lg px-3 py-2">
+        <div><p class="text-sm font-medium">Enable feature</p><p class="text-xs text-gray-500">Toggle behavior</p></div>
+        <label class="inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" checked>
+          <div class="w-10 h-6 bg-gray-200 peer-checked:bg-primary rounded-full relative transition">
+            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-4"></span></div></label>
+      </div>
+    </div>
+    <div class="mt-6 flex gap-2"><button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="toast('Settings saved','success')">Save changes</button>
+      <button class="px-4 py-2 border rounded-lg text-sm">Cancel</button></div>`;
+}
+
+function renderSecurity(){
+  $('#secKpis').innerHTML = [
+    {l:'Active sessions',v:42,c:'primary',i:'🖥️'},
+    {l:'Failed logins (24h)',v:18,c:'warning',i:'🚨'},
+    {l:'Suspicious IPs',v:3,c:'danger',i:'🌐'},
+    {l:'2FA enabled',v:'92%',c:'success',i:'🔐'}
+  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
+    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
+  $('#auditTable').innerHTML = DATA.audit.map(r=>`<tr>
+    <td class="text-gray-500">${r[0]}</td><td class="font-medium">${r[1]}</td>
+    <td>${r[2]}</td><td class="text-gray-500">${r[3]}</td><td class="font-mono text-xs">${r[4]}</td></tr>`).join('');
+  $('#permMatrix').innerHTML = DATA.perms.map(p=>`
+    <div class="flex items-center justify-between p-2 rounded-lg border">
+      <span class="font-medium">${p[0]}</span><span class="text-xs text-gray-500">${p[1]}</span></div>`).join('');
+}
+
+function renderNotifPanel(){
+  $('#notifList').innerHTML = DATA.notifs.map(n=>`
+    <div class="p-4 hover:bg-slate-50">
+      <div class="flex justify-between items-start gap-2">
+        <p class="text-sm font-semibold">${n.t}</p><span class="text-xs text-gray-400">${n.when}</span>
+      </div>
+      <p class="text-xs text-gray-500 mt-1">${n.d}</p>
+    </div>`).join('');
+}
+
+/* ====== Charts ====== */
+let charts = {};
+function destroyCharts(){ Object.values(charts).forEach(c=>c?.destroy?.()); charts={}; }
+
+function mkLine(id, labels, datasets){
+  charts[id] = new Chart(document.getElementById(id),{
+    type:'line', data:{labels, datasets}, options:{
+      responsive:true, plugins:{legend:{display:datasets.length>1, position:'bottom'}},
+      scales:{y:{grid:{color:'#f1f5f9'}}, x:{grid:{display:false}}}
+    }});
+}
+function mkBar(id, labels, data, color='#1e3a5f'){
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar', data:{labels, datasets:[{data, backgroundColor:color, borderRadius:6}]},
+    options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#f1f5f9'}}, x:{grid:{display:false}}}}
+  });
+}
+function mkDoughnut(id, labels, data, colors){
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'doughnut', data:{labels, datasets:[{data, backgroundColor:colors, borderWidth:0}]},
+    options:{cutout:'68%', plugins:{legend:{display:false}}}
+  });
+}
+
+function renderDashboardCharts(){
+  destroyCharts();
+  const months=['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  mkLine('growthChart', months, [
+    {label:'Users',     data:[820,940,1100,1320,1480,1620,1810,2010,2240,2480,2710,2980], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true},
+    {label:'Properties',data:[210,260,320,380,440,510,590,680,780,890,1010,1140], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.12)', tension:.35, fill:true},
+    {label:'Revenue ($k)', data:[42,55,68,82,96,114,138,162,190,221,254,284], borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)', tension:.35, fill:true},
+  ]);
+  const mix = [['Buyers',11250,'#1e3a5f'],['Sellers',4820,'#d4a574'],['Agents',942,'#22c55e'],['Waiting',312,'#f59e0b']];
+  mkDoughnut('userMixChart', mix.map(m=>m[0]), mix.map(m=>m[1]), mix.map(m=>m[2]));
+  $('#userMixLegend').innerHTML = mix.map(m=>`
+    <div class="flex items-center justify-between">
+      <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:${m[2]}"></span>${m[0]}</span>
+      <span class="font-semibold">${fmt(m[1])}</span></div>`).join('');
+}
+
+function renderAnalyticsCharts(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  mkLine('revChart', months, [{label:'$k',data:[138,162,190,221,254,284],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.35,fill:true}]);
+  mkBar('acqChart', months, [820,1010,1180,1310,1480,1620], '#1e3a5f');
+  mkBar('countryChart', ['UAE','KSA','EGY','QAT','ESP','MAR','CHN'],[1820,1402,940,610,420,260,180],'#d4a574');
+  mkLine('agentChart', months, [{label:'Active', data:[420,460,510,560,590,618], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true}]);
+  mkBar('funnelChart', ['Clicks','Signups','Verified','Active','Paying'],[48290,5420,3180,2410,820], '#1e3a5f');
+}
+
+function renderWaitChart(){
+  mkLine('waitChart', ['W1','W2','W3','W4','W5','W6','W7','W8'], [{label:'Joins', data:[12,18,24,31,42,48,55,62], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.15)', tension:.35, fill:true}]);
+  mkDoughnut('waitRoleChart', ['Buyers','Sellers','Agents'],[180,90,42], ['#1e3a5f','#d4a574','#22c55e']);
+}
+function renderRevCharts(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  mkLine('revTrend', months,[{label:'Revenue',data:[138,162,190,221,254,284],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.12)',tension:.35,fill:true}]);
+  mkDoughnut('revMix', ['Subscriptions','Commission','Listing fees','Featured'],[120,98,42,24],['#1e3a5f','#d4a574','#22c55e','#f59e0b']);
+}
+
+/* ====== Section routing ====== */
+const RENDER_MAP = {
+  dashboard: ()=>{ renderKpis(); renderActivity(); renderPending(); renderDashboardCharts(); },
+  analytics: renderAnalyticsCharts,
+  users: renderUsers,
+  properties: ()=>renderProps('All'),
+  agents: renderAgents,
+  waiting: ()=>{ renderWaiting(); renderWaitChart(); },
+  verification: renderVerif,
+  revenue: ()=>{ renderRevenue(); renderRevCharts(); },
+  referrals: renderReferrals,
+  countries: renderCountries,
+  rankings: renderRankings,
+  reports: renderReports,
+  cms: renderCMS,
+  notifications: renderBroadcasts,
+  communication: renderThreads,
+  export: renderExport,
+  settings: ()=>renderSettings(0),
+  security: renderSecurity,
+};
+const TITLES = {
+  dashboard:'Dashboard', analytics:'Analytics', users:'Users', properties:'Properties',
+  agents:'Agents', waiting:'Waiting List', verification:'Verification Center', revenue:'Revenue',
+  referrals:'Referral Center', countries:'Countries', rankings:'Rankings', reports:'Reports',
+  cms:'CMS', notifications:'Notifications', communication:'Communication', export:'Export Center',
+  settings:'Settings', security:'Security'
+};
+function goto(section){
+  $$('.nav-link').forEach(l=>l.classList.toggle('active', l.dataset.section===section));
+  $$('[data-pane]').forEach(p=>p.classList.toggle('active', p.dataset.pane===section));
+  $('#crumb').textContent = TITLES[section]||section;
+  destroyCharts();
+  RENDER_MAP[section]?.();
+  if(window.innerWidth<1024) $('#sidebar').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$$('.nav-link').forEach(l=>l.addEventListener('click', e=>{ e.preventDefault(); goto(l.dataset.section); }));
+
+/* ====== UI helpers ====== */
+function toggleSidebar(){ $('#sidebar').classList.toggle('open'); }
+function toggleTheme(){ document.body.classList.toggle('dark'); }
+function toggleNotifPanel(){ $('#notifPanel').classList.toggle('hidden'); }
+document.addEventListener('click', e=>{
+  const p = $('#notifPanel'); if(!p) return;
+  if(!p.contains(e.target) && !e.target.closest('[title=Notifications]')) p.classList.add('hidden');
+});
+
+function toast(msg, kind=''){
+  const el = document.createElement('div');
+  el.className = `toast ${kind}`; el.textContent = msg;
+  $('#toastWrap').appendChild(el);
+  setTimeout(()=>el.remove(), 2600);
+}
+function openModal(html){ $('#modalContent').innerHTML = html; $('#modalRoot').classList.add('active'); }
+function closeModal(){ $('#modalRoot').classList.remove('active'); }
+function openUser(name,email,role,country,status){
+  openModal(`
+    <div class="flex items-center gap-4 mb-4">
+      <div class="avatar w-14 h-14 text-base">${initials(name)}</div>
+      <div><h3 class="text-lg font-bold">${name}</h3><p class="text-sm text-gray-500">${email}</p></div>
+    </div>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Role</p><p class="font-semibold">${role}</p></div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Country</p><p class="font-semibold">${country}</p></div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Status</p>${badgeFor(status)}</div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Last active</p><p class="font-semibold">2h ago</p></div>
+    </div>
+    <div class="mt-5 flex gap-2 justify-end">
+      <button class="px-4 py-2 border rounded-lg text-sm" onclick="closeModal()">Close</button>
+      <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="closeModal();toast('Profile opened')">Open profile</button>
+    </div>`);
+}
+function openQuickActions(){
+  openModal(`
+    <h3 class="text-lg font-bold mb-1">⚡ Quick actions</h3>
+    <p class="text-sm text-gray-500 mb-4">Common admin tasks</p>
+    <div class="grid grid-cols-2 gap-2">
+      ${[['👥 Invite user','users'],['🏡 Add property','properties'],['🤝 Approve agent','agents'],
+         ['📢 Send broadcast','notifications'],['📤 Export data','export'],['🔐 View audit','security']].map(([l,s])=>`
+        <button class="p-3 border rounded-xl text-sm hover:bg-slate-50 text-left" onclick="closeModal();goto('${s}')">${l}</button>`).join('')}
+    </div>`);
+}
+
+/* ====== User table filters ====== */
+['userSearch','userFilter','userStatus'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target.id===id) renderUsers(); });
+  document.addEventListener('change', e=>{ if(e.target.id===id) renderUsers(); });
+});
+
+/* ====== Init ====== */
+function setDate(){
+  $('#todayDate').textContent = new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+}
+setDate();
+renderNotifPanel();
+goto('dashboard');
+</script>
+</body>
+</html>

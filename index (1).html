@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="meta.title">ISHFADI - Find Your Perfect Home</title>
+  <meta name="description" data-i18n-attr="content" data-i18n="meta.description" content="Connect with verified hosts and discover amazing properties. Safe, secure, and simple.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="map.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a5f',
+            secondary: '#d4a574',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            muted: '#64748b'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    html[lang="ar"] body { font-family: 'Cairo', system-ui, -apple-system, sans-serif; }
+
+    .card-hover { transition: all 0.3s; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 20px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .verified-pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+
+    .hero-bg {
+      background:
+        linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(45,74,111,0.9) 50%, rgba(30,58,95,0.95) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .features-bg {
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z' fill='%231e3a5f' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    .cta-bg {
+      background:
+        linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(212,165,116,0.3) 50%, rgba(30,58,95,0.95) 100%);
+    }
+    .referral-bg { background: linear-gradient(135deg, rgba(212,165,116,0.15) 0%, rgba(30,58,95,0.1) 100%); }
+    .location-card { position: relative; overflow: hidden; }
+    .location-card img { transition: transform 0.5s ease; }
+    .location-card:hover img { transform: scale(1.1); }
+
+    /* ============ RTL SUPPORT ============ */
+    html[dir="rtl"] body { text-align: right; }
+    html[dir="rtl"] .text-left { text-align: right !important; }
+    html[dir="rtl"] .text-right { text-align: left !important; }
+    /* Mirror simple directional spacing for layout-critical pieces */
+    html[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+    /* ============ LANGUAGE SWITCHER ============ */
+    .lang-switcher { position: relative; }
+    .lang-trigger {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 0.85rem; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+      background: #ffffff; color: #1e3a5f; font-weight: 600; font-size: 0.875rem;
+      cursor: pointer; transition: all 0.2s ease; line-height: 1;
+    }
+    .lang-trigger:hover { border-color: #1e3a5f; box-shadow: 0 4px 12px rgba(30,58,95,0.08); }
+    .lang-trigger:focus-visible { outline: 2px solid #1e3a5f; outline-offset: 2px; }
+    .lang-trigger .chev { transition: transform 0.2s ease; }
+    .lang-switcher.open .lang-trigger .chev { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 0.5rem); min-width: 200px;
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.875rem;
+      box-shadow: 0 20px 40px rgba(15,23,42,0.12); padding: 0.4rem;
+      opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease; z-index: 60;
+    }
+    html[dir="ltr"] .lang-menu { right: 0; }
+    html[dir="rtl"] .lang-menu { left: 0; }
+    .lang-switcher.open .lang-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.6rem;
+      background: transparent; border: none; cursor: pointer; text-align: start;
+      color: #334155; font-size: 0.9rem; font-weight: 500;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .lang-option:hover, .lang-option:focus-visible {
+      background: rgba(30,58,95,0.06); color: #1e3a5f; outline: none;
+    }
+    .lang-option[aria-current="true"] { background: rgba(30,58,95,0.08); color: #1e3a5f; font-weight: 600; }
+    .lang-option .check { opacity: 0; color: #1e3a5f; }
+    .lang-option[aria-current="true"] .check { opacity: 1; }
+    .lang-name { display: block; font-size: 0.95rem; }
+    .lang-sub { display: block; font-size: 0.72rem; color: #94a3b8; font-weight: 400; margin-top: 1px; }
+
+    /* Switching micro-animation */
+    .lang-switching main, .lang-switching nav, .lang-switching footer, .lang-switching section { transition: opacity 0.18s ease; }
+    .lang-switching .switch-fade { opacity: 0.35; }
+  </style>
+
+  <!-- ============ PWA META ============ -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1e3a5f" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light">
+  <meta name="application-name" content="ISHFADI">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ISHFADI">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="msapplication-TileColor" content="#1e3a5f">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+  <link rel="mask-icon" href="icons/icon.svg" color="#1e3a5f">
+  <style>
+    /* ============ PWA UI ============ */
+    :root { --pwa-primary:#1e3a5f; --pwa-secondary:#d4a574; }
+    @supports(padding:max(0px)) {
+      body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+      nav.fixed { padding-top: env(safe-area-inset-top); }
+    }
+    /* Splash */
+    #pwaSplash {
+      position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 28px;
+      background: radial-gradient(circle at 30% 20%, #2d4a6f 0%, #1e3a5f 55%, #0f1f36 100%);
+      color: #fff; transition: opacity .45s ease, visibility .45s ease;
+    }
+    #pwaSplash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    #pwaSplash .brand { font-size: 2rem; font-weight: 800; letter-spacing: .22em; }
+    #pwaSplash .brand span { color: var(--pwa-secondary); }
+    #pwaSplash .tag { color: #cbd5e1; font-size: .9rem; letter-spacing: .12em; text-transform: uppercase; }
+    #pwaSplash .ring { width: 56px; height: 56px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.18); border-top-color: var(--pwa-secondary);
+      animation: pwaSpin 1s linear infinite; }
+    @keyframes pwaSpin { to { transform: rotate(360deg); } }
+    /* Install card */
+    #pwaInstallCard {
+      position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 90;
+      background: #fff; border-radius: 18px; padding: 14px 16px;
+      box-shadow: 0 20px 50px rgba(15,23,42,.18); border: 1px solid #e5e7eb;
+      display: none; gap: 14px; align-items: center;
+      transform: translateY(120%); transition: transform .35s cubic-bezier(.2,.8,.2,1);
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+    #pwaInstallCard.show { display: flex; transform: translateY(0); }
+    #pwaInstallCard .ic-logo {
+      width: 48px; height: 48px; border-radius: 12px; background: #1e3a5f;
+      display: flex; align-items: center; justify-content: center; color: #d4a574;
+      font-weight: 800; font-size: 1.4rem; flex-shrink: 0;
+    }
+    #pwaInstallCard .ic-body { flex: 1; min-width: 0; }
+    #pwaInstallCard .ic-title { font-weight: 700; color: #0f172a; font-size: .95rem; }
+    #pwaInstallCard .ic-sub   { font-size: .8rem; color: #64748b; margin-top: 2px; }
+    #pwaInstallCard .ic-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    #pwaInstallCard button {
+      border: 0; cursor: pointer; font-weight: 600; font-size: .85rem;
+      padding: 9px 14px; border-radius: 10px;
+    }
+    #pwaInstallCard .ic-install { background: #1e3a5f; color: #fff; }
+    #pwaInstallCard .ic-install:hover { background: #15294a; }
+    #pwaInstallCard .ic-dismiss { background: transparent; color: #64748b; }
+    @media (min-width: 640px) {
+      #pwaInstallCard { left: auto; right: 24px; bottom: 24px; max-width: 420px; }
+    }
+    /* Manual install button in nav */
+    #pwaInstallBtn { display: none; }
+    #pwaInstallBtn.show { display: inline-flex; }
+    /* Update banner */
+    #pwaUpdate {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 95;
+      background: #1e3a5f; color: #fff; padding: 10px 16px;
+      display: none; align-items: center; justify-content: center; gap: 12px;
+      font-size: .9rem; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      padding-top: calc(10px + env(safe-area-inset-top));
+      transform: translateY(-100%); transition: transform .3s ease;
+    }
+    #pwaUpdate.show { display: flex; transform: translateY(0); }
+    #pwaUpdate button { border: 0; cursor: pointer; font-weight: 600; font-size: .85rem;
+      padding: 6px 14px; border-radius: 8px; }
+    #pwaUpdate .upd-now { background: #d4a574; color: #1e293b; }
+    #pwaUpdate .upd-later { background: transparent; color: #cbd5e1; }
+    /* Connection toast */
+    #pwaConn {
+      position: fixed; left: 50%; transform: translateX(-50%) translateY(-120%);
+      top: calc(12px + env(safe-area-inset-top)); z-index: 96;
+      background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px;
+      font-size: .85rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      transition: transform .35s cubic-bezier(.2,.8,.2,1); display: flex; align-items: center; gap: 8px;
+    }
+    #pwaConn.show { transform: translateX(-50%) translateY(0); }
+    #pwaConn .pdot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+    #pwaConn.online .pdot { background: #22c55e; }
+  </style>
+
+</head>
+<body class="bg-gray-50">
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50">
+    <div class="container mx-auto px-4 h-16 flex items-center justify-between gap-3">
+      <a href="index.html" class="text-2xl font-bold text-primary shrink-0">ISHFADI</a>
+
+      <div class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-primary font-medium" data-i18n="nav.home">Home</a>
+        <a href="#listings" class="text-gray-600 hover:text-primary transition-colors" data-i18n="nav.explore">Explore</a>
+        <a href="#features" class="text-gray-600 hover:text-primary transition-colors" data-i18n="nav.features">Features</a>
+        <a href="#contact" class="text-gray-600 hover:text-primary transition-colors" data-i18n="nav.contact">Contact</a>
+      </div>
+
+      <div class="flex items-center gap-2 md:gap-3">
+        <!-- Desktop language switcher -->
+        <div class="lang-switcher hidden md:block" id="langSwitcherDesktop">
+          <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            <span class="lang-current-label">English</span>
+            <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+        </div>
+
+        <button onclick="openModal('authModal')" class="hidden sm:inline-flex px-4 py-2 text-primary hover:bg-primary/5 rounded-lg font-medium transition-colors" data-i18n="nav.signin">Sign In</button>
+        <button id="pwaInstallBtn" type="button" onclick="window.__pwa && window.__pwa.promptInstall()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors" aria-label="Install ISHFADI app"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg><span>Install</span></button>
+        <button onclick="openModal('authModal'); setAuthMode('signup')" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.getStarted">Get Started</button>
+
+        <!-- Mobile menu button -->
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
+      <div class="container mx-auto px-4 py-4 space-y-3">
+        <a href="index.html" class="block py-2 text-primary font-medium" data-i18n="nav.home">Home</a>
+        <a href="#listings" class="block py-2 text-gray-700" data-i18n="nav.explore">Explore</a>
+        <a href="#features" class="block py-2 text-gray-700" data-i18n="nav.features">Features</a>
+        <a href="#contact" class="block py-2 text-gray-700" data-i18n="nav.contact">Contact</a>
+        <button onclick="openModal('authModal')" class="block w-full text-start py-2 text-primary font-medium sm:hidden" data-i18n="nav.signin">Sign In</button>
+
+        <div class="pt-3 border-t">
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2" data-i18n="lang.label">Language</p>
+          <div class="lang-switcher w-full" id="langSwitcherMobile">
+            <button type="button" class="lang-trigger w-full justify-between" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+                <span class="lang-current-label">English</span>
+              </span>
+              <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="lang-menu" role="listbox" aria-label="Languages" style="position:static;width:100%;margin-top:.5rem"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-bg pt-24 pb-20 text-white relative overflow-hidden">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-float"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-3xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
+          <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
+          <span class="text-sm" data-i18n="hero.badge">1,234+ Active Listings</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+          <span data-i18n="hero.title1">Find Your Perfect Home</span><br>
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-secondary" data-i18n="hero.title2">Anywhere in the World</span>
+        </h1>
+        <p class="text-xl text-white/80 mb-8" data-i18n="hero.subtitle">Connect with verified hosts and discover amazing properties. Safe, secure, and simple.</p>
+
+        <!-- Search Bar -->
+        <div class="bg-white rounded-2xl p-4 shadow-2xl">
+          <div class="grid md:grid-cols-4 gap-4">
+            <div class="text-left">
+              <label class="text-xs text-gray-500 block mb-1" data-i18n="search.location">Location</label>
+              <input type="text" data-i18n-placeholder="search.locationPlaceholder" placeholder="City or Country" class="w-full text-gray-800 font-medium focus:outline-none" id="searchLocation">
+            </div>
+            <div class="text-left">
+              <label class="text-xs text-gray-500 block mb-1" data-i18n="search.type">Property Type</label>
+              <select class="w-full text-gray-800 font-medium focus:outline-none bg-transparent" id="searchType">
+                <option value="" data-i18n="search.anyType">Any Type</option>
+                <option value="house" data-i18n="type.house">House</option>
+                <option value="apartment" data-i18n="type.apartment">Apartment</option>
+                <option value="room" data-i18n="type.room">Room</option>
+                <option value="studio" data-i18n="type.studio">Studio</option>
+              </select>
+            </div>
+            <div class="text-left">
+              <label class="text-xs text-gray-500 block mb-1" data-i18n="search.price">Price Range</label>
+              <select class="w-full text-gray-800 font-medium focus:outline-none bg-transparent" id="searchPrice">
+                <option value="" data-i18n="search.anyPrice">Any Price</option>
+                <option value="0-500">$0 - $500</option>
+                <option value="500-1000">$500 - $1,000</option>
+                <option value="1000-2000">$1,000 - $2,000</option>
+                <option value="2000+">$2,000+</option>
+              </select>
+            </div>
+            <button onclick="performSearch()" class="bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all py-3 shadow-lg shadow-primary/25" data-i18n="search.button">
+              Search
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-8 mt-10">
+          <div class="text-center">
+            <p class="text-3xl font-bold">10K+</p>
+            <p class="text-sm text-white/60" data-i18n="stats.properties">Properties</p>
+          </div>
+          <div class="text-center">
+            <p class="text-3xl font-bold">50K+</p>
+            <p class="text-sm text-white/60" data-i18n="stats.users">Happy Users</p>
+          </div>
+          <div class="text-center">
+            <p class="text-3xl font-bold">120+</p>
+            <p class="text-sm text-white/60" data-i18n="stats.countries">Countries</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ISHFADI SMART EXPLORER ============ -->
+  <section id="smartExplorer" class="py-12">
+    <div class="container mx-auto px-4">
+      <div class="ex-header">
+        <div>
+          <div class="ex-title">
+            <h2 data-i18n="explorer.title">Smart Explorer</h2>
+            <span class="ex-badge">
+              <svg width="10" height="10" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="10" cy="10" r="6"/></svg>
+              Live
+            </span>
+          </div>
+          <p class="ex-subtitle" data-i18n="explorer.subtitle">Discover properties, accommodation, and stays around any place in the world.</p>
+        </div>
+        <div class="ex-modes" role="tablist" aria-label="Explorer mode">
+          <button type="button" class="ex-mode-btn active" data-mode="discovery" role="tab" aria-selected="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span data-i18n="explorer.modeA">Property Discovery</span>
+          </button>
+          <button type="button" class="ex-mode-btn" data-mode="nearby" role="tab" aria-selected="false">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3" stroke-width="2"/></svg>
+            <span data-i18n="explorer.modeB">Nearby Explorer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="ex-filterbar" role="search" aria-label="Property filters">
+        <div class="ex-filter-row">
+          <div class="ex-search">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="exSearch" type="search" placeholder="Search city, district or property…" aria-label="Search properties" />
+          </div>
+          <select id="exCountry" class="ex-select" aria-label="Country"></select>
+          <select id="exCity" class="ex-select" aria-label="City"></select>
+          <button id="exLocate" type="button" class="ex-btn-primary" aria-label="Use my current location">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3" stroke-width="2"/></svg>
+            <span data-i18n="explorer.locate">Near me</span>
+          </button>
+        </div>
+        <div class="ex-chips" id="exChips" role="group" aria-label="Categories"></div>
+      </div>
+
+      <!-- Main layout -->
+      <div class="ex-layout">
+        <!-- Sidebar with listings -->
+        <aside id="exSidebar" class="ex-sidebar" aria-label="Listings">
+          <div class="ex-sidebar-handle" id="exSheetHandle" aria-hidden="true"></div>
+          <div class="ex-sidebar-header">
+            <div class="ex-sidebar-count" id="exCount">Loading…</div>
+            <button type="button" class="ex-sort" aria-label="Sort listings">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M6 12h12M10 18h4"/></svg>
+              Best match
+            </button>
+          </div>
+          <div id="exList" class="ex-list" role="list"></div>
+        </aside>
+
+        <!-- Map -->
+        <div id="exMapWrap" class="ex-map-wrap">
+          <div class="ex-layers" role="group" aria-label="Map layer">
+            <button type="button" data-layer="streets" class="active">Map</button>
+            <button type="button" data-layer="satellite">Satellite</button>
+          </div>
+          <div class="ex-mapctrl top">
+            <button id="exZoomIn" type="button" aria-label="Zoom in"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14M5 12h14"/></svg></button>
+            <button id="exZoomOut" type="button" aria-label="Zoom out"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14"/></svg></button>
+          </div>
+          <div class="ex-mapctrl bottom">
+            <button id="exFullscreen" type="button" aria-label="Toggle fullscreen"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M16 4h4v4M4 16v4h4M16 20h4v-4"/></svg></button>
+          </div>
+          <div id="explorerMap" role="application" aria-label="Property map"></div>
+          <aside id="exPreview" class="ex-preview" aria-live="polite" aria-label="Property preview"></aside>
+        </div>
+      </div>
+
+      <!-- City Explorer -->
+      <div class="ex-cities">
+        <div class="ex-cities-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m-1 4h1m4-4h1m-1 4h1m-7 8v-4h6v4"/></svg>
+          <span data-i18n="explorer.cities">Explore by City</span>
+        </div>
+        <div id="exCitiesGrid" class="ex-cities-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trending Locations -->
+  <section class="py-12 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center gap-2 mb-6">
+        <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <span class="font-semibold text-gray-800" data-i18n="trending.title">Trending Locations</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="trendingGrid">
+        <!-- rendered by JS for i18n city/listings labels -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Listings -->
+  <section id="listings" class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4" data-i18n="listings.title">Featured Properties</h2>
+        <p class="text-gray-600" data-i18n="listings.subtitle">Handpicked listings from verified hosts</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="listingsGrid"></div>
+      <p id="listingsEmpty" class="hidden text-center text-gray-500 py-12" data-i18n="listings.empty">No properties match your search. Try different filters.</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features-bg py-16">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4" data-i18n="features.title">Why Choose ISHFADI?</h2>
+        <p class="text-gray-600" data-i18n="features.subtitle">Everything you need for a seamless rental experience</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center p-8 rounded-2xl bg-white shadow-lg shadow-primary/5 card-hover">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/25">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="features.f1.title">Verified Hosts</h3>
+          <p class="text-gray-600" data-i18n="features.f1.desc">All hosts go through identity verification for your safety</p>
+        </div>
+
+        <div class="text-center p-8 rounded-2xl bg-white shadow-lg shadow-secondary/5 card-hover">
+          <div class="w-16 h-16 bg-gradient-to-br from-secondary to-secondary/70 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-secondary/25">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="features.f2.title">Secure Payments</h3>
+          <p class="text-gray-600" data-i18n="features.f2.desc">Payment protection with escrow until move-in</p>
+        </div>
+
+        <div class="text-center p-8 rounded-2xl bg-white shadow-lg shadow-success/5 card-hover">
+          <div class="w-16 h-16 bg-gradient-to-br from-success to-success/70 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-success/25">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2" data-i18n="features.f3.title">Direct Messaging</h3>
+          <p class="text-gray-600" data-i18n="features.f3.desc">Chat directly with hosts before booking</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Referral -->
+  <section class="py-16 referral-bg">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-secondary/20 rounded-full mb-4">
+          <span class="text-secondary">🎁</span>
+          <span class="text-sm font-medium text-secondary" data-i18n="referral.badge">Referral Program</span>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-800 mb-4" data-i18n="referral.title">Invite Friends, Earn Rewards</h2>
+        <p class="text-gray-600 mb-6" data-i18n="referral.desc">Share your referral code and both you and your friend get $50 credit!</p>
+        <div class="flex items-center justify-center gap-4 flex-wrap">
+          <div class="bg-white px-6 py-3 rounded-lg border-2 border-dashed border-secondary font-mono text-lg shadow-lg">ISHFADI2024</div>
+          <button onclick="copyReferral()" class="px-6 py-3 bg-secondary text-white rounded-lg font-semibold hover:bg-secondary/90 transition-colors shadow-lg shadow-secondary/25" data-i18n="referral.copy">Copy Code</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-bg py-20 relative overflow-hidden">
+    <div class="container mx-auto px-4 relative z-10 text-center">
+      <h2 class="text-3xl md:text-5xl font-bold text-white mb-6" data-i18n="cta.title">Ready to Find Your Place?</h2>
+      <p class="text-lg text-white/80 mb-8 max-w-2xl mx-auto" data-i18n="cta.desc">Join thousands of seekers who have found their perfect home through ISHFADI. It's free to sign up and start exploring.</p>
+      <button onclick="openModal('authModal'); setAuthMode('signup')" class="inline-flex items-center gap-3 px-10 py-5 bg-white text-primary font-bold rounded-xl shadow-2xl hover:shadow-xl hover:-translate-y-1 transition-all text-lg">
+        <span>✨</span><span data-i18n="cta.button">Create Free Account</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact" class="bg-primary text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">ISHFADI</h3>
+          <p class="text-white/70" data-i18n="footer.about">Find your perfect place anywhere in the world. Trusted by thousands globally.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4" data-i18n="footer.quickLinks">Quick Links</h4>
+          <ul class="space-y-2 text-white/70">
+            <li><a href="#" class="hover:text-white transition-colors" data-i18n="nav.home">Home</a></li>
+            <li><a href="#listings" class="hover:text-white transition-colors" data-i18n="footer.exploreListings">Explore Listings</a></li>
+            <li><a href="seller.html" class="hover:text-white transition-colors" data-i18n="footer.hostDashboard">Host Dashboard</a></li>
+            <li><a href="buyer.html" class="hover:text-white transition-colors" data-i18n="footer.seekerDashboard">Seeker Dashboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4" data-i18n="footer.resources">Resources</h4>
+          <ul class="space-y-2 text-white/70">
+            <li><a href="help-center.html" class="hover:text-white transition-colors" data-i18n="footer.helpCenter">Help Center</a></li>
+            <li><a href="safety-tips.html" class="hover:text-white transition-colors" data-i18n="footer.safetyTips">Safety Tips</a></li>
+            <li><a href="terms-of-service.html" class="hover:text-white transition-colors" data-i18n="footer.terms">Terms of Service</a></li>
+            <li><a href="privacy-policy.html" class="hover:text-white transition-colors" data-i18n="footer.privacy">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4" data-i18n="footer.contact">Contact</h4>
+          <ul class="space-y-2 text-white/70">
+            <li>support@ishfadi.com</li>
+            <li>+1 (555) 123-4567</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/20 pt-8 text-center text-white/60">
+        <p data-i18n="footer.copyright">&copy; 2024 ISHFADI. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="modal-content p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="authTitle" class="text-2xl font-bold text-gray-800" data-i18n="auth.signinTitle">Sign In</h2>
+        <button onclick="closeModal('authModal')" aria-label="Close" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="signinForm">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="auth.email">Email</label>
+            <input type="email" data-i18n-placeholder="auth.emailPlaceholder" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="your@email.com">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="auth.password">Password</label>
+            <input type="password" placeholder="••••••••" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+          <button onclick="handleLogin()" class="w-full py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25" data-i18n="auth.signinBtn">Sign In</button>
+        </div>
+        <p class="text-center mt-4 text-gray-600">
+          <span data-i18n="auth.noAccount">Don't have an account?</span>
+          <button onclick="setAuthMode('signup')" class="text-primary font-medium hover:underline" data-i18n="auth.signupLink">Sign Up</button>
+        </p>
+      </div>
+
+      <div id="signupForm" class="hidden">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="auth.fullName">Full Name</label>
+            <input type="text" id="signupName" data-i18n-placeholder="auth.namePlaceholder" placeholder="John Doe" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="auth.email">Email</label>
+            <input type="email" id="signupEmail" data-i18n-placeholder="auth.emailPlaceholder" placeholder="your@email.com" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="auth.password">Password</label>
+            <input type="password" id="signupPassword" placeholder="••••••••" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="auth.iWantTo">I want to:</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" onclick="selectRole('buyer')" id="roleBuyer" class="p-4 border-2 rounded-lg text-center hover:border-primary transition-all">
+                <svg class="w-8 h-8 mx-auto mb-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span class="font-medium" data-i18n="auth.roleBuyer">Find a Place</span>
+              </button>
+              <button type="button" onclick="selectRole('seller')" id="roleSeller" class="p-4 border-2 rounded-lg text-center hover:border-primary transition-all">
+                <svg class="w-8 h-8 mx-auto mb-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="font-medium" data-i18n="auth.roleSeller">List Property</span>
+              </button>
+            </div>
+          </div>
+          <button onclick="handleSignup()" class="w-full py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25" data-i18n="auth.createBtn">Create Account</button>
+        </div>
+        <p class="text-center mt-4 text-gray-600">
+          <span data-i18n="auth.haveAccount">Already have an account?</span>
+          <button onclick="setAuthMode('signin')" class="text-primary font-medium hover:underline" data-i18n="auth.signinLink">Sign In</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inquiry Modal -->
+  <div id="inquiryModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="inquiry.title">Contact Host</h2>
+        <button onclick="closeModal('inquiryModal')" aria-label="Close" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <p class="font-medium text-gray-800" id="inquiryListingTitle">—</p>
+        <p class="text-sm text-gray-600"><span data-i18n="inquiry.hostLabel">Host:</span> <span id="inquiryHostName">—</span></p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="inquiry.moveIn">Move-in Date</label>
+          <input type="date" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="inquiry.duration">Duration</label>
+          <select class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+            <option data-i18n="duration.1m">1 month</option>
+            <option data-i18n="duration.3m">3 months</option>
+            <option data-i18n="duration.6m">6 months</option>
+            <option data-i18n="duration.12m">12 months</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="inquiry.message">Message</label>
+          <textarea rows="4" data-i18n-placeholder="inquiry.messagePlaceholder" placeholder="Introduce yourself and ask any questions..." class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all"></textarea>
+        </div>
+        <button onclick="sendInquiry()" class="w-full py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25" data-i18n="inquiry.send">Send Inquiry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listing Detail Modal -->
+  <div id="listingModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content max-w-2xl">
+      <div class="relative">
+        <div class="aspect-video bg-gradient-to-br from-primary/20 to-secondary/30 flex items-center justify-center rounded-t-2xl overflow-hidden">
+          <div class="text-center">
+            <svg class="w-16 h-16 text-white/60 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <p class="text-white/60" data-i18n="listingModal.gallery">Photo Gallery</p>
+          </div>
+        </div>
+        <button onclick="closeModal('listingModal')" aria-label="Close" class="absolute top-4 end-4 p-2 bg-white/90 rounded-full shadow-lg hover:bg-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <button onclick="toggleWishlist()" id="wishlistBtn" aria-label="Toggle wishlist" class="absolute top-4 start-4 p-2 bg-white/90 rounded-full shadow-lg hover:bg-white transition-colors">
+          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex items-start justify-between mb-4 gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full" id="modalType">—</span>
+              <span class="flex items-center gap-1 px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-full verified-pulse" id="modalVerified">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span data-i18n="badge.verified">Verified</span>
+              </span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">—</h2>
+            <p class="text-gray-600 flex items-center gap-1" id="modalLocation">—</p>
+          </div>
+          <div class="text-end">
+            <p class="text-3xl font-bold text-primary" id="modalPrice">—</p>
+            <p class="text-sm text-gray-500" data-i18n="listingModal.perMonth">per month</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-6">
+          <div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center font-semibold text-primary" id="modalHostInitials">—</div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-800" id="modalHostName">—</p>
+            <div class="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4 fill-warning text-warning" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                4.9
+              </span>
+              <span>•</span>
+              <span><span>127</span> <span data-i18n="listingModal.reviews">reviews</span></span>
+              <span>•</span>
+              <span data-i18n="listingModal.superhost">Superhost</span>
+            </div>
+          </div>
+          <button onclick="openModal('inquiryModal')" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors" data-i18n="listingModal.message">Message</button>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-semibold text-gray-800 mb-3" data-i18n="listingModal.amenities">Amenities</h3>
+          <div class="flex flex-wrap gap-2" id="modalAmenities"></div>
+        </div>
+
+        <div class="border rounded-xl p-4 mb-6">
+          <h3 class="font-semibold text-gray-800 mb-3" data-i18n="listingModal.priceBreakdown">Price Breakdown</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-600" data-i18n="listingModal.monthlyRent">Monthly rent</span><span class="font-medium">$1,500</span></div>
+            <div class="flex justify-between"><span class="text-gray-600" data-i18n="listingModal.serviceFee">Service fee</span><span class="font-medium">$150</span></div>
+            <div class="flex justify-between"><span class="text-gray-600" data-i18n="listingModal.deposit">Security deposit</span><span class="font-medium">$1,500</span></div>
+            <hr class="my-2">
+            <div class="flex justify-between text-base"><span class="font-semibold" data-i18n="listingModal.totalFirst">Total first payment</span><span class="font-bold text-primary">$3,150</span></div>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="font-semibold text-gray-800 mb-3" data-i18n="listingModal.availability">Availability</h3>
+          <div class="p-4 bg-success/10 rounded-xl flex items-center gap-3">
+            <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <div>
+              <p class="font-medium text-success" data-i18n="listingModal.availableNow">Available Now</p>
+              <p class="text-sm text-gray-600" data-i18n="listingModal.flexible">Move-in date flexible</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="openModal('inquiryModal')" class="flex-1 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25" data-i18n="listingModal.contactHost">Contact Host</button>
+          <button onclick="openModal('bookingModal')" class="flex-1 py-3 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-primary/5 transition-colors" data-i18n="listingModal.bookNow">Book Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Modal -->
+  <div id="bookingModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="booking.title">Book This Property</h2>
+        <button onclick="closeModal('bookingModal')" aria-label="Close" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="p-4 bg-gray-50 rounded-lg">
+          <p class="font-medium text-gray-800" data-i18n="booking.sampleTitle">Modern Downtown Apartment</p>
+          <p class="text-sm text-gray-600">$1,500/<span data-i18n="booking.month">month</span></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="inquiry.moveIn">Move-in Date</label>
+            <input type="date" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="inquiry.duration">Duration</label>
+            <select class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+              <option data-i18n="duration.1m">1 month</option>
+              <option data-i18n="duration.3m">3 months</option>
+              <option data-i18n="duration.6m">6 months</option>
+              <option data-i18n="duration.12m">12 months</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="booking.card">Card Number</label>
+          <input type="text" placeholder="1234 5678 9012 3456" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="booking.expiry">Expiry</label>
+            <input type="text" placeholder="MM/YY" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="booking.cvc">CVC</label>
+            <input type="text" placeholder="123" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary transition-all">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 p-3 bg-success/10 rounded-lg text-sm text-success">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span data-i18n="booking.escrow">Your payment is protected with escrow</span>
+        </div>
+
+        <button onclick="processPayment()" class="w-full py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25" data-i18n="booking.pay">Pay & Book</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="fixed top-20 end-4 z-[200] flex flex-col gap-2" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ============================================
+       ENTERPRISE MULTILINGUAL SYSTEM
+       ============================================ -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ---------- Language registry (scalable: add new languages here) ----------
+    const LANGUAGES = {
+      en: { code: 'en', name: 'English',  native: 'English',  dir: 'ltr', sub: 'English' },
+      fr: { code: 'fr', name: 'French',   native: 'Français', dir: 'ltr', sub: 'French'  },
+      ar: { code: 'ar', name: 'Arabic',   native: 'العربية',  dir: 'rtl', sub: 'Arabic'  }
+      // To add Spanish, Portuguese, German, etc., add an entry here AND a TRANSLATIONS block.
+    };
+    const FALLBACK = 'en';
+    const STORAGE_KEY = 'ishfadi.lang';
+
+    // ---------- Translations ----------
+    const TRANSLATIONS = {
+      en: {
+        meta: { title: 'ISHFADI - Find Your Perfect Home', description: 'Connect with verified hosts and discover amazing properties. Safe, secure, and simple.' },
+        lang: { label: 'Language' },
+        nav: { home: 'Home', explore: 'Explore', features: 'Features', contact: 'Contact', signin: 'Sign In', getStarted: 'Get Started' },
+        hero: { badge: '1,234+ Active Listings', title1: 'Find Your Perfect Home', title2: 'Anywhere in the World', subtitle: 'Connect with verified hosts and discover amazing properties. Safe, secure, and simple.' },
+        search: { location: 'Location', locationPlaceholder: 'City or Country', type: 'Property Type', anyType: 'Any Type', price: 'Price Range', anyPrice: 'Any Price', button: 'Search' },
+        type: { house: 'House', apartment: 'Apartment', room: 'Room', studio: 'Studio' },
+        stats: { properties: 'Properties', users: 'Happy Users', countries: 'Countries' },
+        map: { title: 'Explore on Map', show: 'Show Map', hide: 'Hide Map' },
+        trending: { title: 'Trending Locations', listings: '{n} listings' },
+        cities: { 'New York': 'New York', 'London': 'London', 'Tokyo': 'Tokyo', 'Paris': 'Paris', 'Miami': 'Miami', 'Berlin': 'Berlin', 'Dubai': 'Dubai' },
+        countries: { 'USA': 'USA', 'UK': 'UK', 'Germany': 'Germany', 'UAE': 'UAE', 'France': 'France' },
+        listings: { title: 'Featured Properties', subtitle: 'Handpicked listings from verified hosts', empty: 'No properties match your search. Try different filters.', contact: 'Contact Host', perMonth: '/mo' },
+        badge: { featured: '👑 Featured', verified: '✓ Verified' },
+        features: { title: 'Why Choose ISHFADI?', subtitle: 'Everything you need for a seamless rental experience',
+          f1: { title: 'Verified Hosts', desc: 'All hosts go through identity verification for your safety' },
+          f2: { title: 'Secure Payments', desc: 'Payment protection with escrow until move-in' },
+          f3: { title: 'Direct Messaging', desc: 'Chat directly with hosts before booking' } },
+        referral: { badge: 'Referral Program', title: 'Invite Friends, Earn Rewards', desc: "Share your referral code and both you and your friend get $50 credit!", copy: 'Copy Code', copied: 'Referral code copied to clipboard!' },
+        cta: { title: 'Ready to Find Your Place?', desc: "Join thousands of seekers who have found their perfect home through ISHFADI. It's free to sign up and start exploring.", button: 'Create Free Account' },
+        footer: { about: 'Find your perfect place anywhere in the world. Trusted by thousands globally.', quickLinks: 'Quick Links', exploreListings: 'Explore Listings', hostDashboard: 'Host Dashboard', seekerDashboard: 'Seeker Dashboard', resources: 'Resources', helpCenter: 'Help Center', safetyTips: 'Safety Tips', terms: 'Terms of Service', privacy: 'Privacy Policy', contact: 'Contact', copyright: '© 2024 ISHFADI. All rights reserved.' },
+        auth: { signinTitle: 'Sign In', signupTitle: 'Create Account', email: 'Email', emailPlaceholder: 'your@email.com', password: 'Password', signinBtn: 'Sign In', noAccount: "Don't have an account?", signupLink: 'Sign Up', fullName: 'Full Name', namePlaceholder: 'John Doe', iWantTo: 'I want to:', roleBuyer: 'Find a Place', roleSeller: 'List Property', createBtn: 'Create Account', haveAccount: 'Already have an account?', signinLink: 'Sign In' },
+        inquiry: { title: 'Contact Host', hostLabel: 'Host:', moveIn: 'Move-in Date', duration: 'Duration', message: 'Message', messagePlaceholder: 'Introduce yourself and ask any questions...', send: 'Send Inquiry', sent: 'Inquiry sent! The host will respond soon.' },
+        duration: { '1m': '1 month', '3m': '3 months', '6m': '6 months', '12m': '12 months' },
+        listingModal: { gallery: 'Photo Gallery', perMonth: 'per month', reviews: 'reviews', superhost: 'Superhost', message: 'Message', amenities: 'Amenities', priceBreakdown: 'Price Breakdown', monthlyRent: 'Monthly rent', serviceFee: 'Service fee', deposit: 'Security deposit', totalFirst: 'Total first payment', availability: 'Availability', availableNow: 'Available Now', flexible: 'Move-in date flexible', contactHost: 'Contact Host', bookNow: 'Book Now' },
+        amenities: { 'WiFi': 'WiFi', 'Kitchen': 'Kitchen', 'Washer': 'Washer', 'AC': 'AC', 'Air conditioning': 'Air conditioning', 'Pool': 'Pool', 'Parking': 'Parking', 'Garden': 'Garden', 'Garage': 'Garage', 'Gym': 'Gym', 'Concierge': 'Concierge', 'Fireplace': 'Fireplace' },
+        booking: { title: 'Book This Property', sampleTitle: 'Modern Downtown Apartment', month: 'month', card: 'Card Number', expiry: 'Expiry', cvc: 'CVC', escrow: 'Your payment is protected with escrow', pay: 'Pay & Book', processing: 'Payment processing... In production, this would connect to a payment gateway.' },
+        toast: { wishlistAdded: 'Added to wishlist!', wishlistRemoved: 'Removed from wishlist', langSwitched: 'Language switched to {lang}' },
+        listingTitles: {
+          'Modern Downtown Apartment': 'Modern Downtown Apartment',
+          'Cozy Studio Near Beach': 'Cozy Studio Near Beach',
+          'Spacious Family House': 'Spacious Family House',
+          'Private Room in Shared Flat': 'Private Room in Shared Flat',
+          'Luxury Penthouse Suite': 'Luxury Penthouse Suite',
+          'Charming Cottage': 'Charming Cottage'
+        }
+      },
+
+      fr: {
+        meta: { title: 'ISHFADI - Trouvez votre logement idéal', description: 'Connectez-vous avec des hôtes vérifiés et découvrez des propriétés incroyables. Sûr, sécurisé et simple.' },
+        lang: { label: 'Langue' },
+        nav: { home: 'Accueil', explore: 'Explorer', features: 'Fonctionnalités', contact: 'Contact', signin: 'Se connecter', getStarted: 'Commencer' },
+        hero: { badge: '1 234+ annonces actives', title1: 'Trouvez votre logement idéal', title2: 'Partout dans le monde', subtitle: 'Connectez-vous avec des hôtes vérifiés et découvrez des propriétés incroyables. Sûr, sécurisé et simple.' },
+        search: { location: 'Emplacement', locationPlaceholder: 'Ville ou pays', type: 'Type de bien', anyType: 'Tous types', price: 'Fourchette de prix', anyPrice: 'Tous prix', button: 'Rechercher' },
+        type: { house: 'Maison', apartment: 'Appartement', room: 'Chambre', studio: 'Studio' },
+        stats: { properties: 'Propriétés', users: 'Utilisateurs satisfaits', countries: 'Pays' },
+        map: { title: 'Explorer sur la carte', show: 'Afficher la carte', hide: 'Masquer la carte' },
+        trending: { title: 'Destinations populaires', listings: '{n} annonces' },
+        cities: { 'New York': 'New York', 'London': 'Londres', 'Tokyo': 'Tokyo', 'Paris': 'Paris', 'Miami': 'Miami', 'Berlin': 'Berlin', 'Dubai': 'Dubaï' },
+        countries: { 'USA': 'États-Unis', 'UK': 'Royaume-Uni', 'Germany': 'Allemagne', 'UAE': 'Émirats arabes unis', 'France': 'France' },
+        listings: { title: 'Propriétés à la une', subtitle: 'Annonces sélectionnées auprès d’hôtes vérifiés', empty: 'Aucune propriété ne correspond à votre recherche. Essayez d’autres filtres.', contact: 'Contacter l’hôte', perMonth: '/mois' },
+        badge: { featured: '👑 À la une', verified: '✓ Vérifié' },
+        features: { title: 'Pourquoi choisir ISHFADI ?', subtitle: 'Tout ce qu’il vous faut pour une location sans tracas',
+          f1: { title: 'Hôtes vérifiés', desc: 'Tous les hôtes sont vérifiés pour votre sécurité' },
+          f2: { title: 'Paiements sécurisés', desc: 'Protection des paiements avec séquestre jusqu’à l’emménagement' },
+          f3: { title: 'Messagerie directe', desc: 'Discutez directement avec les hôtes avant de réserver' } },
+        referral: { badge: 'Programme de parrainage', title: 'Invitez vos amis, gagnez des récompenses', desc: 'Partagez votre code de parrainage et recevez 50 $ de crédit chacun !', copy: 'Copier le code', copied: 'Code de parrainage copié dans le presse-papiers !' },
+        cta: { title: 'Prêt à trouver votre logement ?', desc: 'Rejoignez des milliers d’utilisateurs qui ont trouvé leur logement idéal grâce à ISHFADI. L’inscription est gratuite.', button: 'Créer un compte gratuit' },
+        footer: { about: 'Trouvez votre logement idéal partout dans le monde. Apprécié par des milliers d’utilisateurs.', quickLinks: 'Liens rapides', exploreListings: 'Explorer les annonces', hostDashboard: 'Espace hôte', seekerDashboard: 'Espace locataire', resources: 'Ressources', helpCenter: 'Centre d’aide', safetyTips: 'Conseils de sécurité', terms: 'Conditions d’utilisation', privacy: 'Politique de confidentialité', contact: 'Contact', copyright: '© 2024 ISHFADI. Tous droits réservés.' },
+        auth: { signinTitle: 'Se connecter', signupTitle: 'Créer un compte', email: 'E-mail', emailPlaceholder: 'votre@email.com', password: 'Mot de passe', signinBtn: 'Se connecter', noAccount: 'Pas encore de compte ?', signupLink: 'S’inscrire', fullName: 'Nom complet', namePlaceholder: 'Jean Dupont', iWantTo: 'Je souhaite :', roleBuyer: 'Trouver un logement', roleSeller: 'Mettre un bien en ligne', createBtn: 'Créer un compte', haveAccount: 'Vous avez déjà un compte ?', signinLink: 'Se connecter' },
+        inquiry: { title: 'Contacter l’hôte', hostLabel: 'Hôte :', moveIn: 'Date d’emménagement', duration: 'Durée', message: 'Message', messagePlaceholder: 'Présentez-vous et posez vos questions...', send: 'Envoyer la demande', sent: 'Demande envoyée ! L’hôte répondra rapidement.' },
+        duration: { '1m': '1 mois', '3m': '3 mois', '6m': '6 mois', '12m': '12 mois' },
+        listingModal: { gallery: 'Galerie photos', perMonth: 'par mois', reviews: 'avis', superhost: 'Superhôte', message: 'Message', amenities: 'Équipements', priceBreakdown: 'Détail du prix', monthlyRent: 'Loyer mensuel', serviceFee: 'Frais de service', deposit: 'Caution', totalFirst: 'Total du premier paiement', availability: 'Disponibilité', availableNow: 'Disponible maintenant', flexible: 'Date d’emménagement flexible', contactHost: 'Contacter l’hôte', bookNow: 'Réserver' },
+        amenities: { 'WiFi': 'Wi-Fi', 'Kitchen': 'Cuisine', 'Washer': 'Lave-linge', 'AC': 'Clim.', 'Air conditioning': 'Climatisation', 'Pool': 'Piscine', 'Parking': 'Parking', 'Garden': 'Jardin', 'Garage': 'Garage', 'Gym': 'Salle de sport', 'Concierge': 'Conciergerie', 'Fireplace': 'Cheminée' },
+        booking: { title: 'Réserver cette propriété', sampleTitle: 'Appartement moderne au centre-ville', month: 'mois', card: 'Numéro de carte', expiry: 'Expiration', cvc: 'CVC', escrow: 'Votre paiement est protégé par séquestre', pay: 'Payer et réserver', processing: 'Traitement du paiement... En production, ceci se connecterait à une passerelle de paiement.' },
+        toast: { wishlistAdded: 'Ajouté aux favoris !', wishlistRemoved: 'Retiré des favoris', langSwitched: 'Langue changée en {lang}' },
+        listingTitles: {
+          'Modern Downtown Apartment': 'Appartement moderne au centre-ville',
+          'Cozy Studio Near Beach': 'Studio cosy près de la plage',
+          'Spacious Family House': 'Grande maison familiale',
+          'Private Room in Shared Flat': 'Chambre privée en colocation',
+          'Luxury Penthouse Suite': 'Suite penthouse de luxe',
+          'Charming Cottage': 'Cottage de charme'
+        }
+      },
+
+      ar: {
+        meta: { title: 'إشفادي - اعثر على منزلك المثالي', description: 'تواصل مع مضيفين موثّقين واكتشف عقارات رائعة. آمن وموثوق وبسيط.' },
+        lang: { label: 'اللغة' },
+        nav: { home: 'الرئيسية', explore: 'استكشاف', features: 'المزايا', contact: 'تواصل معنا', signin: 'تسجيل الدخول', getStarted: 'ابدأ الآن' },
+        hero: { badge: '+1,234 إعلان نشط', title1: 'اعثر على منزلك المثالي', title2: 'في أي مكان حول العالم', subtitle: 'تواصل مع مضيفين موثّقين واكتشف عقارات رائعة. آمن وموثوق وبسيط.' },
+        search: { location: 'الموقع', locationPlaceholder: 'مدينة أو دولة', type: 'نوع العقار', anyType: 'أي نوع', price: 'نطاق السعر', anyPrice: 'أي سعر', button: 'بحث' },
+        type: { house: 'منزل', apartment: 'شقة', room: 'غرفة', studio: 'استوديو' },
+        stats: { properties: 'عقار', users: 'مستخدم سعيد', countries: 'دولة' },
+        map: { title: 'استكشف على الخريطة', show: 'إظهار الخريطة', hide: 'إخفاء الخريطة' },
+        trending: { title: 'الوجهات الرائجة', listings: '{n} إعلان' },
+        cities: { 'New York': 'نيويورك', 'London': 'لندن', 'Tokyo': 'طوكيو', 'Paris': 'باريس', 'Miami': 'ميامي', 'Berlin': 'برلين', 'Dubai': 'دبي' },
+        countries: { 'USA': 'الولايات المتحدة', 'UK': 'المملكة المتحدة', 'Germany': 'ألمانيا', 'UAE': 'الإمارات', 'France': 'فرنسا' },
+        listings: { title: 'عقارات مميزة', subtitle: 'إعلانات مختارة من مضيفين موثّقين', empty: 'لا توجد عقارات مطابقة لبحثك. جرّب مرشحات أخرى.', contact: 'تواصل مع المضيف', perMonth: '/شهر' },
+        badge: { featured: '👑 مميز', verified: '✓ موثّق' },
+        features: { title: 'لماذا إشفادي؟', subtitle: 'كل ما تحتاجه لتجربة إيجار سلسة',
+          f1: { title: 'مضيفون موثّقون', desc: 'يخضع جميع المضيفين للتحقق من الهوية لسلامتك' },
+          f2: { title: 'مدفوعات آمنة', desc: 'حماية الدفع عبر الضمان حتى موعد الانتقال' },
+          f3: { title: 'مراسلة مباشرة', desc: 'تحدث مباشرة مع المضيفين قبل الحجز' } },
+        referral: { badge: 'برنامج الإحالة', title: 'ادعُ أصدقاءك واربح مكافآت', desc: 'شارك رمز الإحالة الخاص بك، واحصل أنت وصديقك على رصيد 50 دولارًا!', copy: 'نسخ الرمز', copied: 'تم نسخ رمز الإحالة!' },
+        cta: { title: 'هل أنت مستعد لإيجاد منزلك؟', desc: 'انضم إلى آلاف المستخدمين الذين عثروا على منزلهم المثالي عبر إشفادي. التسجيل مجاني.', button: 'أنشئ حسابًا مجانيًا' },
+        footer: { about: 'اعثر على منزلك المثالي في أي مكان حول العالم. موثوق به من قبل الآلاف.', quickLinks: 'روابط سريعة', exploreListings: 'استكشاف الإعلانات', hostDashboard: 'لوحة المضيف', seekerDashboard: 'لوحة الباحث', resources: 'مصادر', helpCenter: 'مركز المساعدة', safetyTips: 'نصائح السلامة', terms: 'شروط الخدمة', privacy: 'سياسة الخصوصية', contact: 'تواصل', copyright: '© 2024 إشفادي. جميع الحقوق محفوظة.' },
+        auth: { signinTitle: 'تسجيل الدخول', signupTitle: 'إنشاء حساب', email: 'البريد الإلكتروني', emailPlaceholder: 'your@email.com', password: 'كلمة المرور', signinBtn: 'تسجيل الدخول', noAccount: 'ليس لديك حساب؟', signupLink: 'إنشاء حساب', fullName: 'الاسم الكامل', namePlaceholder: 'محمد أحمد', iWantTo: 'أرغب في:', roleBuyer: 'البحث عن منزل', roleSeller: 'نشر عقار', createBtn: 'إنشاء حساب', haveAccount: 'لديك حساب بالفعل؟', signinLink: 'تسجيل الدخول' },
+        inquiry: { title: 'تواصل مع المضيف', hostLabel: 'المضيف:', moveIn: 'تاريخ الانتقال', duration: 'المدة', message: 'الرسالة', messagePlaceholder: 'عرّف بنفسك واطرح أسئلتك...', send: 'إرسال الطلب', sent: 'تم إرسال الطلب! سيرد المضيف قريبًا.' },
+        duration: { '1m': 'شهر واحد', '3m': '3 أشهر', '6m': '6 أشهر', '12m': '12 شهرًا' },
+        listingModal: { gallery: 'معرض الصور', perMonth: 'شهريًا', reviews: 'تقييم', superhost: 'مضيف متميّز', message: 'مراسلة', amenities: 'المرافق', priceBreakdown: 'تفاصيل السعر', monthlyRent: 'الإيجار الشهري', serviceFee: 'رسوم الخدمة', deposit: 'مبلغ التأمين', totalFirst: 'إجمالي الدفعة الأولى', availability: 'التوفر', availableNow: 'متوفر الآن', flexible: 'تاريخ الانتقال مرن', contactHost: 'تواصل مع المضيف', bookNow: 'احجز الآن' },
+        amenities: { 'WiFi': 'واي فاي', 'Kitchen': 'مطبخ', 'Washer': 'غسالة', 'AC': 'مكيّف', 'Air conditioning': 'تكييف الهواء', 'Pool': 'مسبح', 'Parking': 'موقف سيارات', 'Garden': 'حديقة', 'Garage': 'كراج', 'Gym': 'صالة رياضية', 'Concierge': 'كونسيرج', 'Fireplace': 'مدفأة' },
+        booking: { title: 'احجز هذا العقار', sampleTitle: 'شقة عصرية في وسط المدينة', month: 'شهر', card: 'رقم البطاقة', expiry: 'تاريخ الانتهاء', cvc: 'CVC', escrow: 'دفعتك محمية عبر الضمان', pay: 'ادفع واحجز', processing: 'جارٍ معالجة الدفع... في الإنتاج سيتم الاتصال ببوابة دفع.' },
+        toast: { wishlistAdded: 'تمت الإضافة إلى المفضلة!', wishlistRemoved: 'تمت الإزالة من المفضلة', langSwitched: 'تم تغيير اللغة إلى {lang}' },
+        listingTitles: {
+          'Modern Downtown Apartment': 'شقة عصرية في وسط المدينة',
+          'Cozy Studio Near Beach': 'استوديو مريح قرب الشاطئ',
+          'Spacious Family House': 'منزل عائلي واسع',
+          'Private Room in Shared Flat': 'غرفة خاصة في شقة مشتركة',
+          'Luxury Penthouse Suite': 'جناح بنتهاوس فاخر',
+          'Charming Cottage': 'كوخ ساحر'
+        }
+      }
+    };
+
+    // ---------- Core i18n API ----------
+    let currentLang = FALLBACK;
+
+    function detectLanguage() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && LANGUAGES[saved]) return saved;
+      } catch (e) {}
+      const candidates = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || navigator.userLanguage || ''];
+      for (const raw of candidates) {
+        if (!raw) continue;
+        const code = String(raw).toLowerCase().split('-')[0];
+        if (LANGUAGES[code]) return code;
+      }
+      return FALLBACK;
+    }
+
+    function get(obj, path) {
+      if (!obj) return undefined;
+      const parts = path.split('.');
+      let cur = obj;
+      for (const p of parts) {
+        if (cur && Object.prototype.hasOwnProperty.call(cur, p)) cur = cur[p];
+        else return undefined;
+      }
+      return cur;
+    }
+
+    function t(key, vars) {
+      let val = get(TRANSLATIONS[currentLang], key);
+      if (val === undefined) val = get(TRANSLATIONS[FALLBACK], key);
+      if (val === undefined || val === null) return key; // never render undefined/null
+      if (typeof val !== 'string') return key;
+      if (vars) {
+        Object.keys(vars).forEach(k => { val = val.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]); });
+      }
+      return val;
+    }
+
+    function translateAmenity(name) {
+      const tx = get(TRANSLATIONS[currentLang], 'amenities.' + name);
+      if (tx) return tx;
+      const fb = get(TRANSLATIONS[FALLBACK], 'amenities.' + name);
+      return fb || name;
+    }
+    function translateCity(name) {
+      return get(TRANSLATIONS[currentLang], 'cities.' + name) || get(TRANSLATIONS[FALLBACK], 'cities.' + name) || name;
+    }
+    function translateCountry(name) {
+      return get(TRANSLATIONS[currentLang], 'countries.' + name) || get(TRANSLATIONS[FALLBACK], 'countries.' + name) || name;
+    }
+    function translateType(t1) {
+      return get(TRANSLATIONS[currentLang], 'type.' + t1) || get(TRANSLATIONS[FALLBACK], 'type.' + t1) || t1;
+    }
+    function translateListingTitle(title) {
+      return get(TRANSLATIONS[currentLang], 'listingTitles.' + title) || get(TRANSLATIONS[FALLBACK], 'listingTitles.' + title) || title;
+    }
+
+    function applyDOMTranslations(root) {
+      const scope = root || document;
+      scope.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const attr = el.getAttribute('data-i18n-attr');
+        const val = t(key);
+        if (attr) el.setAttribute(attr, val);
+        else el.textContent = val;
+      });
+      scope.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+      });
+      scope.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+      });
+    }
+
+    function setLanguage(lang, opts) {
+      if (!LANGUAGES[lang]) lang = FALLBACK;
+      const meta = LANGUAGES[lang];
+      const html = document.documentElement;
+
+      // Smooth micro-fade (no page reload, no flash)
+      document.body.classList.add('lang-switching');
+      const fadeTargets = document.querySelectorAll('nav, section, footer');
+      fadeTargets.forEach(n => n.classList.add('switch-fade'));
+
+      window.setTimeout(() => {
+        currentLang = lang;
+        html.setAttribute('lang', lang);
+        html.setAttribute('dir', meta.dir);
+        try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
+
+        document.title = t('meta.title');
+        applyDOMTranslations();
+        renderLanguageSwitchers();
+        renderTrending();
+        renderListings(window.__lastFiltered || window.LISTINGS);
+
+        fadeTargets.forEach(n => n.classList.remove('switch-fade'));
+        document.body.classList.remove('lang-switching');
+
+        if (opts && opts.announce) {
+          showToast(t('toast.langSwitched', { lang: meta.native }));
+        }
+      }, 120);
+    }
+
+    // ---------- Language switcher UI ----------
+    function renderLanguageSwitchers() {
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const menu = sw.querySelector('.lang-menu');
+        const labelEl = sw.querySelector('.lang-current-label');
+        if (labelEl) labelEl.textContent = LANGUAGES[currentLang].native;
+        if (!menu) return;
+        menu.innerHTML = Object.values(LANGUAGES).map(l => `
+          <button type="button" role="option" class="lang-option" data-lang="${l.code}" aria-current="${l.code === currentLang ? 'true' : 'false'}">
+            <span>
+              <span class="lang-name">${l.native}</span>
+              <span class="lang-sub">${t('lang.label')} · ${l.code.toUpperCase()}</span>
+            </span>
+            <svg class="check w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </button>
+        `).join('');
+        menu.querySelectorAll('.lang-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const code = btn.getAttribute('data-lang');
+            closeAllLangMenus();
+            setLanguage(code, { announce: true });
+          });
+        });
+      });
+    }
+
+    function closeAllLangMenus() {
+      document.querySelectorAll('.lang-switcher.open').forEach(s => {
+        s.classList.remove('open');
+        const trig = s.querySelector('.lang-trigger');
+        if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function wireLangSwitchers() {
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const trigger = sw.querySelector('.lang-trigger');
+        if (!trigger) return;
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = sw.classList.contains('open');
+          closeAllLangMenus();
+          if (!isOpen) { sw.classList.add('open'); trigger.setAttribute('aria-expanded', 'true'); }
+        });
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') { closeAllLangMenus(); trigger.focus(); }
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            sw.classList.add('open'); trigger.setAttribute('aria-expanded', 'true');
+            const first = sw.querySelector('.lang-option'); if (first) first.focus();
+          }
+        });
+      });
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.lang-switcher')) closeAllLangMenus();
+      });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllLangMenus(); });
+    }
+
+    // ---------- Toast ----------
+    function showToast(message) {
+      const c = document.getElementById('toastContainer');
+      if (!c) return;
+      const el = document.createElement('div');
+      el.className = 'bg-primary text-white text-sm font-medium px-4 py-3 rounded-xl shadow-2xl fade-in';
+      el.setAttribute('role', 'status');
+      el.textContent = message;
+      c.appendChild(el);
+      setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 320); }, 2400);
+    }
+
+    // ---------- Listings data ----------
+    const LISTINGS = [
+      { id: 1, title: 'Modern Downtown Apartment', type: 'apartment', price: 1500, city: 'New York', country: 'USA', verified: true, featured: true, host: 'John Doe', amenities: ['WiFi', 'Kitchen', 'Washer', 'AC'], lat: 40.7128, lng: -74.0060 },
+      { id: 2, title: 'Cozy Studio Near Beach', type: 'studio', price: 800, city: 'Miami', country: 'USA', verified: true, featured: false, host: 'Sarah Smith', amenities: ['WiFi', 'Pool', 'Parking'], lat: 25.7617, lng: -80.1918 },
+      { id: 3, title: 'Spacious Family House', type: 'house', price: 2500, city: 'London', country: 'UK', verified: true, featured: true, host: 'James Wilson', amenities: ['WiFi', 'Garden', 'Garage', 'Gym'], lat: 51.5074, lng: -0.1278 },
+      { id: 4, title: 'Private Room in Shared Flat', type: 'room', price: 450, city: 'Berlin', country: 'Germany', verified: false, featured: false, host: 'Emma Brown', amenities: ['WiFi', 'Kitchen'], lat: 52.5200, lng: 13.4050 },
+      { id: 5, title: 'Luxury Penthouse Suite', type: 'apartment', price: 3500, city: 'Dubai', country: 'UAE', verified: true, featured: true, host: 'Ahmed Hassan', amenities: ['WiFi', 'Pool', 'Gym', 'Concierge'], lat: 25.2048, lng: 55.2708 },
+      { id: 6, title: 'Charming Cottage', type: 'house', price: 1200, city: 'Paris', country: 'France', verified: true, featured: false, host: 'Marie Dupont', amenities: ['WiFi', 'Garden', 'Fireplace'], lat: 48.8566, lng: 2.3522 }
+    ];
+    window.LISTINGS = LISTINGS;
+    window.__lastFiltered = LISTINGS;
+
+    const TRENDING = [
+      { city: 'New York', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop', count: 1234 },
+      { city: 'London',   img: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop', count: 892 },
+      { city: 'Tokyo',    img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&h=300&fit=crop', count: 756 },
+      { city: 'Paris',    img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop', count: 643 }
+    ];
+
+    function renderTrending() {
+      const grid = document.getElementById('trendingGrid');
+      if (!grid) return;
+      grid.innerHTML = TRENDING.map(loc => `
+        <button onclick="searchByLocation('${loc.city}')" class="location-card group rounded-2xl aspect-[4/3] card-hover">
+          <img src="${loc.img}" alt="${translateCity(loc.city)}" class="absolute inset-0 w-full h-full object-cover rounded-2xl">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-2xl"></div>
+          <div class="absolute bottom-0 start-0 end-0 p-4 text-start">
+            <h3 class="text-lg font-bold text-white">${translateCity(loc.city)}</h3>
+            <p class="text-sm text-white/70">${t('trending.listings', { n: loc.count.toLocaleString() })}</p>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    // ---------- Listings rendering ----------
+    function getTypeIcon(type) {
+      const icons = {
+        house: '<svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>',
+        apartment: '<svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>',
+        room: '<svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>',
+        studio: '<svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>'
+      };
+      return icons[type] || icons.house;
+    }
+    function getTypeColor(type) {
+      return ({ house: 'bg-primary/10 text-primary', apartment: 'bg-secondary/10 text-secondary', room: 'bg-success/10 text-success', studio: 'bg-warning/10 text-warning' })[type] || 'bg-primary/10 text-primary';
+    }
+
+    function renderListings(filtered) {
+      const list = filtered || LISTINGS;
+      window.__lastFiltered = list;
+      const grid = document.getElementById('listingsGrid');
+      const empty = document.getElementById('listingsEmpty');
+      if (!grid) return;
+      if (!list.length) { grid.innerHTML = ''; if (empty) empty.classList.remove('hidden'); return; }
+      if (empty) empty.classList.add('hidden');
+
+      grid.innerHTML = list.map((listing, index) => `
+        <div class="bg-white rounded-2xl border overflow-hidden card-hover fade-in ${listing.featured ? 'border-warning/50 ring-2 ring-warning/20' : ''}" style="animation-delay: ${index * 0.08}s" onclick="openListingModal(${listing.id})">
+          <div class="relative aspect-[4/3] bg-gradient-to-br from-primary/20 to-secondary/30 overflow-hidden cursor-pointer">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">${getTypeIcon(listing.type)}</div>
+            </div>
+            ${listing.featured ? `<div class="absolute top-3 start-3 px-2.5 py-1 bg-warning text-white text-xs font-medium rounded-full">${t('badge.featured')}</div>` : ''}
+            ${listing.verified && !listing.featured ? `<div class="absolute top-3 start-3 px-2.5 py-1 bg-success text-white text-xs font-medium rounded-full verified-pulse">${t('badge.verified')}</div>` : ''}
+            <div class="absolute bottom-3 end-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
+              <p class="text-lg font-bold text-gray-800">$${listing.price.toLocaleString()}<span class="text-xs font-normal text-gray-500">${t('listings.perMonth')}</span></p>
+            </div>
+          </div>
+          <div class="p-4">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(listing.type)} mb-2">${translateType(listing.type)}</span>
+            <h3 class="font-semibold text-gray-800 mb-1 line-clamp-1">${translateListingTitle(listing.title)}</h3>
+            <p class="text-sm text-gray-500 flex items-center gap-1 mb-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+              ${translateCity(listing.city)}, ${translateCountry(listing.country)}
+            </p>
+            <div class="flex flex-wrap gap-1.5 mb-4">
+              ${listing.amenities.slice(0, 3).map(a => `<span class="px-2 py-0.5 bg-gray-100 rounded-md text-xs text-gray-600">${translateAmenity(a)}</span>`).join('')}
+              ${listing.amenities.length > 3 ? `<span class="px-2 py-0.5 bg-gray-100 rounded-md text-xs text-gray-600">+${listing.amenities.length - 3}</span>` : ''}
+            </div>
+            <button onclick="event.stopPropagation(); openInquiry(${listing.id})" class="w-full py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors text-sm">${t('listings.contact')}</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    window.renderListings = renderListings;
+
+    // ---------- Modals / app logic ----------
+    let selectedRole = '';
+    let map = null, mapVisible = false;
+
+    window.openModal = function (id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; };
+    window.closeModal = function (id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; };
+
+    window.setAuthMode = function (mode) {
+      const title = document.getElementById('authTitle');
+      const si = document.getElementById('signinForm');
+      const su = document.getElementById('signupForm');
+      if (mode === 'signup') { title.textContent = t('auth.signupTitle'); si.classList.add('hidden'); su.classList.remove('hidden'); }
+      else { title.textContent = t('auth.signinTitle'); si.classList.remove('hidden'); su.classList.add('hidden'); }
+    };
+
+    window.selectRole = function (role) {
+      selectedRole = role;
+      const b = document.getElementById('roleBuyer'), s = document.getElementById('roleSeller');
+      b.classList.toggle('border-primary', role === 'buyer'); b.classList.toggle('bg-primary/5', role === 'buyer');
+      s.classList.toggle('border-primary', role === 'seller'); s.classList.toggle('bg-primary/5', role === 'seller');
+    };
+
+    window.handleLogin = function () { closeModal('authModal'); /* navigate in your app */ };
+    window.handleSignup = function () { closeModal('authModal'); };
+
+    window.openListingModal = function (id) {
+      const l = LISTINGS.find(x => x.id === id); if (!l) return;
+      document.getElementById('modalTitle').textContent = translateListingTitle(l.title);
+      document.getElementById('modalLocation').innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> ${translateCity(l.city)}, ${translateCountry(l.country)}`;
+      document.getElementById('modalPrice').textContent = '$' + l.price.toLocaleString();
+      document.getElementById('modalType').textContent = translateType(l.type);
+      document.getElementById('modalHostName').textContent = l.host;
+      document.getElementById('modalHostInitials').textContent = l.host.split(' ').map(n => n[0]).join('');
+      document.getElementById('modalAmenities').innerHTML = l.amenities.map(a => `<span class="px-3 py-1.5 bg-gray-100 rounded-full text-sm">${translateAmenity(a)}</span>`).join('');
+      document.getElementById('modalVerified').style.display = l.verified ? 'flex' : 'none';
+      openModal('listingModal');
+    };
+
+    window.openInquiry = function (id) {
+      const l = LISTINGS.find(x => x.id === id); if (!l) return;
+      document.getElementById('inquiryListingTitle').textContent = translateListingTitle(l.title);
+      document.getElementById('inquiryHostName').textContent = l.host;
+      openModal('inquiryModal');
+    };
+
+    window.sendInquiry = function () { showToast(t('inquiry.sent')); closeModal('inquiryModal'); };
+
+    window.toggleWishlist = function () {
+      const btn = document.getElementById('wishlistBtn'); const svg = btn.querySelector('svg');
+      if (svg.getAttribute('fill') === 'none') {
+        svg.setAttribute('fill', 'currentColor'); svg.classList.add('text-red-500'); svg.classList.remove('text-gray-600');
+        showToast(t('toast.wishlistAdded'));
+      } else {
+        svg.setAttribute('fill', 'none'); svg.classList.remove('text-red-500'); svg.classList.add('text-gray-600');
+        showToast(t('toast.wishlistRemoved'));
+      }
+    };
+
+    window.processPayment = function () { showToast(t('booking.processing')); closeModal('bookingModal'); };
+
+    window.performSearch = function () {
+      const location = (document.getElementById('searchLocation').value || '').toLowerCase().trim();
+      const type = document.getElementById('searchType').value;
+      const price = document.getElementById('searchPrice').value;
+      const filtered = LISTINGS.filter(l => {
+        if (location) {
+          const hay = [l.city, l.country, translateCity(l.city), translateCountry(l.country)].map(s => s.toLowerCase());
+          if (!hay.some(h => h.includes(location))) return false;
+        }
+        if (type && l.type !== type) return false;
+        if (price) {
+          const [min, max] = price.replace('+', '-99999').split('-').map(Number);
+          if (l.price < min || l.price > max) return false;
+        }
+        return true;
+      });
+      renderListings(filtered);
+    };
+
+    window.searchByLocation = function (city) {
+      document.getElementById('searchLocation').value = city;
+      performSearch();
+      document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.toggleMapView = function () {
+      const container = document.getElementById('mapContainer');
+      const toggleText = document.getElementById('mapToggleText');
+      if (mapVisible) {
+        container.classList.add('hidden'); toggleText.textContent = t('map.show'); mapVisible = false;
+      } else {
+        container.classList.remove('hidden'); toggleText.textContent = t('map.hide'); mapVisible = true;
+        if (!map) {
+          map = L.map('mapContainer').setView([40.7128, -74.0060], 3);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+          LISTINGS.forEach(l => {
+            L.marker([l.lat, l.lng]).addTo(map)
+              .bindPopup(`<strong>${translateListingTitle(l.title)}</strong><br>$${l.price}${t('listings.perMonth')}<br><a href="#" onclick="openListingModal(${l.id})">${t('listingModal.contactHost')}</a>`);
+          });
+        }
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+    };
+
+    window.copyReferral = function () {
+      try { navigator.clipboard.writeText('ISHFADI2024'); } catch (e) {}
+      showToast(t('referral.copied'));
+    };
+
+    // Mobile menu
+    function wireMobileMenu() {
+      const btn = document.getElementById('mobileMenuBtn');
+      const menu = document.getElementById('mobileMenu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', () => {
+        const open = !menu.classList.contains('hidden');
+        if (open) { menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); }
+        else { menu.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); }
+      });
+      // Close mobile menu when a nav link is clicked
+      menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+        menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false');
+      }));
+    }
+
+    // ---------- Boot ----------
+    document.addEventListener('DOMContentLoaded', () => {
+      currentLang = detectLanguage();
+      const meta = LANGUAGES[currentLang];
+      document.documentElement.setAttribute('lang', currentLang);
+      document.documentElement.setAttribute('dir', meta.dir);
+      document.title = t('meta.title');
+
+      wireLangSwitchers();
+      wireMobileMenu();
+      renderLanguageSwitchers();
+      applyDOMTranslations();
+      renderTrending();
+      renderListings();
+    });
+
+    // Expose minimal i18n API for future extension
+    window.i18n = { t, setLanguage, get current() { return currentLang; }, languages: LANGUAGES };
+  })();
+  </script>
+
+  <!-- ============ PWA UI MOUNT POINTS ============ -->
+  <div id="pwaSplash" role="status" aria-live="polite" aria-label="Loading ISHFADI">
+    <div class="brand">ISH<span>FADI</span></div>
+    <div class="ring" aria-hidden="true"></div>
+    <div class="tag">Find your perfect home</div>
+  </div>
+
+  <div id="pwaUpdate" role="status" aria-live="polite">
+    <span>A new version of ISHFADI is available.</span>
+    <button class="upd-now"   onclick="window.__pwa.applyUpdate()">Update Now</button>
+    <button class="upd-later" onclick="window.__pwa.dismissUpdate()">Later</button>
+  </div>
+
+  <div id="pwaConn" role="status" aria-live="polite"><span class="pdot"></span><span class="ptxt">Offline</span></div>
+
+  <div id="pwaInstallCard" role="dialog" aria-label="Install ISHFADI">
+    <div class="ic-logo" aria-hidden="true">I</div>
+    <div class="ic-body">
+      <div class="ic-title">Install ISHFADI</div>
+      <div class="ic-sub">Add to your home screen for a faster, app-like experience.</div>
+    </div>
+    <div class="ic-actions">
+      <button class="ic-dismiss" onclick="window.__pwa.dismissInstall()" aria-label="Dismiss">Not now</button>
+      <button class="ic-install" onclick="window.__pwa.promptInstall()">Install</button>
+    </div>
+  </div>
+
+  <script>
+  /* ============ ISHFADI PWA RUNTIME ============ */
+  (function(){
+    const KEY_DISMISS = 'ishfadi.installDismissedAt';
+    const DISMISS_DAYS = 7;
+    let deferredPrompt = null;
+    let registration = null;
+
+    const $ = (id) => document.getElementById(id);
+    const splash = () => $('pwaSplash');
+    const card   = () => $('pwaInstallCard');
+    const upd    = () => $('pwaUpdate');
+    const conn   = () => $('pwaConn');
+
+    // ---------- Splash ----------
+    function hideSplash() {
+      const el = splash(); if (!el) return;
+      el.classList.add('hidden');
+      setTimeout(() => el.remove(), 600);
+    }
+    window.addEventListener('load', () => setTimeout(hideSplash, 650));
+    // safety fallback
+    setTimeout(hideSplash, 4000);
+
+    // ---------- Connection status ----------
+    function setConn(online) {
+      const c = conn(); if (!c) return;
+      c.classList.toggle('online', online);
+      c.querySelector('.ptxt').textContent = online ? "Back online" : "You're offline";
+      c.classList.add('show');
+      clearTimeout(c._t);
+      c._t = setTimeout(() => c.classList.remove('show'), online ? 2200 : 4000);
+    }
+    window.addEventListener('online',  () => setConn(true));
+    window.addEventListener('offline', () => setConn(false));
+    if (!navigator.onLine) window.addEventListener('load', () => setConn(false));
+
+    // ---------- Install flow ----------
+    const installed = () =>
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+
+    function dismissedRecently() {
+      const t = parseInt(localStorage.getItem(KEY_DISMISS) || '0', 10);
+      if (!t) return false;
+      return (Date.now() - t) < DISMISS_DAYS * 86400000;
+    }
+
+    function showInstallCard() {
+      if (installed() || dismissedRecently() || !deferredPrompt) return;
+      const c = card(); if (!c) return;
+      c.classList.add('show');
+    }
+
+    function hideInstallCard() {
+      const c = card(); if (c) c.classList.remove('show');
+    }
+
+    function showManualBtn(show) {
+      const b = document.getElementById('pwaInstallBtn');
+      if (b) b.classList.toggle('show', !!show);
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showManualBtn(true);
+      // Wait until user has been on the page a little before suggesting install
+      setTimeout(showInstallCard, 8000);
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      hideInstallCard();
+      showManualBtn(false);
+      localStorage.removeItem(KEY_DISMISS);
+    });
+
+    // ---------- Update flow ----------
+    let waitingWorker = null;
+    function showUpdateBanner(worker) {
+      waitingWorker = worker;
+      const u = upd(); if (u) u.classList.add('show');
+    }
+
+    // ---------- Public API ----------
+    window.__pwa = {
+      promptInstall: async () => {
+        if (!deferredPrompt) {
+          // iOS / unsupported: show simple instruction
+          if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            alert("To install ISHFADI: tap the Share icon, then 'Add to Home Screen'.");
+          }
+          return;
+        }
+        hideInstallCard();
+        deferredPrompt.prompt();
+        try {
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome !== 'accepted') localStorage.setItem(KEY_DISMISS, String(Date.now()));
+        } catch(e) {}
+        deferredPrompt = null;
+        showManualBtn(false);
+      },
+      dismissInstall: () => {
+        localStorage.setItem(KEY_DISMISS, String(Date.now()));
+        hideInstallCard();
+      },
+      openInstall: () => { if (deferredPrompt) showInstallCard(); else window.__pwa.promptInstall(); },
+      applyUpdate: () => {
+        if (waitingWorker) waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+        upd()?.classList.remove('show');
+      },
+      dismissUpdate: () => upd()?.classList.remove('show'),
+      isInstalled: installed
+    };
+
+    // ---------- Service worker registration ----------
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          registration = await navigator.serviceWorker.register('service-worker.js', { scope: './' });
+
+          if (registration.waiting) showUpdateBanner(registration.waiting);
+
+          registration.addEventListener('updatefound', () => {
+            const nw = registration.installing;
+            if (!nw) return;
+            nw.addEventListener('statechange', () => {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateBanner(nw);
+              }
+            });
+          });
+
+          // Periodically check for updates (every 60 min)
+          setInterval(() => registration.update().catch(()=>{}), 60 * 60 * 1000);
+
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+          });
+        } catch (err) {
+          console.warn('[PWA] SW registration failed:', err);
+        }
+      });
+    }
+  })();
+  </script>
+
+  <script src="explorer.js" defer></script>
+</body>
+</html>

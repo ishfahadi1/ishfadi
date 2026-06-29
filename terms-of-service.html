@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service - ISHFADI</title>
+<meta name="description" content="ISHFADI Terms of Service - Rules and guidelines for using our platform.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a365d;--primary-light:#2a4a7f;--accent:#e8913a;
+  --bg:#f7f8fa;--card:#fff;--text:#1a202c;--muted:#64748b;
+  --border:#e2e8f0;--radius:12px;--destructive:#dc2626;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--primary);box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.navbar .container{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:rgba(255,255,255,.8);font-size:.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#fff;text-decoration:none}
+
+.page-hero{padding:120px 24px 60px;text-align:center;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 50%,#1a365d 100%);
+  background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff}
+.page-hero .icon-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.15);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:2rem}
+.page-hero h1{font-size:2.5rem;font-weight:800;margin-bottom:8px}
+.page-hero p{color:rgba(255,255,255,.7)}
+
+.content{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:24px}
+.section-card h2{font-size:1.4rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.section-card h2 .icon{width:28px;height:28px;background:rgba(26,54,93,.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:.9rem}
+.section-card h2 .icon-red{width:28px;height:28px;background:rgba(220,38,38,.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:.9rem}
+.section-card h3{font-weight:600;margin:16px 0 8px}
+.section-card p,.section-card li{color:var(--muted);font-size:.95rem}
+.section-card ul{list-style:disc;padding-left:20px}
+.section-card ul li{margin-bottom:6px}
+.bullet-list{list-style:none;padding:0}
+.bullet-list li{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;color:var(--muted);font-size:.95rem}
+.bullet-list li::before{content:'';width:8px;height:8px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.bullet-list.primary li::before{background:var(--primary)}
+.bullet-list.red li::before{background:var(--destructive)}
+.highlight-section{background:rgba(26,54,93,.04);border:1px solid rgba(26,54,93,.15);border-radius:var(--radius);padding:32px;margin-bottom:24px}
+.highlight-section h2{font-size:1.4rem;font-weight:700;margin-bottom:12px}
+.highlight-section p{color:var(--muted);font-size:.95rem}
+.highlight-section .email{font-weight:600;color:var(--text);margin-top:8px}
+
+.footer{background:var(--primary);color:#fff;padding:48px 24px 24px}
+.footer .container{max-width:1200px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px}
+.footer h4{font-weight:600;margin-bottom:12px}
+.footer p,.footer a{color:rgba(255,255,255,.7);font-size:.9rem}
+.footer a:hover{color:#fff}
+.footer ul{list-style:none;padding:0}
+.footer ul li{margin-bottom:8px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.footer-bottom p{font-size:.85rem;color:rgba(255,255,255,.5)}
+.footer-bottom a{font-size:.85rem;color:rgba(255,255,255,.5);margin-left:20px}
+.footer-bottom a:hover{color:#fff}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .page-hero h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">ISH<span>FADI</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#explore">Explore</a>
+      <a href="seller.html">Host Dashboard</a>
+      <a href="buyer.html">Seeker Dashboard</a>
+      <a href="help-center.html">Help</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="icon-circle">📄</div>
+  <h1>Terms of Service</h1>
+  <p>Last updated: January 11, 2026</p>
+</div>
+
+<div class="content">
+
+  <div class="section-card">
+    <h2>Agreement to Terms</h2>
+    <p>By accessing or using ISHFADI, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our platform. These terms apply to all users, including seekers (buyers) and hosts (sellers).</p>
+  </div>
+
+  <div class="section-card">
+    <h2><span class="icon">👥</span> User Accounts</h2>
+    <p>When creating an account, you agree to:</p>
+    <ul>
+      <li>Provide accurate and complete information</li>
+      <li>Maintain the security of your account credentials</li>
+      <li>Notify us immediately of any unauthorized access</li>
+      <li>Be responsible for all activities under your account</li>
+      <li>Not create multiple accounts for deceptive purposes</li>
+    </ul>
+    <p style="margin-top:12px">We reserve the right to suspend or terminate accounts that violate these terms.</p>
+  </div>
+
+  <div class="section-card">
+    <h2><span class="icon">🏠</span> Listings &amp; Content</h2>
+    <h3>For Hosts (Sellers)</h3>
+    <ul>
+      <li>You must have the legal right to list the property</li>
+      <li>All listing information must be accurate and up-to-date</li>
+      <li>Photos must represent the actual property</li>
+      <li>You are responsible for complying with local laws and regulations</li>
+      <li>You must respond to inquiries in a timely manner</li>
+    </ul>
+    <h3>For Seekers (Buyers)</h3>
+    <ul>
+      <li>Use the platform for legitimate housing searches only</li>
+      <li>Communicate respectfully with hosts</li>
+      <li>Do not misuse contact information provided</li>
+      <li>Report suspicious listings to our team</li>
+    </ul>
+  </div>
+
+  <div class="section-card">
+    <h2><span class="icon-red">🚫</span> Prohibited Activities</h2>
+    <p>The following activities are strictly prohibited:</p>
+    <ul class="bullet-list red">
+      <li>Posting fraudulent or misleading listings</li>
+      <li>Harassment, discrimination, or abuse of other users</li>
+      <li>Attempting to bypass platform security measures</li>
+      <li>Scraping or automated data collection</li>
+      <li>Money laundering or fraudulent financial activities</li>
+      <li>Impersonating other users or ISHFADI staff</li>
+    </ul>
+  </div>
+
+  <div class="section-card">
+    <h2><span class="icon">⚠️</span> Disclaimers &amp; Limitations</h2>
+    <p>ISHFADI is a platform connecting seekers and hosts. We do not:</p>
+    <ul>
+      <li>Own or manage any listed properties</li>
+      <li>Guarantee the accuracy of listing information</li>
+      <li>Act as a party to any rental or sale agreement</li>
+      <li>Provide legal, financial, or real estate advice</li>
+    </ul>
+    <p style="margin-top:12px">Users are responsible for conducting their own due diligence before entering into any agreements. We strongly recommend verifying all information and meeting in safe, public places.</p>
+  </div>
+
+  <div class="section-card">
+    <h2><span class="icon">⚖️</span> Dispute Resolution</h2>
+    <p>In the event of a dispute between users, we encourage direct communication to resolve issues. If needed:</p>
+    <ul>
+      <li>Contact our support team for mediation assistance</li>
+      <li>Disputes will be handled according to the laws of the applicable jurisdiction</li>
+      <li>We may suspend accounts pending investigation of serious disputes</li>
+    </ul>
+  </div>
+
+  <div class="highlight-section">
+    <h2>Changes to Terms</h2>
+    <p>We may update these Terms of Service from time to time. We will notify users of significant changes via email or platform notification. Continued use of ISHFADI after changes constitutes acceptance of the updated terms.</p>
+    <p style="margin-top:12px">For questions about these terms, contact us at: <span class="email">legal@ishfadi.com</span></p>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>ISHFADI</h4>
+        <p>Find your perfect place anywhere in the world. Trusted by thousands globally.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#explore">Explore Listings</a></li>
+          <li><a href="seller.html">Host Dashboard</a></li>
+          <li><a href="buyer.html">Seeker Dashboard</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="help-center.html">Help Center</a></li>
+          <li><a href="safety-tips.html">Safety Tips</a></li>
+          <li><a href="terms-of-service.html">Terms of Service</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>support@ishfadi.com</p>
+        <p>+1 (555) 123-4567</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 ISHFADI. All rights reserved.</p>
+      <div>
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="terms-of-service.html">Terms</a>
+        <a href="safety-tips.html">Safety</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
