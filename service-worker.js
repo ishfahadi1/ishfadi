@@ -7,7 +7,7 @@
  *  - Tile / API requests: network-only (never cached)
  * Versioning: bump CACHE_VERSION on every release; old caches are deleted on activate.
  */
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.0.1';
 const PRECACHE      = `ishfadi-precache-${CACHE_VERSION}`;
 const RUNTIME       = `ishfadi-runtime-${CACHE_VERSION}`;
 const OFFLINE_URL   = '/offline.html';

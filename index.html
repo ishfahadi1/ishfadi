@@ -113,6 +113,413 @@
     /* Switching micro-animation */
     .lang-switching main, .lang-switching nav, .lang-switching footer, .lang-switching section { transition: opacity 0.18s ease; }
     .lang-switching .switch-fade { opacity: 0.35; }
+
+    /* ============ Featured Properties (Sprint 1 / Feature 4) ============ */
+    .country-block { margin-bottom: 3.5rem; }
+    .country-block:last-child { margin-bottom: 0; }
+    .country-header { display: flex; align-items: center; gap: 0.85rem; padding-bottom: 0.5rem; }
+    .country-flag {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; line-height: 1;
+      background: linear-gradient(135deg, rgba(30,58,95,0.08), rgba(212,165,116,0.12));
+      border: 1px solid rgba(30,58,95,0.08);
+      flex-shrink: 0;
+    }
+    .country-name {
+      font-size: 1.5rem; font-weight: 800; color: #1e3a5f; letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .country-sub { font-size: 0.85rem; color: #64748b; margin-top: 2px; }
+
+    .city-row { margin-top: 1.25rem; }
+    .city-row-head {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 1rem; margin-bottom: 0.9rem;
+    }
+    .city-title {
+      display: flex; align-items: center; gap: 0.55rem;
+      font-size: 1.1rem; font-weight: 700; color: #0f172a;
+    }
+    .city-title svg { width: 18px; height: 18px; color: #d4a574; }
+    .city-count { font-size: 0.8rem; color: #94a3b8; font-weight: 500; margin-inline-start: 0.4rem; }
+    .view-all-btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.5rem 0.9rem; border-radius: 9999px;
+      background: rgba(30,58,95,0.06); color: #1e3a5f;
+      font-size: 0.82rem; font-weight: 600; border: 1px solid transparent;
+      transition: all 0.2s ease; white-space: nowrap;
+    }
+    .view-all-btn:hover { background: #1e3a5f; color: #fff; transform: translateX(2px); }
+    html[dir="rtl"] .view-all-btn:hover { transform: translateX(-2px); }
+    .view-all-btn svg { width: 14px; height: 14px; transition: transform 0.2s; }
+    .view-all-btn:hover svg { transform: translateX(3px); }
+    html[dir="rtl"] .view-all-btn svg { transform: scaleX(-1); }
+    html[dir="rtl"] .view-all-btn:hover svg { transform: scaleX(-1) translateX(3px); }
+
+    /* Horizontal scrolling carousel */
+    .carousel-wrap { position: relative; }
+    .carousel {
+      display: flex; gap: 1.1rem;
+      overflow-x: auto; overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      padding: 6px 2px 18px;
+      margin: -6px -2px 0;
+    }
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel > .pcard {
+      flex: 0 0 300px; scroll-snap-align: start;
+    }
+    @media (min-width: 640px) { .carousel > .pcard { flex-basis: 320px; } }
+    @media (min-width: 1024px) { .carousel > .pcard { flex-basis: calc((100% - 4.4rem) / 5); min-width: 260px; } }
+
+    .carousel-nav {
+      position: absolute; top: 38%; transform: translateY(-50%);
+      width: 40px; height: 40px; border-radius: 9999px;
+      background: rgba(255,255,255,0.96); color: #1e3a5f;
+      display: none; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.16); border: 1px solid #e2e8f0;
+      cursor: pointer; z-index: 5; transition: all 0.2s;
+    }
+    .carousel-nav:hover { background: #1e3a5f; color: #fff; transform: translateY(-50%) scale(1.08); }
+    .carousel-nav.prev { left: -14px; }
+    .carousel-nav.next { right: -14px; }
+    html[dir="rtl"] .carousel-nav.prev { left: auto; right: -14px; }
+    html[dir="rtl"] .carousel-nav.next { right: auto; left: -14px; }
+    @media (hover: hover) and (min-width: 1024px) {
+      .carousel-wrap:hover .carousel-nav { display: inline-flex; }
+    }
+    .carousel-nav:disabled { opacity: 0; pointer-events: none; }
+
+    /* Premium property card */
+    .pcard {
+      background: #fff; border-radius: 18px; overflow: hidden;
+      border: 1px solid #eef1f5;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+      display: flex; flex-direction: column;
+      transition: transform 0.32s cubic-bezier(.2,.8,.2,1), box-shadow 0.32s, border-color 0.32s;
+      position: relative;
+    }
+    .pcard:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 44px -18px rgba(15,23,42,0.22);
+      border-color: rgba(30,58,95,0.18);
+    }
+    .pcard:focus-within {
+      outline: 2px solid #1e3a5f; outline-offset: 3px;
+    }
+    .pcard-media {
+      position: relative; aspect-ratio: 4 / 3; overflow: hidden;
+      background: linear-gradient(135deg, #e7ecf3, #f7eee2);
+    }
+    .pcard-media img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.6s cubic-bezier(.2,.8,.2,1), opacity 0.4s;
+      opacity: 0;
+    }
+    .pcard-media img.loaded { opacity: 1; }
+    .pcard:hover .pcard-media img { transform: scale(1.06); }
+    .pcard-media::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(15,23,42,0) 55%, rgba(15,23,42,0.35) 100%);
+      pointer-events: none;
+    }
+
+    .pcard-badges {
+      position: absolute; top: 12px; inset-inline-start: 12px;
+      display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100% - 70px);
+      z-index: 2;
+    }
+    .pbadge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 9px; border-radius: 9999px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.02em;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 6px rgba(15,23,42,0.12);
+    }
+    .pbadge-featured { background: #d4a574; color: #fff; }
+    .pbadge-verified { background: rgba(34,197,94,0.95); color: #fff; }
+    .pbadge-new      { background: rgba(30,58,95,0.95); color: #fff; }
+    .pbadge-popular  { background: rgba(239,68,68,0.95); color: #fff; }
+    .pbadge-premium  { background: linear-gradient(135deg, #1e3a5f, #d4a574); color: #fff; }
+
+    .pcard-fav {
+      position: absolute; top: 10px; inset-inline-end: 10px; z-index: 2;
+      width: 36px; height: 36px; border-radius: 9999px;
+      background: rgba(255,255,255,0.92); color: #64748b;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pcard-fav:hover { background: #fff; color: #ef4444; transform: scale(1.08); }
+    .pcard-fav.active { color: #ef4444; background: #fff; }
+    .pcard-fav svg { width: 18px; height: 18px; }
+
+    .pcard-price {
+      position: absolute; bottom: 12px; inset-inline-end: 12px; z-index: 2;
+      padding: 6px 11px; border-radius: 10px;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(6px);
+      font-weight: 800; color: #0f172a; font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.12);
+    }
+    .pcard-price .per { font-size: 0.68rem; font-weight: 500; color: #64748b; margin-inline-start: 2px; }
+
+    .pcard-quick {
+      position: absolute; bottom: 12px; inset-inline-start: 12px; z-index: 2;
+      padding: 6px 11px; border-radius: 9999px;
+      background: rgba(15,23,42,0.78); color: #fff;
+      font-size: 0.72rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 5px;
+      opacity: 0; transform: translateY(6px); transition: all 0.25s;
+      border: none; cursor: pointer; backdrop-filter: blur(4px);
+    }
+    .pcard:hover .pcard-quick, .pcard:focus-within .pcard-quick { opacity: 1; transform: translateY(0); }
+    .pcard-quick:hover { background: #1e3a5f; }
+    .pcard-quick svg { width: 13px; height: 13px; }
+
+    .pcard-body { padding: 14px 15px 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .pcard-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .pcard-cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 9999px;
+      background: rgba(30,58,95,0.07); color: #1e3a5f;
+      font-size: 0.7rem; font-weight: 600; text-transform: capitalize;
+    }
+    .pcard-rating {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.78rem; font-weight: 700; color: #0f172a;
+    }
+    .pcard-rating svg { width: 13px; height: 13px; color: #f59e0b; }
+    .pcard-rating .rc { font-weight: 500; color: #94a3b8; font-size: 0.72rem; }
+
+    .pcard-title {
+      font-size: 0.98rem; font-weight: 700; color: #0f172a;
+      line-height: 1.3; letter-spacing: -0.005em;
+      display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pcard-loc {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.8rem; color: #64748b; min-width: 0;
+    }
+    .pcard-loc svg { width: 13px; height: 13px; color: #d4a574; flex-shrink: 0; }
+    .pcard-loc span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .pcard-host {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.74rem; color: #475569; margin-top: 2px;
+    }
+    .pcard-host .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+    }
+    .pcard-host .htype {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-weight: 600; color: #1e3a5f;
+    }
+
+    .pcard-actions {
+      margin-top: auto; padding-top: 10px;
+      display: grid; grid-template-columns: 1fr auto; gap: 8px;
+      border-top: 1px dashed #eef1f5;
+    }
+    .pcard-details {
+      padding: 8px 12px; border-radius: 10px;
+      background: #1e3a5f; color: #fff;
+      font-size: 0.82rem; font-weight: 600;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .pcard-details:hover { background: #15294a; }
+    .pcard-contact {
+      padding: 8px 10px; border-radius: 10px;
+      border: 1px solid #e2e8f0; color: #1e3a5f; background: #fff;
+      font-size: 0.82rem; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .pcard-contact:hover { background: rgba(30,58,95,0.05); border-color: #1e3a5f; }
+    .pcard-contact svg { width: 14px; height: 14px; }
+
+    /* Search-results fallback grid */
+    .results-grid {
+      display: grid; gap: 1.25rem;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    @media (min-width: 640px) { .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1024px) { .results-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+    /* Mobile niceties */
+    @media (max-width: 640px) {
+      .country-name { font-size: 1.25rem; }
+      .city-row-head { align-items: center; }
+      .carousel { gap: 0.85rem; padding-inline: 4px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pcard, .pcard-media img, .carousel { transition: none !important; }
+      .pcard:hover { transform: none; }
+    }
+  
+    /* ============ Join ISHFADI / Onboarding (Sprint 1 / Feature 5) ============ */
+    .join-bg {
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f8fafc 60%, #ffffff 100%),
+        url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 40m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0' fill='%231e3a5f' fill-opacity='0.05'/%3E%3C/svg%3E");
+    }
+    .join-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0.9rem; border-radius: 9999px;
+      background: rgba(30,58,95,0.08); color: #1e3a5f;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .role-grid {
+      display: grid; gap: 1.5rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px) { .role-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (min-width: 1024px) { .role-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+
+    .role-card {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid #eef1f5;
+      border-radius: 22px;
+      padding: 2rem 1.75rem 1.75rem;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+      display: flex; flex-direction: column; gap: 1.1rem;
+      transition: transform 0.32s cubic-bezier(.2,.8,.2,1), box-shadow 0.32s, border-color 0.32s;
+      overflow: hidden;
+    }
+    .role-card::before {
+      content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+      background: linear-gradient(90deg, #1e3a5f, #d4a574);
+      opacity: 0.85;
+    }
+    .role-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 26px 50px -22px rgba(15,23,42,0.25);
+      border-color: rgba(30,58,95,0.18);
+    }
+    .role-card:focus-within { outline: 2px solid #1e3a5f; outline-offset: 3px; }
+    .role-icon {
+      width: 64px; height: 64px; border-radius: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 2rem; line-height: 1;
+      background: linear-gradient(135deg, rgba(30,58,95,0.1), rgba(212,165,116,0.18));
+      border: 1px solid rgba(30,58,95,0.08);
+    }
+    .role-title {
+      font-size: 1.25rem; font-weight: 800; color: #0f172a;
+      letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.55rem;
+    }
+    .role-desc { color: #475569; font-size: 0.94rem; line-height: 1.55; flex: 1; }
+    .role-actions { display: flex; flex-direction: column; gap: 0.55rem; }
+    .role-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.78rem 1rem; border-radius: 12px;
+      font-weight: 700; font-size: 0.92rem;
+      transition: all 0.2s ease;
+      border: 1px solid transparent; cursor: pointer; text-decoration: none;
+    }
+    .role-btn-primary { background: #1e3a5f; color: #fff; }
+    .role-btn-primary:hover { background: #16304f; transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(30,58,95,0.55); }
+    .role-btn-secondary { background: #d4a574; color: #fff; }
+    .role-btn-secondary:hover { background: #c49560; transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,165,116,0.55); }
+    .role-btn-ghost {
+      background: transparent; color: #1e3a5f; border-color: rgba(30,58,95,0.18);
+    }
+    .role-btn-ghost:hover { background: rgba(30,58,95,0.06); border-color: #1e3a5f; }
+    .role-btn-link {
+      background: transparent; color: #1e3a5f; padding: 0.45rem 0.6rem;
+      font-weight: 600; font-size: 0.86rem;
+    }
+    .role-btn-link:hover { color: #d4a574; }
+    .role-btn:focus-visible { outline: 2px solid #1e3a5f; outline-offset: 2px; }
+
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.25rem 0.55rem; border-radius: 9999px;
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .role-badge-business { background: rgba(30,58,95,0.1); color: #1e3a5f; }
+    .role-badge-career   { background: rgba(212,165,116,0.18); color: #a07238; }
+
+    /* Community CTA strip */
+    .community-strip {
+      background: linear-gradient(135deg, rgba(30,58,95,0.04), rgba(212,165,116,0.08));
+      border-top: 1px solid rgba(30,58,95,0.06);
+      border-bottom: 1px solid rgba(30,58,95,0.06);
+    }
+    .community-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.15rem; border-radius: 9999px;
+      font-weight: 700; font-size: 0.88rem;
+      transition: all 0.2s ease; cursor: pointer; text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .community-btn-primary { background: #1e3a5f; color: #fff; }
+    .community-btn-primary:hover { background: #16304f; transform: translateY(-1px); }
+    .community-btn-secondary { background: #d4a574; color: #fff; }
+    .community-btn-secondary:hover { background: #c49560; transform: translateY(-1px); }
+    .community-btn-outline { background: transparent; color: #1e3a5f; border-color: rgba(30,58,95,0.25); }
+    .community-btn-outline:hover { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+
+    /* Footer enhancements */
+    .footer-grid-enhanced { display: grid; gap: 2rem; grid-template-columns: 1fr; }
+    @media (min-width: 640px) { .footer-grid-enhanced { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (min-width: 1024px) { .footer-grid-enhanced { grid-template-columns: repeat(5, minmax(0,1fr)); } }
+    .footer-heading { font-weight: 700; color: #fff; margin-bottom: 1rem; font-size: 0.95rem; letter-spacing: 0.02em; }
+    .footer-list { display: flex; flex-direction: column; gap: 0.55rem; }
+    .footer-list a {
+      color: rgba(255,255,255,0.7); font-size: 0.9rem;
+      transition: color 0.18s ease, transform 0.18s ease;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .footer-list a:hover { color: #fff; transform: translateX(2px); }
+    html[dir="rtl"] .footer-list a:hover { transform: translateX(-2px); }
+    .footer-list a:focus-visible { outline: 2px solid #d4a574; outline-offset: 2px; border-radius: 4px; }
+
+    .social-grid {
+      display: grid; gap: 0.6rem;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      max-width: 100%;
+    }
+    @media (min-width: 1024px) { .social-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    .social-link {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(255,255,255,0.08); color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+    }
+    .social-link:hover { background: #d4a574; border-color: #d4a574; transform: translateY(-2px); }
+    .social-link:focus-visible { outline: 2px solid #d4a574; outline-offset: 2px; }
+    .social-link svg { width: 18px; height: 18px; }
+
+    /* Sign-in choice modal */
+    .choice-card {
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      width: 100%; padding: 1rem 1.1rem; border-radius: 14px;
+      border: 1px solid #e2e8f0; background: #fff; text-align: start;
+      cursor: pointer; transition: all 0.18s ease;
+    }
+    .choice-card:hover, .choice-card:focus-visible {
+      border-color: #1e3a5f; background: rgba(30,58,95,0.04); outline: none;
+      transform: translateY(-1px);
+    }
+    .choice-card .ci {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(30,58,95,0.1), rgba(212,165,116,0.18));
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .choice-card .ct { font-weight: 700; color: #0f172a; font-size: 0.98rem; }
+    .choice-card .cs { color: #64748b; font-size: 0.82rem; margin-top: 2px; line-height: 1.4; }
+
   </style>
 
   <!-- ============ PWA META ============ -->
@@ -245,7 +652,7 @@
 
         <button onclick="openModal('authModal')" class="hidden sm:inline-flex px-4 py-2 text-primary hover:bg-primary/5 rounded-lg font-medium transition-colors" data-i18n="nav.signin">Sign In</button>
         <button id="pwaInstallBtn" type="button" onclick="window.__pwa && window.__pwa.promptInstall()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors" aria-label="Install ISHFADI app"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg><span>Install</span></button>
-        <button onclick="openModal('authModal'); setAuthMode('signup')" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.getStarted">Get Started</button>
+        <button onclick="openWelcomeOnboard(this)" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.getStarted" aria-haspopup="dialog" aria-controls="welcomeOnboardModal">Get Started</button>
 
         <!-- Mobile menu button -->
         <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
@@ -391,17 +798,39 @@
     </div>
   </section>
 
-  <!-- Featured Listings -->
-  <section id="listings" class="py-16 bg-white">
+  <!-- Featured Properties -->
+  <section id="listings" class="py-16 bg-white" aria-labelledby="featuredPropertiesTitle">
     <div class="container mx-auto px-4">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4" data-i18n="listings.title">Featured Properties</h2>
-        <p class="text-gray-600" data-i18n="listings.subtitle">Handpicked listings from verified hosts</p>
+      <div class="text-center mb-12 max-w-2xl mx-auto">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-semibold uppercase tracking-wider mb-3">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.539 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.783.57-1.838-.196-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+          <span>Discover</span>
+        </span>
+        <h2 id="featuredPropertiesTitle" class="text-3xl md:text-4xl font-bold text-gray-800 mb-3" data-i18n="listings.title">Featured Properties</h2>
+        <p class="text-gray-600" data-i18n="listings.subtitle">Handpicked listings from verified hosts around the world</p>
       </div>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="listingsGrid"></div>
+
+      <!-- Grouped: Country → City → Carousel (rendered by JS) -->
+      <div id="featuredCountries" class="space-y-2" aria-live="polite"></div>
+
+      <!-- Back to Featured Properties (shown when viewing all for a city) -->
+      <div id="backToFeaturedWrap" class="hidden mb-6">
+        <button type="button" id="backToFeaturedBtn" onclick="backToFeatured()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/20 text-primary font-semibold hover:bg-primary hover:text-white transition-colors"
+          aria-label="Back to Featured Properties">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          <span>Back to Featured Properties</span>
+        </button>
+        <p id="backToFeaturedLabel" class="text-sm text-gray-500 mt-2"></p>
+      </div>
+
+      <!-- Flat results grid (used when Hero Search is active) -->
+      <div id="listingsGrid" class="results-grid hidden" role="list"></div>
+
       <p id="listingsEmpty" class="hidden text-center text-gray-500 py-12" data-i18n="listings.empty">No properties match your search. Try different filters.</p>
     </div>
   </section>
+
 
   <!-- Features -->
   <section id="features" class="features-bg py-16">
@@ -471,34 +900,76 @@
   <!-- Footer -->
   <footer id="contact" class="bg-primary text-white py-12">
     <div class="container mx-auto px-4">
-      <div class="grid md:grid-cols-4 gap-8 mb-8">
+      <div class="footer-grid-enhanced mb-10">
         <div>
           <h3 class="text-xl font-bold mb-4">ISHFADI</h3>
-          <p class="text-white/70" data-i18n="footer.about">Find your perfect place anywhere in the world. Trusted by thousands globally.</p>
+          <p class="text-white/70 text-sm leading-relaxed" data-i18n="footer.about">Find your perfect place anywhere in the world. Trusted by thousands globally.</p>
+          <div class="mt-5">
+            <p class="footer-heading" id="follow-ishfadi" style="margin-bottom:0.6rem;">Follow ISHFADI</p>
+            <div class="social-grid" role="list" aria-label="Follow ISHFADI on social media">
+              <a href="https://facebook.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>
+              </a>
+              <a href="https://instagram.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram" role="listitem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+              </a>
+              <a href="https://tiktok.com/@ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="TikTok" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.4 1.9 1.6 3.4 3.5 3.8v2.6c-1.4 0-2.7-.4-3.9-1.1v6.4a5.7 5.7 0 1 1-5.7-5.7c.3 0 .7 0 1 .1V12c-.3-.1-.6-.2-1-.2a2.9 2.9 0 1 0 2.9 2.9V3h3.2z"/></svg>
+              </a>
+              <a href="https://x.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="X (Twitter)" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 3H22l-7.4 8.5L23 21h-6.8l-5.3-6.5L4.6 21H1.5l7.9-9.1L1 3h7l4.8 6 6.1-6zm-2.4 16h2L7.7 5H5.6l10.9 14z"/></svg>
+              </a>
+              <a href="https://linkedin.com/company/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.1c.5-.9 1.8-1.9 3.7-1.9 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4V9z"/></svg>
+              </a>
+              <a href="https://youtube.com/@ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="YouTube" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 12s0-3.5-.4-5.2a2.8 2.8 0 0 0-2-2C18.8 4.4 12 4.4 12 4.4s-6.8 0-8.6.4a2.8 2.8 0 0 0-2 2C1 8.5 1 12 1 12s0 3.5.4 5.2a2.8 2.8 0 0 0 2 2c1.8.4 8.6.4 8.6.4s6.8 0 8.6-.4a2.8 2.8 0 0 0 2-2C23 15.5 23 12 23 12zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+              </a>
+              <a href="https://t.me/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Telegram" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.8-.5l2.4-2.4 4.9 3.6c.9.5 1.5.2 1.8-.8l3.3-15.4c.3-1.3-.4-1.9-1.7-1.4z"/></svg>
+              </a>
+              <a href="https://chat.whatsapp.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="WhatsApp Community" role="listitem">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A10.4 10.4 0 0 0 3.4 16.2L2 22l5.9-1.5a10.4 10.4 0 0 0 12.6-17zM12 20.1a8.5 8.5 0 0 1-4.3-1.2l-.3-.2-3.5.9.9-3.4-.2-.3a8.5 8.5 0 1 1 7.4 4.2zm4.7-6.4c-.3-.1-1.5-.7-1.8-.8-.2-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a7 7 0 0 1-2-1.3 7.7 7.7 0 0 1-1.4-1.8c-.1-.3 0-.4.1-.5l.4-.5c.1-.1.2-.3.2-.4 0-.2 0-.3 0-.5 0-.1-.6-1.5-.8-2-.2-.5-.5-.5-.6-.5h-.5c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.2 0 1.3.9 2.5 1 2.7.1.1 1.8 2.8 4.4 3.9 2.6 1 2.6.7 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.1-.5-.3z"/></svg>
+              </a>
+            </div>
+          </div>
         </div>
+
         <div>
-          <h4 class="font-semibold mb-4" data-i18n="footer.quickLinks">Quick Links</h4>
-          <ul class="space-y-2 text-white/70">
-            <li><a href="#" class="hover:text-white transition-colors" data-i18n="nav.home">Home</a></li>
-            <li><a href="#listings" class="hover:text-white transition-colors" data-i18n="footer.exploreListings">Explore Listings</a></li>
-            <li><a href="seller.html" class="hover:text-white transition-colors" data-i18n="footer.hostDashboard">Host Dashboard</a></li>
-            <li><a href="buyer.html" class="hover:text-white transition-colors" data-i18n="footer.seekerDashboard">Seeker Dashboard</a></li>
+          <h4 class="footer-heading" data-i18n="footer.quickLinks">Quick Links</h4>
+          <ul class="footer-list">
+            <li><a href="#" data-i18n="nav.home">Home</a></li>
+            <li><a href="#listings" data-i18n="footer.exploreListings">Explore Listings</a></li>
+            <li><a href="become-agent.html">Become an Agent</a></li>
           </ul>
         </div>
+
         <div>
-          <h4 class="font-semibold mb-4" data-i18n="footer.resources">Resources</h4>
-          <ul class="space-y-2 text-white/70">
-            <li><a href="help-center.html" class="hover:text-white transition-colors" data-i18n="footer.helpCenter">Help Center</a></li>
-            <li><a href="safety-tips.html" class="hover:text-white transition-colors" data-i18n="footer.safetyTips">Safety Tips</a></li>
-            <li><a href="terms-of-service.html" class="hover:text-white transition-colors" data-i18n="footer.terms">Terms of Service</a></li>
-            <li><a href="privacy-policy.html" class="hover:text-white transition-colors" data-i18n="footer.privacy">Privacy Policy</a></li>
+          <h4 class="footer-heading">Dashboards</h4>
+          <ul class="footer-list">
+            <li><a href="buyer.html" data-dashboard="buyer">Buyer Dashboard</a></li>
+            <li><a href="seller.html" data-dashboard="seller">Seller Dashboard</a></li>
+            <li><a href="agent.html" data-dashboard="agent">Agent Dashboard</a></li>
+            <li><a href="admin.html" data-dashboard="admin">Admin Dashboard</a></li>
+            <li><a href="waiting-list.html" data-dashboard="waiting-list">Waiting List</a></li>
           </ul>
         </div>
+
         <div>
-          <h4 class="font-semibold mb-4" data-i18n="footer.contact">Contact</h4>
-          <ul class="space-y-2 text-white/70">
-            <li>support@ishfadi.com</li>
-            <li>+1 (555) 123-4567</li>
+          <h4 class="footer-heading" data-i18n="footer.resources">Resources</h4>
+          <ul class="footer-list">
+            <li><a href="help-center.html" data-i18n="footer.helpCenter">Help Center</a></li>
+            <li><a href="safety-tips.html" data-i18n="footer.safetyTips">Safety Tips</a></li>
+            <li><a href="terms-of-service.html" data-i18n="footer.terms">Terms of Service</a></li>
+            <li><a href="privacy-policy.html" data-i18n="footer.privacy">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading" data-i18n="footer.contact">Contact</h4>
+          <ul class="footer-list">
+            <li><a href="mailto:support@ishfadi.com">support@ishfadi.com</a></li>
+            <li><a href="tel:+15551234567">+1 (555) 123-4567</a></li>
           </ul>
         </div>
       </div>
@@ -991,7 +1462,7 @@
         applyDOMTranslations();
         renderLanguageSwitchers();
         renderTrending();
-        renderListings(window.__lastFiltered || window.LISTINGS);
+        renderListings(window.__lastFiltered && window.__lastFiltered !== window.LISTINGS ? window.__lastFiltered : undefined);
 
         fadeTargets.forEach(n => n.classList.remove('switch-fade'));
         document.body.classList.remove('lang-switching');
@@ -1075,12 +1546,36 @@
 
     // ---------- Listings data ----------
     const LISTINGS = [
-      { id: 1, title: 'Modern Downtown Apartment', type: 'apartment', price: 1500, city: 'New York', country: 'USA', verified: true, featured: true, host: 'John Doe', amenities: ['WiFi', 'Kitchen', 'Washer', 'AC'], lat: 40.7128, lng: -74.0060 },
-      { id: 2, title: 'Cozy Studio Near Beach', type: 'studio', price: 800, city: 'Miami', country: 'USA', verified: true, featured: false, host: 'Sarah Smith', amenities: ['WiFi', 'Pool', 'Parking'], lat: 25.7617, lng: -80.1918 },
-      { id: 3, title: 'Spacious Family House', type: 'house', price: 2500, city: 'London', country: 'UK', verified: true, featured: true, host: 'James Wilson', amenities: ['WiFi', 'Garden', 'Garage', 'Gym'], lat: 51.5074, lng: -0.1278 },
-      { id: 4, title: 'Private Room in Shared Flat', type: 'room', price: 450, city: 'Berlin', country: 'Germany', verified: false, featured: false, host: 'Emma Brown', amenities: ['WiFi', 'Kitchen'], lat: 52.5200, lng: 13.4050 },
-      { id: 5, title: 'Luxury Penthouse Suite', type: 'apartment', price: 3500, city: 'Dubai', country: 'UAE', verified: true, featured: true, host: 'Ahmed Hassan', amenities: ['WiFi', 'Pool', 'Gym', 'Concierge'], lat: 25.2048, lng: 55.2708 },
-      { id: 6, title: 'Charming Cottage', type: 'house', price: 1200, city: 'Paris', country: 'France', verified: true, featured: false, host: 'Marie Dupont', amenities: ['WiFi', 'Garden', 'Fireplace'], lat: 48.8566, lng: 2.3522 }
+      // 🇷🇼 Rwanda — Kigali
+      { id: 1, title: 'Modern Kigali Heights Apartment', type: 'apartment', category: 'Apartment', price: 950, city: 'Kigali', country: 'Rwanda', verified: true, featured: true, isNew: false, isPopular: true, isPremium: false, hostType: 'company', rating: 4.9, reviews: 128, host: 'Kivu Stays', amenities: ['WiFi', 'Kitchen', 'AC', 'Parking'], img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop', lat: -1.9536, lng: 30.0606 },
+      { id: 2, title: 'Cozy Hilltop Studio in Nyamirambo', type: 'studio', category: 'Studio', price: 480, city: 'Kigali', country: 'Rwanda', verified: true, featured: false, isNew: true, isPopular: false, hostType: 'individual', rating: 4.7, reviews: 42, host: 'Aline Uwase', amenities: ['WiFi', 'Kitchen'], img: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&h=600&fit=crop', lat: -1.9706, lng: 30.0438 },
+      { id: 3, title: 'Family Villa with Garden', type: 'house', category: 'Villa', price: 1800, city: 'Kigali', country: 'Rwanda', verified: true, featured: true, isPremium: true, hostType: 'agent', rating: 4.95, reviews: 76, host: 'Premier Realty', amenities: ['WiFi', 'Garden', 'Garage', 'Pool'], img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&h=600&fit=crop', lat: -1.9441, lng: 30.0619 },
+      { id: 4, title: 'Light-filled Loft near Convention Center', type: 'apartment', category: 'Loft', price: 1100, city: 'Kigali', country: 'Rwanda', verified: true, featured: false, isPopular: true, hostType: 'company', rating: 4.8, reviews: 91, host: 'Kigali Living', amenities: ['WiFi', 'Gym', 'AC'], img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop', lat: -1.9533, lng: 30.0928 },
+      { id: 5, title: 'Quiet Room near Kimihurura', type: 'room', category: 'Private Room', price: 320, city: 'Kigali', country: 'Rwanda', verified: false, featured: false, isNew: true, hostType: 'individual', rating: 4.6, reviews: 18, host: 'Jean Habimana', amenities: ['WiFi', 'Kitchen'], img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop', lat: -1.9510, lng: 30.0855 },
+      { id: 21, title: 'Skyline Penthouse Kacyiru', type: 'apartment', category: 'Penthouse', price: 2400, city: 'Kigali', country: 'Rwanda', verified: true, featured: true, isPremium: true, hostType: 'agent', rating: 5.0, reviews: 34, host: 'Skyline Agents', amenities: ['WiFi', 'Pool', 'Concierge'], img: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&h=600&fit=crop', lat: -1.9450, lng: 30.0820 },
+
+      // 🇰🇪 Kenya — Nairobi
+      { id: 6, title: 'Westlands Glass Tower Apartment', type: 'apartment', category: 'Apartment', price: 1300, city: 'Nairobi', country: 'Kenya', verified: true, featured: true, isPopular: true, hostType: 'company', rating: 4.85, reviews: 211, host: 'Nairobi Homes', amenities: ['WiFi', 'Gym', 'Pool', 'AC'], img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop', lat: -1.2657, lng: 36.8030 },
+      { id: 7, title: 'Karen Garden Cottage', type: 'house', category: 'Cottage', price: 1700, city: 'Nairobi', country: 'Kenya', verified: true, featured: false, isPremium: true, hostType: 'individual', rating: 4.9, reviews: 64, host: 'Grace Mwangi', amenities: ['WiFi', 'Garden', 'Fireplace'], img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&h=600&fit=crop', lat: -1.3197, lng: 36.7076 },
+      { id: 8, title: 'Kilimani Modern Studio', type: 'studio', category: 'Studio', price: 620, city: 'Nairobi', country: 'Kenya', verified: true, featured: false, isNew: true, hostType: 'individual', rating: 4.7, reviews: 39, host: 'Daniel Otieno', amenities: ['WiFi', 'Kitchen'], img: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800&h=600&fit=crop', lat: -1.2906, lng: 36.7833 },
+      { id: 9, title: 'Lavington Family Home', type: 'house', category: 'Family Home', price: 2100, city: 'Nairobi', country: 'Kenya', verified: true, featured: true, hostType: 'agent', rating: 4.88, reviews: 102, host: 'Acacia Realty', amenities: ['WiFi', 'Garden', 'Garage', 'Pool'], img: 'https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=800&h=600&fit=crop', lat: -1.2790, lng: 36.7700 },
+      { id: 10, title: 'Riverside Drive Loft', type: 'apartment', category: 'Loft', price: 1450, city: 'Nairobi', country: 'Kenya', verified: true, featured: false, isPopular: true, hostType: 'company', rating: 4.75, reviews: 88, host: 'Riverside Co.', amenities: ['WiFi', 'Gym', 'AC'], img: 'https://images.unsplash.com/photo-1502672023488-70e25813eb80?w=800&h=600&fit=crop', lat: -1.2740, lng: 36.8050 },
+
+      // 🇰🇪 Kenya — Mombasa
+      { id: 11, title: 'Diani Beachfront Villa', type: 'house', category: 'Beach Villa', price: 2200, city: 'Mombasa', country: 'Kenya', verified: true, featured: true, isPremium: true, hostType: 'agent', rating: 4.95, reviews: 142, host: 'Coast Premier', amenities: ['WiFi', 'Pool', 'Beach Access'], img: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&h=600&fit=crop', lat: -4.0435, lng: 39.6682 },
+      { id: 12, title: 'Old Town Heritage Apartment', type: 'apartment', category: 'Heritage', price: 720, city: 'Mombasa', country: 'Kenya', verified: true, featured: false, isNew: true, hostType: 'individual', rating: 4.6, reviews: 24, host: 'Asha Khamis', amenities: ['WiFi', 'AC'], img: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop', lat: -4.0625, lng: 39.6772 },
+      { id: 13, title: 'Nyali Pool Suite', type: 'apartment', category: 'Suite', price: 1350, city: 'Mombasa', country: 'Kenya', verified: true, featured: true, isPopular: true, hostType: 'company', rating: 4.82, reviews: 76, host: 'Indian Ocean Stays', amenities: ['WiFi', 'Pool', 'Gym'], img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop', lat: -4.0270, lng: 39.7196 },
+
+      // 🇺🇬 Uganda — Kampala
+      { id: 14, title: 'Kololo Hill View Apartment', type: 'apartment', category: 'Apartment', price: 1050, city: 'Kampala', country: 'Uganda', verified: true, featured: true, hostType: 'company', rating: 4.78, reviews: 67, host: 'Pearl Homes', amenities: ['WiFi', 'Pool', 'AC'], img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop', lat: 0.3408, lng: 32.5825 },
+      { id: 15, title: 'Bugolobi Garden Studio', type: 'studio', category: 'Studio', price: 510, city: 'Kampala', country: 'Uganda', verified: true, featured: false, isNew: true, hostType: 'individual', rating: 4.65, reviews: 21, host: 'Patrick Okello', amenities: ['WiFi', 'Garden'], img: 'https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&h=600&fit=crop', lat: 0.3098, lng: 32.6188 },
+      { id: 16, title: 'Naguru Family Townhouse', type: 'house', category: 'Townhouse', price: 1600, city: 'Kampala', country: 'Uganda', verified: true, featured: true, isPopular: true, hostType: 'agent', rating: 4.84, reviews: 48, host: 'Crane Realty', amenities: ['WiFi', 'Garage', 'Garden'], img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop', lat: 0.3294, lng: 32.6055 },
+
+      // 🇦🇪 UAE — Dubai
+      { id: 17, title: 'Downtown Luxury Penthouse', type: 'apartment', category: 'Penthouse', price: 4200, city: 'Dubai', country: 'UAE', verified: true, featured: true, isPremium: true, hostType: 'agent', rating: 4.97, reviews: 188, host: 'Burj Realty', amenities: ['WiFi', 'Pool', 'Gym', 'Concierge'], img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop', lat: 25.1972, lng: 55.2744 },
+      { id: 18, title: 'Marina View Suite', type: 'apartment', category: 'Suite', price: 2600, city: 'Dubai', country: 'UAE', verified: true, featured: true, isPopular: true, hostType: 'company', rating: 4.9, reviews: 145, host: 'Marina Living', amenities: ['WiFi', 'Pool', 'Gym'], img: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800&h=600&fit=crop', lat: 25.0805, lng: 55.1403 },
+      { id: 19, title: 'JBR Beach Studio', type: 'studio', category: 'Studio', price: 1400, city: 'Dubai', country: 'UAE', verified: true, featured: false, isNew: true, hostType: 'individual', rating: 4.75, reviews: 53, host: 'Layla Hassan', amenities: ['WiFi', 'Beach Access', 'AC'], img: 'https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=800&h=600&fit=crop', lat: 25.0795, lng: 55.1336 },
+      { id: 20, title: 'Palm Jumeirah Villa', type: 'house', category: 'Villa', price: 5800, city: 'Dubai', country: 'UAE', verified: true, featured: true, isPremium: true, hostType: 'agent', rating: 5.0, reviews: 73, host: 'Palm Estates', amenities: ['WiFi', 'Pool', 'Beach Access', 'Concierge'], img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop', lat: 25.1124, lng: 55.1390 }
     ];
     window.LISTINGS = LISTINGS;
     window.__lastFiltered = LISTINGS;
@@ -1121,44 +1616,208 @@
       return ({ house: 'bg-primary/10 text-primary', apartment: 'bg-secondary/10 text-secondary', room: 'bg-success/10 text-success', studio: 'bg-warning/10 text-warning' })[type] || 'bg-primary/10 text-primary';
     }
 
+    // ---------- Featured Properties: country → city → carousel ----------
+    const COUNTRY_FLAGS = {
+      'Rwanda': '🇷🇼', 'Kenya': '🇰🇪', 'Uganda': '🇺🇬', 'Tanzania': '🇹🇿',
+      'UAE': '🇦🇪', 'USA': '🇺🇸', 'UK': '🇬🇧', 'France': '🇫🇷',
+      'Germany': '🇩🇪', 'Japan': '🇯🇵', 'Saudi Arabia': '🇸🇦', 'Egypt': '🇪🇬'
+    };
+    const MAX_CARDS_PER_CITY = 5;
+
+    function flagFor(country) { return COUNTRY_FLAGS[country] || '🌍'; }
+
+    function hostTypeBadge(type) {
+      const map = {
+        company:    { label: 'Company Host',    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M9 17h6"/></svg>' },
+        individual: { label: 'Individual Host', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>' },
+        agent:      { label: 'Agent Verified',  icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' }
+      };
+      return map[type] || map.individual;
+    }
+
+    function statusBadges(l) {
+      const out = [];
+      if (l.featured)  out.push(`<span class="pbadge pbadge-featured">★ ${t('badge.featured').replace(/^[^\w\u0600-\u06FF]+/, '')}</span>`);
+      if (l.isPremium) out.push(`<span class="pbadge pbadge-premium">◆ Premium</span>`);
+      if (l.isNew)     out.push(`<span class="pbadge pbadge-new">New</span>`);
+      if (l.isPopular) out.push(`<span class="pbadge pbadge-popular">🔥 Popular</span>`);
+      if (l.verified && !l.featured) out.push(`<span class="pbadge pbadge-verified">✓ ${t('badge.verified').replace(/^[^\w\u0600-\u06FF]+/, '')}</span>`);
+      return out.slice(0, 3).join('');
+    }
+
+    function propertyCard(listing) {
+      const ht = hostTypeBadge(listing.hostType);
+      const cat = listing.category || listing.type;
+      const img = listing.img || `https://source.unsplash.com/640x480/?${encodeURIComponent(listing.type + ',home')}`;
+      const rating = (listing.rating || 4.7).toFixed(2).replace(/\.?0+$/, '');
+      const reviews = listing.reviews || 0;
+      return `
+        <article class="pcard" role="listitem" aria-label="${translateListingTitle(listing.title)}" tabindex="0"
+                 onkeydown="if(event.key==='Enter'){openListingModal(${listing.id})}">
+          <div class="pcard-media">
+            <img loading="lazy" decoding="async" src="${img}" alt="${translateListingTitle(listing.title)} — ${translateCity(listing.city)}"
+                 onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+            <div class="pcard-badges">${statusBadges(listing)}</div>
+            <button class="pcard-fav" type="button" aria-label="Save to favorites"
+                    onclick="event.stopPropagation(); this.classList.toggle('active')">
+              <svg fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+            </button>
+            <div class="pcard-price">$${listing.price.toLocaleString()}<span class="per">${t('listings.perMonth')}</span></div>
+            <button class="pcard-quick" type="button" onclick="event.stopPropagation(); openListingModal(${listing.id})" aria-label="Quick view">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              Quick view
+            </button>
+          </div>
+          <div class="pcard-body">
+            <div class="pcard-meta">
+              <span class="pcard-cat">${translateType(listing.type) || cat}</span>
+              <span class="pcard-rating" aria-label="Rating ${rating} out of 5">
+                <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.539 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.783.57-1.838-.196-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                ${rating}<span class="rc">(${reviews})</span>
+              </span>
+            </div>
+            <h3 class="pcard-title">${translateListingTitle(listing.title)}</h3>
+            <p class="pcard-loc">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+              <span>${translateCity(listing.city)}, ${translateCountry(listing.country)}</span>
+            </p>
+            <div class="pcard-host">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="htype">${ht.icon}${ht.label}</span>
+            </div>
+            <div class="pcard-actions">
+              <button type="button" class="pcard-details" onclick="openListingModal(${listing.id})">View Details</button>
+              <button type="button" class="pcard-contact" onclick="openInquiry(${listing.id})" aria-label="${t('listings.contact')}" title="${t('listings.contact')}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function groupListings(list) {
+      // country -> city -> [listings]
+      const tree = new Map();
+      list.forEach(l => {
+        if (!tree.has(l.country)) tree.set(l.country, new Map());
+        const cities = tree.get(l.country);
+        if (!cities.has(l.city)) cities.set(l.city, []);
+        cities.get(l.city).push(l);
+      });
+      return tree;
+    }
+
+    function renderFeaturedCountries() {
+      const root = document.getElementById('featuredCountries');
+      if (!root) return;
+      const tree = groupListings(LISTINGS);
+      const blocks = [];
+      tree.forEach((cities, country) => {
+        const cityBlocks = [];
+        cities.forEach((items, city) => {
+          const shown = items.slice(0, MAX_CARDS_PER_CITY);
+          const hasMore = items.length > MAX_CARDS_PER_CITY;
+          const carouselId = `car-${country}-${city}`.replace(/\s+/g, '-');
+          cityBlocks.push(`
+            <div class="city-row">
+              <div class="city-row-head">
+                <h4 class="city-title">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+                  ${translateCity(city)}
+                  <span class="city-count">${items.length} ${items.length === 1 ? 'property' : 'properties'}</span>
+                </h4>
+                <button type="button" class="view-all-btn" onclick="searchByLocation('${city.replace(/'/g, "\\'")}')" aria-label="View all properties in ${city}">
+                  View All
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div class="carousel-wrap">
+                <button type="button" class="carousel-nav prev" aria-label="Scroll left" onclick="scrollCarousel('${carouselId}', -1)">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="carousel" id="${carouselId}" role="list" tabindex="0" aria-label="${translateCity(city)} featured properties">
+                  ${shown.map(propertyCard).join('')}
+                  ${hasMore ? `
+                    <article class="pcard" role="listitem" style="background:linear-gradient(135deg,#1e3a5f,#2d4a6f);color:#fff;align-items:center;justify-content:center;text-align:center;cursor:pointer;" onclick="searchByLocation('${city.replace(/'/g, "\\'")}')">
+                      <div class="pcard-body" style="justify-content:center;align-items:center;gap:12px;">
+                        <div style="font-size:2rem;">+${items.length - MAX_CARDS_PER_CITY}</div>
+                        <div style="font-weight:700;">More in ${translateCity(city)}</div>
+                        <div style="opacity:.7;font-size:.8rem;">Tap to view all</div>
+                      </div>
+                    </article>` : ''}
+                </div>
+                <button type="button" class="carousel-nav next" aria-label="Scroll right" onclick="scrollCarousel('${carouselId}', 1)">
+                  <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          `);
+        });
+        blocks.push(`
+          <section class="country-block" aria-label="${translateCountry(country)} properties">
+            <header class="country-header">
+              <span class="country-flag" aria-hidden="true">${flagFor(country)}</span>
+              <div>
+                <div class="country-name">${translateCountry(country)}</div>
+                <div class="country-sub">${cities.size} ${cities.size === 1 ? 'city' : 'cities'} · ${[...cities.values()].reduce((s,a)=>s+a.length,0)} properties</div>
+              </div>
+            </header>
+            ${cityBlocks.join('')}
+          </section>
+        `);
+      });
+      root.innerHTML = blocks.join('');
+    }
+
+    window.scrollCarousel = function (id, dir) {
+      const el = document.getElementById(id); if (!el) return;
+      const card = el.querySelector('.pcard');
+      const step = (card ? card.getBoundingClientRect().width : 300) + 18;
+      el.scrollBy({ left: step * dir, behavior: 'smooth' });
+    };
+
+    // Unified entry point: no args → grouped discovery view; array → flat search results
     function renderListings(filtered) {
-      const list = filtered || LISTINGS;
-      window.__lastFiltered = list;
+      const grouped = document.getElementById('featuredCountries');
       const grid = document.getElementById('listingsGrid');
       const empty = document.getElementById('listingsEmpty');
-      if (!grid) return;
-      if (!list.length) { grid.innerHTML = ''; if (empty) empty.classList.remove('hidden'); return; }
-      if (empty) empty.classList.add('hidden');
+      const backWrap = document.getElementById('backToFeaturedWrap');
+      const backLabel = document.getElementById('backToFeaturedLabel');
 
-      grid.innerHTML = list.map((listing, index) => `
-        <div class="bg-white rounded-2xl border overflow-hidden card-hover fade-in ${listing.featured ? 'border-warning/50 ring-2 ring-warning/20' : ''}" style="animation-delay: ${index * 0.08}s" onclick="openListingModal(${listing.id})">
-          <div class="relative aspect-[4/3] bg-gradient-to-br from-primary/20 to-secondary/30 overflow-hidden cursor-pointer">
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">${getTypeIcon(listing.type)}</div>
-            </div>
-            ${listing.featured ? `<div class="absolute top-3 start-3 px-2.5 py-1 bg-warning text-white text-xs font-medium rounded-full">${t('badge.featured')}</div>` : ''}
-            ${listing.verified && !listing.featured ? `<div class="absolute top-3 start-3 px-2.5 py-1 bg-success text-white text-xs font-medium rounded-full verified-pulse">${t('badge.verified')}</div>` : ''}
-            <div class="absolute bottom-3 end-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
-              <p class="text-lg font-bold text-gray-800">$${listing.price.toLocaleString()}<span class="text-xs font-normal text-gray-500">${t('listings.perMonth')}</span></p>
-            </div>
-          </div>
-          <div class="p-4">
-            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(listing.type)} mb-2">${translateType(listing.type)}</span>
-            <h3 class="font-semibold text-gray-800 mb-1 line-clamp-1">${translateListingTitle(listing.title)}</h3>
-            <p class="text-sm text-gray-500 flex items-center gap-1 mb-3">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-              ${translateCity(listing.city)}, ${translateCountry(listing.country)}
-            </p>
-            <div class="flex flex-wrap gap-1.5 mb-4">
-              ${listing.amenities.slice(0, 3).map(a => `<span class="px-2 py-0.5 bg-gray-100 rounded-md text-xs text-gray-600">${translateAmenity(a)}</span>`).join('')}
-              ${listing.amenities.length > 3 ? `<span class="px-2 py-0.5 bg-gray-100 rounded-md text-xs text-gray-600">+${listing.amenities.length - 3}</span>` : ''}
-            </div>
-            <button onclick="event.stopPropagation(); openInquiry(${listing.id})" class="w-full py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors text-sm">${t('listings.contact')}</button>
-          </div>
-        </div>
-      `).join('');
+      if (!filtered) {
+        window.__lastFiltered = LISTINGS;
+        if (empty) empty.classList.add('hidden');
+        if (grid) { grid.classList.add('hidden'); grid.innerHTML = ''; }
+        if (grouped) grouped.classList.remove('hidden');
+        if (backWrap) backWrap.classList.add('hidden');
+        renderFeaturedCountries();
+        return;
+      }
+
+      window.__lastFiltered = filtered;
+      if (grouped) grouped.classList.add('hidden');
+      if (backWrap) {
+        backWrap.classList.remove('hidden');
+        if (backLabel) {
+          const loc = (document.getElementById('searchLocation') || {}).value || '';
+          backLabel.textContent = loc
+            ? `Showing ${filtered.length} ${filtered.length === 1 ? 'property' : 'properties'} for "${loc}"`
+            : `Showing ${filtered.length} ${filtered.length === 1 ? 'property' : 'properties'}`;
+        }
+      }
+      if (!grid) return;
+      if (!filtered.length) {
+        grid.classList.add('hidden'); grid.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+      grid.classList.remove('hidden');
+      grid.innerHTML = filtered.map(propertyCard).join('');
     }
     window.renderListings = renderListings;
+    window.renderFeaturedCountries = renderFeaturedCountries;
 
     // ---------- Modals / app logic ----------
     let selectedRole = '';
@@ -1473,5 +2132,404 @@
 
   <!-- ISHFADI Smart Map -->
   <script src="smart-map.js" defer></script>
+
+  <!-- Onboarding choice modal (Sprint 1 / Feature 5) -->
+  <div id="onboardChoiceModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="onboardChoiceTitle">
+    <div class="modal-content p-6">
+      <div class="flex justify-between items-start mb-5">
+        <div>
+          <h3 id="onboardChoiceTitle" class="text-xl font-bold text-primary">Continue to ISHFADI</h3>
+          <p id="onboardChoiceSub" class="text-sm text-gray-500 mt-1">Do you already have an account?</p>
+        </div>
+        <button type="button" onclick="closeOnboardChoice()" aria-label="Close" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+      </div>
+      <div class="space-y-3">
+        <button type="button" class="choice-card" data-choice="signin">
+          <span class="ci" aria-hidden="true">🔐</span>
+          <span>
+            <span class="ct">Yes, I already have an account</span>
+            <span class="cs">Sign in to continue to your dashboard.</span>
+          </span>
+        </button>
+        <button type="button" class="choice-card" data-choice="signup">
+          <span class="ci" aria-hidden="true">✨</span>
+          <span>
+            <span class="ct">No, I'm new — create my account</span>
+            <span class="cs">Start the registration flow for your selected role.</span>
+          </span>
+        </button>
+      </div>
+      <p class="text-xs text-gray-400 mt-5 text-center">Your selection is remembered for this session.</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Role → registration / sign-in destinations (frontend-only routing scaffold).
+      // Future backend can plug in here without UI changes.
+      const ROLE_ROUTES = {
+        individual: { signup: 'signup-individual.html', signin: 'signin.html?role=individual', dashboard: 'seller.html' },
+        company:    { signup: 'signup-company.html',    signin: 'signin.html?role=company',    dashboard: 'seller.html' },
+        agent:      { signup: 'signup-agent.html',      signin: 'signin.html?role=agent',      dashboard: 'agent.html' },
+        buyer:      { signup: 'signup-buyer.html',      signin: 'signin.html?role=buyer',      dashboard: 'buyer.html' },
+        admin:      { signup: 'signin.html?role=admin', signin: 'signin.html?role=admin',      dashboard: 'admin.html' }
+      };
+
+      const DASHBOARD_ROLE = {
+        'buyer': 'buyer',
+        'seller': 'individual',
+        'agent': 'agent',
+        'admin': 'admin',
+        'waiting-list': 'individual'
+      };
+
+      function isAuthed() {
+        try {
+          return localStorage.getItem('ishfadi_auth') === '1'
+              || sessionStorage.getItem('ishfadi_auth') === '1';
+        } catch (_e) { return false; }
+      }
+
+      function goTo(url) { if (url) window.location.href = url; }
+
+      const modal = document.getElementById('onboardChoiceModal');
+      const subEl = document.getElementById('onboardChoiceSub');
+      let pendingRole = null;
+      let lastTrigger = null;
+
+      function openOnboardChoice(role, opts) {
+        if (!ROLE_ROUTES[role]) return;
+        pendingRole = role;
+        const label = {
+          individual: 'Individual Host', company: 'Company Host',
+          agent: 'Agent', buyer: 'Buyer', admin: 'Admin'
+        }[role] || 'ISHFADI';
+        subEl.textContent = (opts && opts.context)
+          ? `Sign in or create a ${label} account to access ${opts.context}.`
+          : `Do you already have a ${label} account?`;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        const first = modal.querySelector('.choice-card');
+        if (first) first.focus();
+      }
+
+      function closeOnboardChoice() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        pendingRole = null;
+        if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
+        lastTrigger = null;
+      }
+      window.closeOnboardChoice = closeOnboardChoice;
+
+      // Direct routing helpers (used by role cards "Create" / "Sign In" buttons).
+      function routeRole(role, action) {
+        const cfg = ROLE_ROUTES[role];
+        if (!cfg) return;
+        goTo(action === 'signin' ? cfg.signin : cfg.signup);
+      }
+
+      // Delegated listeners — single handler set, no duplicates.
+      document.addEventListener('click', function (ev) {
+        const onboardBtn = ev.target.closest('[data-onboard]');
+        if (onboardBtn) {
+          const role = onboardBtn.getAttribute('data-onboard');
+          const action = onboardBtn.getAttribute('data-action') || 'signup';
+          routeRole(role, action);
+          return;
+        }
+
+        const dashLink = ev.target.closest('[data-dashboard]');
+        if (dashLink) {
+          const key = dashLink.getAttribute('data-dashboard');
+          const role = DASHBOARD_ROLE[key] || 'individual';
+          if (isAuthed()) return; // let the link follow naturally
+          ev.preventDefault();
+          lastTrigger = dashLink;
+          openOnboardChoice(role, { context: dashLink.textContent.trim() });
+          return;
+        }
+
+        const choice = ev.target.closest('#onboardChoiceModal [data-choice]');
+        if (choice && pendingRole) {
+          const action = choice.getAttribute('data-choice');
+          const role = pendingRole;
+          closeOnboardChoice();
+          routeRole(role, action);
+          return;
+        }
+
+        if (ev.target === modal) closeOnboardChoice();
+      });
+
+      // ESC closes the modal & keyboard trap basics.
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && modal.classList.contains('active')) {
+          closeOnboardChoice();
+        }
+      });
+    })();
+  </script>
+
+  <!-- Welcome / Get Started Onboarding (Sprint 1 / Feature 5 FINAL) -->
+  <style>
+    .welcome-overlay {
+      position: fixed; inset: 0; z-index: 110;
+      background: radial-gradient(circle at 20% 10%, rgba(30,58,95,0.55), rgba(15,23,42,0.85) 60%);
+      backdrop-filter: blur(10px);
+      display: none; align-items: stretch; justify-content: center;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+      overflow-y: auto;
+    }
+    .welcome-overlay.active { display: flex; }
+    .welcome-panel {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      width: 100%; max-width: 1100px; margin: auto;
+      border-radius: 24px; padding: 2.25rem 1.5rem 2rem;
+      box-shadow: 0 30px 80px rgba(15,23,42,0.4);
+      animation: welcomeRise 0.42s cubic-bezier(.2,.8,.2,1);
+    }
+    @media (min-width: 768px) { .welcome-panel { padding: 3rem 3rem 2.5rem; margin: 2rem auto; } }
+    @keyframes welcomeRise { from { opacity: 0; transform: translateY(24px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .welcome-head { text-align: center; max-width: 640px; margin: 0 auto 2rem; }
+    .welcome-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0.9rem; border-radius: 9999px;
+      background: rgba(30,58,95,0.08); color: #1e3a5f;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .welcome-title {
+      font-size: 1.85rem; font-weight: 800; color: #0f172a;
+      letter-spacing: -0.02em; margin: 0.75rem 0 0.5rem;
+    }
+    @media (min-width: 768px) { .welcome-title { font-size: 2.4rem; } }
+    .welcome-sub { color: #475569; font-size: 1rem; }
+    .welcome-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(15,23,42,0.06); color: #0f172a;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; cursor: pointer; font-size: 1.4rem; line-height: 1;
+      transition: background 0.2s;
+    }
+    .welcome-close:hover { background: rgba(15,23,42,0.12); }
+    html[dir="rtl"] .welcome-close { right: auto; left: 14px; }
+    .welcome-panel { position: relative; }
+    .welcome-grid {
+      display: grid; gap: 1.25rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px) { .welcome-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .welcome-grid { grid-template-columns: repeat(3, 1fr); } }
+    .welcome-grid.cols-2 { grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .welcome-grid.cols-2 { grid-template-columns: repeat(2, 1fr); max-width: 760px; margin: 0 auto; } }
+
+    .welcome-card {
+      position: relative;
+      background: #fff;
+      border: 1px solid #eef1f5;
+      border-radius: 22px;
+      padding: 1.75rem 1.5rem 1.5rem;
+      display: flex; flex-direction: column; gap: 0.9rem;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+      transition: transform 0.32s cubic-bezier(.2,.8,.2,1), box-shadow 0.32s, border-color 0.32s;
+      overflow: hidden; text-align: start;
+    }
+    .welcome-card::before {
+      content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+      background: linear-gradient(90deg, #1e3a5f, #d4a574);
+    }
+    .welcome-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 26px 50px -22px rgba(15,23,42,0.25);
+      border-color: rgba(30,58,95,0.18);
+    }
+    .welcome-card:focus-within { outline: 2px solid #1e3a5f; outline-offset: 3px; }
+    .welcome-card .wc-icon {
+      width: 64px; height: 64px; border-radius: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 2rem; line-height: 1;
+      background: linear-gradient(135deg, rgba(30,58,95,0.1), rgba(212,165,116,0.18));
+      border: 1px solid rgba(30,58,95,0.08);
+    }
+    .welcome-card .wc-title { font-size: 1.2rem; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; }
+    .welcome-card .wc-desc { color: #475569; font-size: 0.94rem; line-height: 1.55; flex: 1; }
+    .welcome-actions { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.25rem; }
+    .welcome-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.78rem 1rem; border-radius: 12px;
+      font-weight: 700; font-size: 0.92rem; cursor: pointer;
+      text-decoration: none; border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .welcome-btn-primary { background: #1e3a5f; color: #fff; }
+    .welcome-btn-primary:hover { background: #16304f; transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(30,58,95,0.55); }
+    .welcome-btn-secondary { background: #d4a574; color: #fff; }
+    .welcome-btn-secondary:hover { background: #c49560; transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(212,165,116,0.55); }
+    .welcome-btn-ghost { background: transparent; color: #1e3a5f; border-color: rgba(30,58,95,0.2); }
+    .welcome-btn-ghost:hover { background: rgba(30,58,95,0.06); border-color: #1e3a5f; }
+    .welcome-btn:focus-visible { outline: 2px solid #1e3a5f; outline-offset: 2px; }
+    .welcome-back {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: #1e3a5f; font-weight: 600; font-size: 0.88rem;
+      background: transparent; border: 0; cursor: pointer; padding: 0.4rem 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .welcome-back:hover { color: #d4a574; }
+  </style>
+
+  <div id="welcomeOnboardModal" class="welcome-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeOnboardTitle">
+    <div class="welcome-panel">
+      <button type="button" class="welcome-close" aria-label="Close" onclick="closeWelcomeOnboard()">×</button>
+
+      <!-- STEP 1: choose intent -->
+      <div id="welcomeStep1">
+        <div class="welcome-head">
+          <span class="welcome-eyebrow"><span aria-hidden="true">✦</span><span>Get Started</span></span>
+          <h2 id="welcomeOnboardTitle" class="welcome-title">Welcome to ISHFADI</h2>
+          <p class="welcome-sub">How would you like to use ISHFADI today?</p>
+        </div>
+        <div class="welcome-grid">
+          <article class="welcome-card" aria-labelledby="wo-find-title">
+            <div class="wc-icon" aria-hidden="true">🏡</div>
+            <h3 id="wo-find-title" class="wc-title">Find a Place</h3>
+            <p class="wc-desc">Search for apartments, houses, hotels, offices and other places that match your needs.</p>
+            <div class="welcome-actions">
+              <button type="button" class="welcome-btn welcome-btn-primary" onclick="welcomeGoto('buyer.html')" aria-label="Continue to find a place">
+                <span>Continue</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </article>
+
+          <article class="welcome-card" aria-labelledby="wo-list-title">
+            <div class="wc-icon" aria-hidden="true">🏠</div>
+            <h3 id="wo-list-title" class="wc-title">List a Property</h3>
+            <p class="wc-desc">Publish your property and reach future ISHFADI customers.</p>
+            <div class="welcome-actions">
+              <button type="button" class="welcome-btn welcome-btn-primary" onclick="welcomeShowHostStep()" aria-label="Continue to list a property">
+                <span>Continue</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </article>
+
+          <article class="welcome-card" aria-labelledby="wo-agent-title">
+            <div class="wc-icon" aria-hidden="true">🤝</div>
+            <h3 id="wo-agent-title" class="wc-title">Become an Agent</h3>
+            <p class="wc-desc">Join the ISHFADI Agent Program and help grow the platform.</p>
+            <div class="welcome-actions">
+              <button type="button" class="welcome-btn welcome-btn-secondary" onclick="welcomeGoto('agent.html')" aria-label="Become an agent">
+                <span>Become an Agent</span>
+              </button>
+              <a href="become-agent.html" class="welcome-btn welcome-btn-ghost" aria-label="Learn more about the Agent Program">Learn More</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- STEP 2: host type -->
+      <div id="welcomeStep2" class="hidden">
+        <button type="button" class="welcome-back" onclick="welcomeShowStep1()" aria-label="Back">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          <span>Back</span>
+        </button>
+        <div class="welcome-head">
+          <span class="welcome-eyebrow"><span aria-hidden="true">🏠</span><span>List a Property</span></span>
+          <h2 class="welcome-title">Who are you?</h2>
+          <p class="welcome-sub">Choose the option that best describes you. You'll add property details later from the Host Dashboard.</p>
+        </div>
+        <div class="welcome-grid cols-2">
+          <article class="welcome-card" aria-labelledby="wo-ind-title">
+            <div class="wc-icon" aria-hidden="true">👤</div>
+            <h3 id="wo-ind-title" class="wc-title">Individual Host</h3>
+            <p class="wc-desc">For homeowners or individuals listing their own property.</p>
+            <div class="welcome-actions">
+              <button type="button" class="welcome-btn welcome-btn-primary" data-host-type="individual" onclick="welcomeGoto('seller.html', 'individual')" aria-label="Continue as Individual Host">
+                <span>Continue</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </article>
+
+          <article class="welcome-card" aria-labelledby="wo-co-title">
+            <div class="wc-icon" aria-hidden="true">🏢</div>
+            <h3 id="wo-co-title" class="wc-title">Company Host</h3>
+            <p class="wc-desc">For hotels, agencies, developers, organizations and registered companies.</p>
+            <div class="welcome-actions">
+              <button type="button" class="welcome-btn welcome-btn-primary" data-host-type="company" onclick="welcomeGoto('seller.html', 'company')" aria-label="Continue as Company Host">
+                <span>Continue</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+      const overlay = document.getElementById('welcomeOnboardModal');
+      const step1 = document.getElementById('welcomeStep1');
+      const step2 = document.getElementById('welcomeStep2');
+      let lastTrigger = null;
+
+      function setStep(n) {
+        if (n === 2) { step1.classList.add('hidden'); step2.classList.remove('hidden'); }
+        else { step2.classList.add('hidden'); step1.classList.remove('hidden'); }
+        const first = (n === 2 ? step2 : step1).querySelector('.welcome-btn, button');
+        if (first) try { first.focus(); } catch(_){}
+      }
+
+      window.openWelcomeOnboard = function (trigger) {
+        lastTrigger = trigger || document.activeElement;
+        setStep(1);
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      };
+      window.closeWelcomeOnboard = function () {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        if (lastTrigger && typeof lastTrigger.focus === 'function') {
+          try { lastTrigger.focus(); } catch(_){}
+        }
+        lastTrigger = null;
+      };
+      window.welcomeShowHostStep = function () { setStep(2); };
+      window.welcomeShowStep1 = function () { setStep(1); };
+      window.welcomeGoto = function (url, hostType) {
+        try {
+          if (hostType) sessionStorage.setItem('ishfadi_host_type', hostType);
+        } catch(_){}
+        window.location.href = url;
+      };
+
+      // Click outside / ESC to close
+      overlay.addEventListener('click', function (ev) {
+        if (ev.target === overlay) window.closeWelcomeOnboard();
+      });
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && overlay.classList.contains('active')) {
+          window.closeWelcomeOnboard();
+        }
+      });
+
+      // Back to Featured Properties — returns to grouped discovery view without reload.
+      window.backToFeatured = function () {
+        const input = document.getElementById('searchLocation');
+        if (input) input.value = '';
+        if (typeof window.renderListings === 'function') {
+          window.renderListings();
+        }
+        const target = document.getElementById('listings');
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+    })();
+  </script>
+
 </body>
 </html>
