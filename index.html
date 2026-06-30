@@ -7,6 +7,7 @@
   <meta name="description" data-i18n-attr="content" data-i18n="meta.description" content="Connect with verified hosts and discover amazing properties. Safe, secure, and simple.">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="smart-map.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -347,17 +348,33 @@
     </div>
   </section>
 
-  <!-- Map Search Section -->
-  <section class="py-12 bg-white">
+  <!-- Smart Map Launcher -->
+  <section class="py-12 bg-white" id="smartMapLauncher">
     <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800" data-i18n="map.title">Explore on Map</h2>
-        <button onclick="toggleMapView()" class="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-          <span id="mapToggleText" data-i18n="map.show">Show Map</span>
-        </button>
+      <div class="rounded-3xl p-8 md:p-10 text-white relative overflow-hidden"
+           style="background: radial-gradient(circle at 20% 20%, #2d4a6f 0%, #1e3a5f 55%, #0f1f36 100%);">
+        <div class="absolute -top-16 -right-16 w-64 h-64 bg-secondary/20 rounded-full blur-3xl"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="max-w-xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold tracking-wider mb-3">
+              <span class="text-secondary">♛</span>
+              <span>ISHFADI SMART MAP</span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-2" data-i18n="map.title">See properties on the real-world map</h2>
+            <p class="text-white/70 text-sm md:text-base">
+              Explore verified ISHFADI listings, nearby hospitals, universities, transit and more — with satellite imagery and turn-by-turn ready directions.
+            </p>
+          </div>
+          <div class="flex flex-col items-start md:items-end gap-3 shrink-0">
+            <button type="button" id="smartMapShowBtn" data-smart-map="show"
+              class="sm-show-cta" aria-label="Open the ISHFADI Smart Map">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+              <span data-i18n="map.show">Show Map</span>
+            </button>
+            <div class="text-xs text-white/50">Map · Satellite · My Location · Nearby</div>
+          </div>
+        </div>
       </div>
-      <div id="mapContainer" class="hidden h-96 rounded-2xl overflow-hidden border shadow-lg"></div>
     </div>
   </section>
 
@@ -1229,22 +1246,8 @@
     };
 
     window.toggleMapView = function () {
-      const container = document.getElementById('mapContainer');
-      const toggleText = document.getElementById('mapToggleText');
-      if (mapVisible) {
-        container.classList.add('hidden'); toggleText.textContent = t('map.show'); mapVisible = false;
-      } else {
-        container.classList.remove('hidden'); toggleText.textContent = t('map.hide'); mapVisible = true;
-        if (!map) {
-          map = L.map('mapContainer').setView([40.7128, -74.0060], 3);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
-          LISTINGS.forEach(l => {
-            L.marker([l.lat, l.lng]).addTo(map)
-              .bindPopup(`<strong>${translateListingTitle(l.title)}</strong><br>$${l.price}${t('listings.perMonth')}<br><a href="#" onclick="openListingModal(${l.id})">${t('listingModal.contactHost')}</a>`);
-          });
-        }
-        setTimeout(() => map.invalidateSize(), 100);
-      }
+      // Legacy hook — delegated to the new Smart Map overlay.
+      if (window.SmartMap) window.SmartMap.toggle();
     };
 
     window.copyReferral = function () {
@@ -1468,5 +1471,7 @@
   })();
   </script>
 
+  <!-- ISHFADI Smart Map -->
+  <script src="smart-map.js" defer></script>
 </body>
 </html>
