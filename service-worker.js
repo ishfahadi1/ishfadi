@@ -1,34 +1,62 @@
 /* ==========================================================================
-   ISHFADI Production Service Worker
-   Version: 2.0.0
+   ISHFADI — Production Service Worker
+   Version: 3.0.0
+
+   This is the single, permanent service worker for the ISHFADI platform.
+   It merges the previous waiting-list-scoped worker and the index.html
+   worker into one enterprise-grade implementation. Future sprints extend
+   this file — it is never replaced wholesale.
+
    Strategy:
-   - App Shell: Cache First
-   - HTML Pages: Network First
-   - Static Assets: Stale While Revalidate
-   - APIs: Network Only
-   - Automatic cache cleanup
-   - Push Notifications
-   - Background Sync Ready
+   - App Shell            : Precached on install
+   - HTML Pages           : Network First (offline fallback)
+   - CSS / JS / Modules / SVG / Images : Stale While Revalidate
+   - Property / Gallery / Screenshot / Icon / Logo images : Cache First
+   - Fonts (local, CDN, Google Fonts)  : Cache First (long-lived)
+   - APIs / Auth / Payments / POST     : Network Only, never cached
+   - Map tiles                          : Architecture reserved, not active
+   - Push Notifications, Notification Click, Background Sync, Update flow
    ========================================================================== */
 
-const CACHE_VERSION = "v2.0.0";
+const CACHE_VERSION = "v3.0.0";
 
-const PRECACHE = `ishfadi-precache-${CACHE_VERSION}`;
-const RUNTIME = `ishfadi-runtime-${CACHE_VERSION}`;
+/* ==========================================================================
+   Cache Names — one purpose per cache, never mixed
+   ========================================================================== */
+
+const CACHE_NAMES = {
+  precache: `ishfadi-precache-${CACHE_VERSION}`,
+  runtime: `ishfadi-runtime-${CACHE_VERSION}`,
+  images: `ishfadi-images-${CACHE_VERSION}`,
+  fonts: `ishfadi-fonts-${CACHE_VERSION}`,
+  screenshots: `ishfadi-screenshots-${CACHE_VERSION}`,
+  staticAssets: `ishfadi-static-${CACHE_VERSION}`,
+  mapTiles: `ishfadi-map-tiles-${CACHE_VERSION}`, // reserved for future Sprint Map
+  offline: `ishfadi-offline-${CACHE_VERSION}`
+};
+
+// All current-version caches. Anything else found on activate is stale
+// and gets removed, regardless of which past version created it.
+const CURRENT_CACHES = new Set(Object.values(CACHE_NAMES));
 
 const OFFLINE_URL = "/offline.html";
 
-/* ==========================
-   Files to cache immediately
-========================== */
+/* ==========================================================================
+   App Shell — cached immediately on install
+   Missing files are ignored individually so one 404 never blocks install.
+   ========================================================================== */
 
 const APP_SHELL = [
-
   "/",
+  "/waiting-list.html",
   "/index.html",
   "/offline.html",
   "/manifest.json",
 
+  // Logo
+  "/icons/logo.png",
+
+  // Standard / Android icons
   "/icons/icon-16.png",
   "/icons/icon-20.png",
   "/icons/icon-24.png",
@@ -57,376 +85,435 @@ const APP_SHELL = [
   "/icons/icon-256.png",
   "/icons/icon-384.png",
   "/icons/icon-512.png",
-  "/icons/icon-1024.png"
+  "/icons/icon-1024.png",
 
+  // Maskable icons
+  "/icons/maskable-icon-192.png",
+  "/icons/maskable-icon-512.png",
+
+  // Apple touch icons
+  "/icons/apple-touch-icon.png",
+  "/icons/apple-touch-icon-152.png",
+  "/icons/apple-touch-icon-167.png",
+  "/icons/apple-touch-icon-180.png",
+
+  // Favicons
+  "/favicon.ico",
+  "/icons/favicon-16.png",
+  "/icons/favicon-32.png"
 ];
 
-/* ==========================
+/* ==========================================================================
+   Future Pages — not precached yet (they don't exist), but the HTML
+   strategy below already applies to them automatically once they ship.
+   buyer.html, host.html, agent.html, admin.html, property.html,
+   booking.html, chat.html, profile.html
+   ========================================================================== */
+
+/* ==========================================================================
    Install
-========================== */
+   ========================================================================== */
 
-self.addEventListener("install", event => {
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAMES.precache);
 
-    event.waitUntil(
-
-        (async () => {
-
-            const cache = await caches.open(PRECACHE);
-
-            await Promise.all(
-
-                APP_SHELL.map(file =>
-                    cache.add(new Request(file, {
-                        cache: "reload"
-                    })).catch(() => null)
-                )
-
-            );
-
-            self.skipWaiting();
-
-        })()
-
-    );
-
-});
-
-/* ==========================
-   Activate
-========================== */
-
-self.addEventListener("activate", event => {
-
-    event.waitUntil(
-
-        (async () => {
-
-            const keys = await caches.keys();
-
-            await Promise.all(
-
-                keys.map(key => {
-
-                    if (
-                        key.startsWith("ishfadi-") &&
-                        key !== PRECACHE &&
-                        key !== RUNTIME
-                    ) {
-                        return caches.delete(key);
-                    }
-
-                })
-
-            );
-
-            if (self.registration.navigationPreload) {
-                try {
-                    await self.registration.navigationPreload.enable();
-                } catch (e) {}
-            }
-
-            await self.clients.claim();
-
-        })()
-
-    );
-
-});
-
-/* ==========================
-   Skip Waiting
-========================== */
-
-self.addEventListener("message", event => {
-
-    if (
-        event.data === "SKIP_WAITING" ||
-        (
-            event.data &&
-            event.data.type === "SKIP_WAITING"
+      // Cache each file independently so a single missing asset
+      // (e.g. a future-page icon not yet deployed) never fails install.
+      await Promise.all(
+        APP_SHELL.map((file) =>
+          cache.add(new Request(file, { cache: "reload" })).catch(() => null)
         )
-    ) {
-        self.skipWaiting();
-    }
+      );
 
+      await self.skipWaiting();
+    })()
+  );
 });
 
-/* ==========================
-   Helpers
-========================== */
+/* ==========================================================================
+   Activate — clean up any cache from a previous version
+   ========================================================================== */
 
-const isHTML = request =>
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
 
+      await Promise.all(
+        keys.map((key) => {
+          if (key.startsWith("ishfadi-") && !CURRENT_CACHES.has(key)) {
+            return caches.delete(key);
+          }
+          return null;
+        })
+      );
+
+      if (self.registration.navigationPreload) {
+        try {
+          await self.registration.navigationPreload.enable();
+        } catch {
+          // Navigation preload is an optimization, not a requirement.
+        }
+      }
+
+      await self.clients.claim();
+
+      // Let every open tab know a new service worker has taken control,
+      // so the app can show a non-forced "New version available" prompt.
+      const clientsList = await self.clients.matchAll({ type: "window" });
+      for (const client of clientsList) {
+        client.postMessage({ type: "SW_ACTIVATED", version: CACHE_VERSION });
+      }
+    })()
+  );
+});
+
+/* ==========================================================================
+   Update Workflow — "New version available / Refresh / Later"
+   The app calls postMessage({ type: "SKIP_WAITING" }) once the user
+   accepts the update. We never force a reload ourselves.
+   ========================================================================== */
+
+self.addEventListener("message", (event) => {
+  const data = event.data;
+
+  if (data === "SKIP_WAITING" || (data && data.type === "SKIP_WAITING")) {
+    self.skipWaiting();
+    return;
+  }
+
+  if (data && data.type === "CHECK_VERSION") {
+    event.source?.postMessage({ type: "SW_VERSION", version: CACHE_VERSION });
+  }
+});
+
+/* ==========================================================================
+   Request Classification Helpers
+   ========================================================================== */
+
+function isHTMLRequest(request) {
+  return (
     request.mode === "navigate" ||
-
-    (
-        request.method === "GET" &&
-        request.headers
-            .get("accept")
-            ?.includes("text/html")
-    );
-
-const isStaticAsset = url =>
-
-    /\.(css|js|mjs|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|otf)$/i
-        .test(url.pathname);
-
-const isAPI = url =>
-
-    /\/api\//i.test(url.pathname) ||
-
-    /tile\.openstreetmap\.org/i.test(url.hostname);
-
-/* ==========================
-   HTML Strategy
-========================== */
-
-async function networkFirst(event) {
-
-    const cache = await caches.open(RUNTIME);
-
-    try {
-
-        const preload = await event.preloadResponse;
-
-        const response = preload || await fetch(event.request);
-
-        cache.put(event.request, response.clone());
-
-        return response;
-
-    } catch {
-
-        return (
-            await cache.match(event.request)
-        ) ||
-
-        (
-            await caches.match("/index.html")
-        ) ||
-
-        (
-            await caches.match(OFFLINE_URL)
-        );
-
-    }
-
+    (request.method === "GET" &&
+      (request.headers.get("accept") || "").includes("text/html"))
+  );
 }
 
-/* ==========================
-   Static Assets
-========================== */
+function isNeverCache(url, request) {
+  // Anything touching auth, sessions, tokens, or mutating the server
+  // must always hit the network. This list is intentionally broad.
+  if (request.method !== "GET") return true;
 
-async function staleWhileRevalidate(request) {
+  const path = url.pathname.toLowerCase();
+  const host = url.hostname.toLowerCase();
 
-    const cache = await caches.open(RUNTIME);
+  return (
+    host.includes("supabase.co") ||
+    host.includes("supabase.io") ||
+    path.includes("/auth/") ||
+    path.includes("/token") ||
+    path.includes("/session") ||
+    path.includes("/rest/v1/") ||
+    path.includes("/realtime/") ||
+    path.includes("/storage/v1/object/sign") ||
+    host.includes("turnstile") ||
+    host.includes("challenges.cloudflare.com") ||
+    path.includes("/api/")
+  );
+}
 
+function isFontRequest(url) {
+  return (
+    /\.(woff2?|ttf|otf|eot)$/i.test(url.pathname) ||
+    url.hostname.includes("fonts.googleapis.com") ||
+    url.hostname.includes("fonts.gstatic.com")
+  );
+}
+
+function isGalleryOrIconImage(url) {
+  // Property images, screenshots, gallery/preview images, icons and logos —
+  // large, rarely-changing, cache-first candidates.
+  return (
+    /\.(png|jpe?g|webp|gif|svg|ico)$/i.test(url.pathname) &&
+    (url.pathname.includes("/icons/") ||
+      url.pathname.includes("/logo") ||
+      url.pathname.includes("/properties/") ||
+      url.pathname.includes("/screenshots/") ||
+      url.pathname.includes("/gallery/") ||
+      url.pathname.includes("/previews/"))
+  );
+}
+
+function isStaticAsset(url) {
+  return /\.(css|js|mjs|svg|png|jpe?g|gif|webp|ico)$/i.test(url.pathname);
+}
+
+function isMapTileRequest(url) {
+  // Architecture reserved for Sprint Map. Not activated yet — this
+  // classifier exists so the fetch handler already knows how to route
+  // these requests the moment tile caching is turned on.
+  return (
+    /tile\.openstreetmap\.org/i.test(url.hostname) ||
+    /\.tiles\./i.test(url.hostname) ||
+    url.pathname.includes("/map-tiles/")
+  );
+}
+
+/* ==========================================================================
+   HTML Strategy — Network First
+   ========================================================================== */
+
+async function networkFirstHTML(event) {
+  const cache = await caches.open(CACHE_NAMES.runtime);
+  const request = event.request;
+
+  try {
+    const preload = await event.preloadResponse;
+    const response = preload || (await fetch(request));
+
+    if (response && response.ok) {
+      cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch {
     const cached = await cache.match(request);
+    if (cached) return cached;
 
-    const networkFetch = fetch(request)
+    const shellMatch =
+      (await caches.match(request.url)) ||
+      (await caches.match("/index.html")) ||
+      (await caches.match("/waiting-list.html"));
+    if (shellMatch) return shellMatch;
 
-        .then(response => {
+    const offline = await caches.match(OFFLINE_URL);
+    if (offline) return offline;
 
-            if (
-                response &&
-                (
-                    response.ok ||
-                    response.type === "opaque"
-                )
-            ) {
-
-                cache.put(
-                    request,
-                    response.clone()
-                );
-
-            }
-
-            return response;
-
-        })
-
-        .catch(() => null);
-
-    return cached || networkFetch;
-
+    return Response.error();
+  }
 }
 
-/* ==========================
+/* ==========================================================================
+   Static Assets Strategy — Stale While Revalidate
+   ========================================================================== */
+
+async function staleWhileRevalidate(request, cacheName = CACHE_NAMES.staticAssets) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+
+  const networkFetch = fetch(request)
+    .then((response) => {
+      if (response && (response.ok || response.type === "opaque")) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  return cached || networkFetch || Response.error();
+}
+
+/* ==========================================================================
+   Images / Screenshots / Icons Strategy — Cache First
+   ========================================================================== */
+
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response && (response.ok || response.type === "opaque")) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return cached || Response.error();
+  }
+}
+
+/* ==========================================================================
+   Fonts Strategy — Cache First, long-lived
+   ========================================================================== */
+
+async function cacheFirstFonts(request) {
+  return cacheFirst(request, CACHE_NAMES.fonts);
+}
+
+/* ==========================================================================
    Fetch
-========================== */
+   ========================================================================== */
 
-self.addEventListener("fetch", event => {
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
 
-    if (event.request.method !== "GET")
-        return;
+  // Never intercept anything that must always be live.
+  if (isNeverCache(url, request)) {
+    return;
+  }
 
-    const url = new URL(event.request.url);
+  // HTML navigations — current and future pages alike.
+  if (isHTMLRequest(request)) {
+    event.respondWith(networkFirstHTML(event));
+    return;
+  }
 
-    if (isAPI(url))
-        return;
+  if (request.method !== "GET") {
+    return;
+  }
 
-    if (isHTML(event.request)) {
+  // Map tiles — architecture only, not active. Left as a network pass-through
+  // until Sprint Map explicitly enables ISHFADI Map Tiles caching.
+  if (isMapTileRequest(url)) {
+    return;
+  }
 
-        event.respondWith(
-            networkFirst(event)
-        );
+  // Fonts — Google Fonts, CDN fonts, and local fonts.
+  if (isFontRequest(url)) {
+    event.respondWith(cacheFirstFonts(request));
+    return;
+  }
 
-        return;
+  // Property images, screenshots, gallery/preview images, icons, logos.
+  if (isGalleryOrIconImage(url)) {
+    const cacheName = url.pathname.includes("/screenshots/")
+      ? CACHE_NAMES.screenshots
+      : CACHE_NAMES.images;
+    event.respondWith(cacheFirst(request, cacheName));
+    return;
+  }
 
-    }
+  // Same-origin static assets (CSS, JS, modules, SVG, other images).
+  if (url.origin === self.location.origin && isStaticAsset(url)) {
+    event.respondWith(staleWhileRevalidate(request, CACHE_NAMES.staticAssets));
+    return;
+  }
 
-    if (
-        url.origin === self.location.origin &&
-        isStaticAsset(url)
-    ) {
-
-        event.respondWith(
-
-            staleWhileRevalidate(event.request)
-
-        );
-
-        return;
-
-    }
-
-    if (
-
-        url.origin !== self.location.origin &&
-
-        /fonts\.|cdn\.|unpkg\.com|jsdelivr\.net/i
-
-            .test(url.hostname)
-
-    ) {
-
-        event.respondWith(
-
-            staleWhileRevalidate(event.request)
-
-        );
-
-    }
-
+  // Cross-origin CDN assets (scripts/styles served from a CDN).
+  if (
+    url.origin !== self.location.origin &&
+    /cdn\.|unpkg\.com|jsdelivr\.net|cdnjs\.cloudflare\.com/i.test(url.hostname)
+  ) {
+    event.respondWith(staleWhileRevalidate(request, CACHE_NAMES.runtime));
+  }
 });
 
-/* ==========================
+/* ==========================================================================
    Push Notifications
-========================== */
+   ========================================================================== */
 
-self.addEventListener("push", event => {
+self.addEventListener("push", (event) => {
+  let payload = {};
 
-    let data = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
 
-    try {
+  const title = payload.title || "ISHFADI";
 
-        data = event.data
-            ? event.data.json()
-            : {};
+  const options = {
+    body: payload.body || "You have a new notification.",
+    icon: payload.icon || "/icons/icon-192.png",
+    badge: payload.badge || "/icons/icon-72.png",
+    image: payload.image || undefined,
+    tag: payload.tag || "ishfadi-notification",
+    vibrate: payload.vibration || [200, 100, 200],
+    data: {
+      url: payload.url || "/",
+      deepLink: payload.deepLink || undefined
+    },
+    actions: Array.isArray(payload.actions) ? payload.actions : []
+  };
 
-    } catch {}
-
-    event.waitUntil(
-
-        self.registration.showNotification(
-
-            data.title || "ISHFADI",
-
-            {
-
-                body:
-                    data.body ||
-                    "You have a new notification.",
-
-                icon:
-                    "/icons/icon-192.png",
-
-                badge:
-                    "/icons/icon-72.png",
-
-                image:
-                    data.image || undefined,
-
-                tag:
-                    data.tag || "ishfadi",
-
-                data:
-                    data.url || "/",
-
-                vibrate: [
-                    200,
-                    100,
-                    200
-                ]
-
-            }
-
-        )
-
-    );
-
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-/* ==========================
-   Notification Click
-========================== */
+/* ==========================================================================
+   Notification Click — focus existing window or open a new one
+   ========================================================================== */
 
-self.addEventListener("notificationclick", event => {
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
 
-    event.notification.close();
+  const targetUrl =
+    (event.notification.data && event.notification.data.url) || "/";
 
-    const url =
-        event.notification.data || "/";
+  event.waitUntil(
+    (async () => {
+      const windowClients = await clients.matchAll({
+        type: "window",
+        includeUncontrolled: true
+      });
 
-    event.waitUntil(
-
-        clients.matchAll({
-
-            type: "window"
-
-        })
-
-        .then(list => {
-
-            for (const client of list) {
-
-                if ("focus" in client) {
-
-                    client.navigate(url);
-
-                    return client.focus();
-
-                }
-
+      for (const client of windowClients) {
+        if ("focus" in client) {
+          if ("navigate" in client) {
+            try {
+              await client.navigate(targetUrl);
+            } catch {
+              // Navigation can fail cross-origin; focusing is still useful.
             }
+          }
+          return client.focus();
+        }
+      }
 
-            if (clients.openWindow)
-                return clients.openWindow(url);
-
-        })
-
-    );
-
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })()
+  );
 });
 
-/* ==========================
-   Background Sync
-========================== */
+/* ==========================================================================
+   Background Sync — architecture only, no fake implementations.
+   Each tag below is reserved for a specific future retry queue. When the
+   corresponding feature ships, its handler is implemented here without
+   touching the rest of the file.
+   ========================================================================== */
 
-self.addEventListener("sync", event => {
+const SYNC_TAGS = {
+  waitlistSignup: "ishfadi-sync-waitlist-signup",
+  propertyUpload: "ishfadi-sync-property-upload",
+  favorites: "ishfadi-sync-favorites",
+  reviews: "ishfadi-sync-reviews",
+  messages: "ishfadi-sync-messages",
+  analytics: "ishfadi-sync-analytics"
+};
 
-    if (
-        event.tag ===
-        "ishfadi-sync"
-    ) {
+self.addEventListener("sync", (event) => {
+  switch (event.tag) {
+    case SYNC_TAGS.waitlistSignup:
+      // Reserved: retry queued waiting-list signups submitted while offline.
+      break;
 
-        event.waitUntil(
+    case SYNC_TAGS.propertyUpload:
+      // Reserved: retry queued property listing uploads.
+      break;
 
-            Promise.resolve()
+    case SYNC_TAGS.favorites:
+      // Reserved: retry queued favorite/save actions.
+      break;
 
-        );
+    case SYNC_TAGS.reviews:
+      // Reserved: retry queued review submissions.
+      break;
 
-    }
+    case SYNC_TAGS.messages:
+      // Reserved: retry queued chat messages.
+      break;
 
+    case SYNC_TAGS.analytics:
+      // Reserved: retry queued analytics/telemetry events.
+      break;
+
+    default:
+      break;
+  }
 });

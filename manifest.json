@@ -1,9 +1,9 @@
 {
-  "id": "/index.html",
-  "name": "ISHFADI - Find Your Perfect Home",
+  "id": "/",
+  "name": "ISHFADI - Global Accommodation & Relocation Platform",
   "short_name": "ISHFADI",
   "description": "Helping people relocate, discover trusted properties, and connect with opportunities anywhere in the world.",
-  "start_url": "/index.html",
+  "start_url": "/waiting-list.html",
   "scope": "/",
   "display": "standalone",
   "display_override": [
@@ -12,7 +12,7 @@
     "browser"
   ],
   "orientation": "portrait",
-  "background_color": "#1e3a5f",
+  "background_color": "#ffffff",
   "theme_color": "#1e3a5f",
   "lang": "en",
   "dir": "auto",
@@ -26,7 +26,6 @@
   ],
 
   "prefer_related_applications": false,
-  "related_applications": [],
 
   "icons": [
     {
@@ -117,10 +116,23 @@
 
   "shortcuts": [
     {
-      "name": "Home",
-      "short_name": "Home",
-      "description": "Open the ISHFADI homepage",
-      "url": "/index.html",
+      "name": "Reserve Account",
+      "short_name": "Reserve",
+      "description": "Reserve your ISHFADI account before launch",
+      "url": "/waiting-list.html#register",
+      "icons": [
+        {
+          "src": "/icons/sc-wait.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "A Glimpse",
+      "short_name": "Preview",
+      "description": "Preview the future ISHFADI platform",
+      "url": "/waiting-list.html#glimpse",
       "icons": [
         {
           "src": "/icons/sc-home.png",
@@ -130,10 +142,10 @@
       ]
     },
     {
-      "name": "Search Properties",
-      "short_name": "Search",
-      "description": "Browse properties",
-      "url": "/index.html#featured-properties",
+      "name": "FAQ",
+      "short_name": "FAQ",
+      "description": "Frequently Asked Questions",
+      "url": "/waiting-list.html#faq",
       "icons": [
         {
           "src": "/icons/sc-search.png",
@@ -143,39 +155,13 @@
       ]
     },
     {
-      "name": "Become a Host",
-      "short_name": "Host",
-      "description": "List your property",
-      "url": "/seller.html",
-      "icons": [
-        {
-          "src": "/icons/sc-host.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Become an Agent",
-      "short_name": "Agent",
-      "description": "Join the ISHFADI Agent Program",
-      "url": "/agent.html",
+      "name": "Contact",
+      "short_name": "Contact",
+      "description": "Contact ISHFADI",
+      "url": "/waiting-list.html#footer",
       "icons": [
         {
           "src": "/icons/sc-agent.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Waiting List",
-      "short_name": "Waitlist",
-      "description": "Join the launch waiting list",
-      "url": "/waiting-list.html",
-      "icons": [
-        {
-          "src": "/icons/sc-wait.png",
           "sizes": "96x96",
           "type": "image/png"
         }

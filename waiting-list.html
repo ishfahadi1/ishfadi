@@ -1,216 +1,1898 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ISHFADI - Join the Waiting List</title>
-  <meta name="description" content="Be among the first to access ISHFADI — the verified real-estate marketplace.">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: { colors: {
-      primary: '#1e3a5f', secondary: '#d4a574',
-      success: '#22c55e', warning: '#f59e0b', muted: '#64748b'
-    } } } }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title data-i18n="meta.title">ISHFADI Launch Portal — Reserve Your Account</title>
+  <meta name="description" data-i18n-attr="content" data-i18n="meta.description" content="Reserve your ISHFADI account before launch. When ISHFADI goes live, simply sign in — no need to register again.">
+  <link rel="canonical" href="/waiting-list.html">
+  <meta name="robots" content="index,follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ISHFADI Launch Portal — Reserve Your Account">
+  <meta property="og:description" content="Reserve your ISHFADI account before launch. Sign in with the same credentials on day one.">
+  <meta property="og:url" content="/waiting-list.html">
+  <meta property="og:image" content="/icons/icon-512.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ISHFADI Launch Portal">
+  <meta name="twitter:description" content="Reserve your ISHFADI account before launch.">
+  <meta name="twitter:image" content="/icons/icon-512.png">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ISHFADI",
+    "url": "/",
+    "potentialAction": { "@type": "RegisterAction", "target": "/waiting-list.html" }
+  }
   </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ISHFADI">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  <!-- Vendor libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a5f',
+            'primary-2': '#254772',
+            secondary: '#d4a574',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            muted: '#64748b'
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
+    /* ISHFADI shared design system */
     * { box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; }
+    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html[lang="ar"] body { font-family: 'Cairo', system-ui, -apple-system, sans-serif; }
+
+    :focus-visible { outline: 2px solid #1e3a5f; outline-offset: 2px; border-radius: 4px; }
+
+    .card-hover { transition: all 0.3s; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+
     .hero-bg {
       background:
         linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(45,74,111,0.9) 50%, rgba(30,58,95,0.95) 100%),
         url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
-    .card-hover { transition: all 0.3s; }
-    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-    .fade-in { animation: fadeIn 0.5s ease forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-    .float { animation: float 6s ease-in-out infinite; }
-    .success-pop { animation: pop .6s cubic-bezier(.2,1.4,.4,1) both; }
-    @keyframes pop { 0% { transform: scale(.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .features-bg { background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
+
+    /* RTL */
+    html[dir="rtl"] body { text-align: right; }
+    html[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+    /* Language switcher */
+    .lang-switcher { position: relative; }
+    .lang-trigger {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 0.85rem; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+      background: #ffffff; color: #1e3a5f; font-weight: 600; font-size: 0.875rem;
+      cursor: pointer; transition: all 0.2s ease; line-height: 1;
+    }
+    .lang-trigger:hover { border-color: #1e3a5f; box-shadow: 0 4px 12px rgba(30,58,95,0.08); }
+    .lang-trigger .chev { transition: transform 0.2s ease; }
+    .lang-switcher.open .lang-trigger .chev { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 0.5rem); min-width: 200px;
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.875rem;
+      box-shadow: 0 20px 40px rgba(15,23,42,0.12); padding: 0.4rem;
+      opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease; z-index: 60;
+    }
+    html[dir="ltr"] .lang-menu { right: 0; }
+    html[dir="rtl"] .lang-menu { left: 0; }
+    .lang-switcher.open .lang-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.6rem;
+      background: transparent; border: none; cursor: pointer; text-align: start;
+      color: #334155; font-size: 0.9rem; font-weight: 500;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .lang-option:hover, .lang-option:focus-visible { background: rgba(30,58,95,0.06); color: #1e3a5f; outline: none; }
+    .lang-option[aria-current="true"] { background: rgba(30,58,95,0.08); color: #1e3a5f; font-weight: 600; }
+    .lang-option .check { opacity: 0; color: #1e3a5f; }
+    .lang-option[aria-current="true"] .check { opacity: 1; }
+    .lang-name { display: block; font-size: 0.95rem; }
+    .lang-sub { display: block; font-size: 0.72rem; color: #94a3b8; font-weight: 400; margin-top: 1px; }
+
+    .lang-switching main, .lang-switching nav, .lang-switching footer, .lang-switching section { transition: opacity 0.18s ease; }
+    .lang-switching .switch-fade { opacity: 0.35; }
+
+    /* Waiting-list specific */
+    .countdown-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .75rem; max-width: 520px; margin: 0 auto; }
+    .countdown-cell {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 1rem; padding: 1rem .5rem; text-align: center;
+    }
+    .countdown-num { font-size: clamp(1.75rem, 5vw, 2.75rem); font-weight: 800; color: #fff; line-height: 1; font-variant-numeric: tabular-nums; }
+    .countdown-lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.7); margin-top: .4rem; }
+
+    .role-card {
+      position: relative; display: flex; align-items: flex-start; gap: .85rem;
+      padding: 1rem 1.1rem; border: 2px solid #e5e7eb; border-radius: .9rem;
+      background: #fff; cursor: pointer; transition: all .2s ease;
+    }
+    .role-card:hover { border-color: #1e3a5f33; box-shadow: 0 6px 16px rgba(30,58,95,0.07); }
+    .role-card input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+    .role-card .role-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: rgba(30,58,95,0.08); color: #1e3a5f; }
+    .role-card .role-tick { position: absolute; top: .7rem; inset-inline-end: .7rem; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e5e7eb; display:inline-flex; align-items:center; justify-content:center; color:#fff; transition: all .2s ease; }
+    .role-card.selected { border-color: #1e3a5f; background: linear-gradient(180deg, #ffffff 0%, rgba(30,58,95,0.03) 100%); }
+    .role-card.selected .role-tick { background: #1e3a5f; border-color: #1e3a5f; }
+
+    .input-field {
+      width: 100%; padding: .75rem 1rem; border: 1px solid #e5e7eb; border-radius: .75rem;
+      background: #fff; color: #0f172a; font-size: .95rem;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .input-field:focus { outline: none; border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,.15); }
+    .input-field[aria-invalid="true"] { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.15); }
+    .field-error { color:#ef4444; font-size:.8rem; margin-top:.3rem; min-height:1rem; }
+    .field-label { display:block; font-size:.85rem; font-weight:600; color:#334155; margin-bottom:.4rem; }
+
+    .btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.85rem 1.5rem; background:#1e3a5f; color:#fff; font-weight:600; border-radius:.75rem; box-shadow: 0 10px 25px -8px rgba(30,58,95,.5); transition: all .2s ease; border: none; cursor:pointer; }
+    .btn-primary:hover:not(:disabled) { background:#254772; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-secondary { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.85rem 1.5rem; background:#fff; color:#1e3a5f; font-weight:600; border-radius:.75rem; border:1px solid #cbd5e1; transition: all .2s ease; cursor:pointer; }
+    .btn-secondary:hover { background:#f8fafc; }
+
+    .stat-card { background:#fff; border:1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; text-align:center; transition: all .3s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15,23,42,.08); }
+    .stat-num { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; color:#1e3a5f; line-height:1.1; font-variant-numeric: tabular-nums; }
+    .stat-lbl { font-size:.85rem; color:#64748b; margin-top:.4rem; }
+
+    .feature-card { background:#fff; border:1px solid #e5e7eb; border-radius:1rem; padding:1.5rem; height:100%; transition: all .3s ease; }
+    .feature-card:hover { border-color: rgba(30,58,95,.2); transform: translateY(-4px); box-shadow: 0 18px 32px rgba(15,23,42,.06); }
+    .feature-icon { width:48px; height:48px; border-radius:12px; background: linear-gradient(135deg,#1e3a5f,#254772); color:#fff; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; font-size:1.4rem; }
+
+    .faq-item { border:1px solid #e5e7eb; border-radius:.9rem; background:#fff; overflow:hidden; }
+    .faq-item + .faq-item { margin-top:.75rem; }
+    .faq-trigger { display:flex; align-items:center; justify-content:space-between; gap:1rem; width:100%; padding:1rem 1.2rem; background:none; border:none; text-align:start; font-weight:600; color:#0f172a; cursor:pointer; font-size:.95rem; }
+    .faq-trigger .faq-chev { transition: transform .2s ease; color:#64748b; }
+    .faq-item[open] .faq-chev { transform: rotate(180deg); }
+    .faq-body { padding: 0 1.2rem 1.1rem 1.2rem; color:#475569; font-size:.92rem; line-height:1.6; }
+    summary { list-style: none; cursor: pointer; }
+    summary::-webkit-details-marker { display: none; }
+
+    .toast { background: #1e3a5f; color:#fff; font-size:.9rem; font-weight:500; padding:.85rem 1.1rem; border-radius:.85rem; box-shadow: 0 18px 40px rgba(15,23,42,.25); max-width: 360px; }
+    .toast.error { background:#ef4444; }
+    .toast.success { background:#22c55e; }
+
+    #successPanel { display:none; }
+    #successPanel.show { display:block; }
+
+    /* PWA install */
+    #pwaInstallBtn { display:none; }
+    #pwaInstallBtn.show { display: inline-flex; }
+
+    /* Footer (Launch version) */
+    .footer-launch { background: linear-gradient(180deg, #142c4a 0%, #1e3a5f 100%); }
+    .footer-heading { font-weight: 700; color: #fff; margin-bottom: .9rem; font-size: 0.9rem; letter-spacing: 0.03em; text-transform: uppercase; }
+    .footer-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-list a { color: rgba(255,255,255,0.75); font-size: 0.9rem; transition: color 0.18s ease, transform 0.18s ease; }
+    .footer-list a:hover { color: #fff; }
+    .social-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; max-width: 100%; }
+    .social-link { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; flex: 0 0 52px; border-radius: 14px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12); transition: all 0.2s ease; padding: 6px; }
+    .social-link:hover { background: #d4a574; border-color: #d4a574; transform: translateY(-2px); }
+    .social-link svg { width: 24px; height: 24px; }
+
+    /* Gallery */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+    .gallery-item { position: relative; aspect-ratio: 16/10; border-radius: 1rem; overflow: hidden; background: linear-gradient(135deg,#e2e8f0,#cbd5e1); cursor: zoom-in; border: 1px solid #e5e7eb; transition: all .25s ease; }
+    .gallery-item:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(15,23,42,.15); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-item .g-label { position: absolute; left: .75rem; bottom: .6rem; right: .75rem; color: #fff; font-size: .8rem; font-weight: 600; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+    .gallery-empty { grid-column: 1 / -1; border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 3rem 1.5rem; text-align: center; color: #64748b; background: #fff; }
+
+    /* Lightbox */
+    .lb-overlay { position: fixed; inset: 0; background: rgba(3,10,25,.94); z-index: 300; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .lb-overlay.open { display: flex; }
+    .lb-img-wrap { position: relative; max-width: 100%; max-height: 100%; overflow: hidden; touch-action: pinch-zoom; }
+    .lb-img { max-width: 90vw; max-height: 82vh; object-fit: contain; user-select: none; transition: transform .2s ease; will-change: transform; }
+    .lb-img.zoomed { cursor: grab; }
+    .lb-btn { position: absolute; top: 1rem; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(6px); }
+    .lb-btn:hover { background: rgba(255,255,255,.2); }
+    .lb-close { right: 1rem; }
+    .lb-zoom { right: 4.25rem; }
+    .lb-nav { top: 50%; transform: translateY(-50%); }
+    .lb-prev { left: 1rem; }
+    .lb-next { right: 1rem; }
+    .lb-count { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); color: #fff; padding: .35rem .85rem; border-radius: 999px; font-size: .8rem; backdrop-filter: blur(6px); }
+
+    /* Timeline */
+    .timeline { position: relative; max-width: 780px; margin: 0 auto; }
+    .timeline::before { content:""; position: absolute; top: 24px; bottom: 24px; inset-inline-start: 22px; width: 2px; background: #e2e8f0; }
+    .tl-step { position: relative; padding-inline-start: 60px; padding-block: 1rem; opacity: 0; transform: translateY(8px); transition: opacity .5s ease, transform .5s ease; }
+    .tl-step.visible { opacity: 1; transform: translateY(0); }
+    .tl-dot { position: absolute; inset-inline-start: 8px; top: 1.15rem; width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 2px solid #cbd5e1; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: .8rem; transition: all .3s ease; z-index: 1; }
+    .tl-step.done .tl-dot { background: #22c55e; border-color: #22c55e; color: #fff; }
+    .tl-step.current .tl-dot { background: #1e3a5f; border-color: #1e3a5f; color: #fff; box-shadow: 0 0 0 6px rgba(30,58,95,.15); animation: pulse 2s infinite; }
+    .tl-title { font-weight: 700; color: #0f172a; }
+    .tl-desc { font-size: .88rem; color: #64748b; margin-top: .2rem; }
+    .tl-time { font-size: .75rem; color: #94a3b8; margin-top: .2rem; }
+
+    /* Reservation card (screenshot target) */
+    .rescard {
+      width: 720px; max-width: 100%; background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border-radius: 24px; padding: 32px; color: #0f172a;
+      box-shadow: 0 30px 80px -20px rgba(30,58,95,.35);
+      border: 1px solid #e5e7eb; position: relative; overflow: hidden;
+    }
+    .rescard::before { content:""; position:absolute; inset:0 0 auto 0; height:120px; background: linear-gradient(135deg,#1e3a5f 0%, #254772 60%, #2c5687 100%); }
+    .rescard-inner { position: relative; z-index: 1; }
+    .rescard-brand { display:flex; align-items:center; gap:12px; color:#fff; }
+    .rescard-brand img { width: 64px; height: 64px; object-fit: contain; background:#fff; border-radius:12px; padding:2px; }
+    .rescard-brand .b-name { font-size: 1.4rem; font-weight: 800; letter-spacing: .04em; }
+    .rescard-brand .b-tag { font-size:.7rem; text-transform:uppercase; letter-spacing:.15em; color:rgba(255,255,255,.75); }
+    .rescard-body { margin-top: 44px; background:#fff; border-radius: 18px; padding: 22px; border:1px solid #e5e7eb; box-shadow: 0 12px 30px rgba(15,23,42,.06); }
+    .rescard-title { font-size: 1rem; color:#64748b; font-weight: 500; }
+    .rescard-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.7rem; font-weight: 800; color:#1e3a5f; letter-spacing: .05em; }
+    .rescard-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-top: 18px; font-size:.9rem; }
+    .rescard-grid dt { color:#64748b; font-size:.75rem; text-transform: uppercase; letter-spacing:.06em; }
+    .rescard-grid dd { color:#0f172a; font-weight:600; margin-top:2px; }
+    .rescard-qr { display:flex; align-items:center; gap: 18px; margin-top: 20px; padding-top: 18px; border-top:1px dashed #e5e7eb; }
+    .rescard-qr .qr-box { width:110px; height:110px; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; }
+    .rescard-qr .qr-box canvas, .rescard-qr .qr-box img { width:100%; height:100%; display:block; }
+    .rescard-foot { margin-top: 20px; display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:#64748b; }
+    .rescard-badge { display:inline-block; padding: 4px 10px; border-radius: 999px; font-size:.7rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+    .rescard-badge.reserved { background: rgba(245, 158, 11, .12); color:#b45309; }
+    .rescard-badge.verified { background: rgba(34, 197, 94, .12); color:#15803d; }
+
+    .hidden-imp { display: none !important; }
+
+    /* Fix mobile 100vh */
+    .min-h-screen-safe { min-height: 100dvh; }
+    @supports not (min-height: 100dvh) { .min-h-screen-safe { min-height: 100vh; } }
+
+    /* Screen reader only */
+    .sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-gray-50 text-slate-800">
 
-  <!-- Nav -->
-  <nav class="fixed top-0 inset-x-0 z-50 bg-primary/95 backdrop-blur-md shadow-md">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <a href="index.html" class="text-2xl font-extrabold text-white">ISHFADI</a>
-      <div class="hidden md:flex items-center gap-6 text-sm text-white/80">
-        <a href="index.html" class="hover:text-white">Home</a>
-        <a href="help-center.html" class="hover:text-white">Help</a>
-        <a href="#join" class="px-4 py-2 bg-secondary text-primary rounded-xl font-bold hover:scale-105 transition">Join Now</a>
+  <a href="#reserve" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:bg-white focus:text-primary focus:px-3 focus:py-2 focus:rounded-lg focus:shadow" data-i18n="a11y.skip">Skip to reservation form</a>
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50" aria-label="Primary">
+    <div class="container mx-auto px-4 h-20 flex items-center justify-between gap-3">
+      <a href="#home" class="flex items-center gap-2.5 shrink-0" aria-label="ISHFADI home">
+        <span class="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-xl bg-white ring-1 ring-primary/15 shadow-sm p-1 shrink-0">
+          <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
+        </span>
+        <span class="text-2xl md:text-3xl font-bold text-primary tracking-tight whitespace-nowrap">ISHFADI</span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-6 shrink-0">
+        <a href="#home" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.home">Home</a>
+        <a href="#glimpse" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.glimpse">A Glimpse</a>
+        <a href="#faq" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.faq">FAQ</a>
+        <a href="#contact" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.contact">Contact</a>
+      </div>
+
+      <div class="flex items-center gap-2 md:gap-3">
+        <div class="lang-switcher hidden md:block" id="langSwitcherDesktop">
+          <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            <span class="lang-current-label">English</span>
+            <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+        </div>
+
+        <button id="pwaInstallBtn" type="button" onclick="window.__pwa && window.__pwa.promptInstall()" class="items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors" aria-label="Install ISHFADI app">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+          <span data-i18n="nav.install">Install</span>
+        </button>
+
+        <a href="#reserve" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.reserve">Reserve Account</a>
+
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
+      <div class="container mx-auto px-4 py-4 space-y-3">
+        <a href="#home" class="block py-2 text-gray-700" data-i18n="nav.home">Home</a>
+        <a href="#glimpse" class="block py-2 text-gray-700" data-i18n="nav.glimpse">A Glimpse</a>
+        <a href="#faq" class="block py-2 text-gray-700" data-i18n="nav.faq">FAQ</a>
+        <a href="#contact" class="block py-2 text-gray-700" data-i18n="nav.contact">Contact</a>
+        <a href="#reserve" class="block py-2 font-semibold text-primary" data-i18n="nav.reserve">Reserve Account</a>
+        <div class="pt-3 border-t">
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2" data-i18n="lang.label">Language</p>
+          <div class="lang-switcher w-full" id="langSwitcherMobile">
+            <button type="button" class="lang-trigger w-full justify-between" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+                <span class="lang-current-label">English</span>
+              </span>
+              <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div class="lang-menu" role="listbox" aria-label="Languages" style="position:static;width:100%;margin-top:.5rem"></div>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
 
-  <!-- Hero -->
-  <header class="hero-bg text-white pt-28 pb-20 px-4">
-    <div class="max-w-5xl mx-auto text-center">
-      <span class="inline-block px-4 py-1.5 rounded-full bg-secondary/20 text-secondary text-xs font-bold uppercase tracking-widest mb-4">Pre-Launch · Limited Spots</span>
-      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">Be first to find your <span class="text-secondary">verified home</span></h1>
-      <p class="text-white/80 max-w-2xl mx-auto text-lg mb-8">Join 24,000+ seekers, hosts and agents on the ISHFADI waiting list. Early access · exclusive perks · zero spam.</p>
+  <!-- HERO -->
+  <header id="home" class="hero-bg pt-24 pb-20 text-white relative overflow-hidden">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-float" aria-hidden="true"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float" style="animation-delay:2s" aria-hidden="true"></div>
 
-      <!-- Countdown -->
-      <div class="grid grid-cols-4 gap-3 max-w-2xl mx-auto mb-8">
-        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-days">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Days</div></div>
-        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-hours">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Hours</div></div>
-        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-mins">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Min</div></div>
-        <div class="bg-white/10 backdrop-blur-sm rounded-2xl py-4 border border-white/10"><div class="text-3xl md:text-4xl font-extrabold text-secondary" id="cd-secs">00</div><div class="text-xs text-white/60 uppercase tracking-wider">Sec</div></div>
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-3xl mx-auto text-center fade-in">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
+          <span class="w-2 h-2 bg-success rounded-full" style="animation:pulse 2s infinite" aria-hidden="true"></span>
+          <span class="text-sm" data-i18n="hero.badge">Pre-launch · Early Access</span>
+        </div>
+
+        <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4">
+          <span data-i18n="hero.title1">Reserve Your ISHFADI Account</span>
+          <br>
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-secondary" data-i18n="hero.title2">Today</span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-white/85 mb-8 max-w-2xl mx-auto" data-i18n="hero.subtitle">
+          Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.
+        </p>
+
+        <div class="mb-8" aria-label="Launch countdown">
+          <p class="text-sm uppercase tracking-widest text-white/60 mb-3" data-i18n="hero.countdownLabel">Launching in</p>
+          <div class="countdown-grid" id="countdown" role="timer" aria-live="polite">
+            <div class="countdown-cell"><div class="countdown-num" data-cd="days">--</div><div class="countdown-lbl" data-i18n="hero.days">Days</div></div>
+            <div class="countdown-cell"><div class="countdown-num" data-cd="hours">--</div><div class="countdown-lbl" data-i18n="hero.hours">Hours</div></div>
+            <div class="countdown-cell"><div class="countdown-num" data-cd="minutes">--</div><div class="countdown-lbl" data-i18n="hero.minutes">Minutes</div></div>
+            <div class="countdown-cell"><div class="countdown-num" data-cd="seconds">--</div><div class="countdown-lbl" data-i18n="hero.seconds">Seconds</div></div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a href="#reserve" class="btn-primary bg-white !text-primary hover:!bg-white/95" data-i18n="hero.ctaReserve">Reserve My Account</a>
+          <a href="#why" class="btn-secondary bg-transparent !text-white border-white/40 hover:!bg-white/10" data-i18n="hero.ctaLearn">Learn More</a>
+        </div>
       </div>
-
-      <a href="#join" class="inline-block px-8 py-4 bg-secondary text-primary rounded-xl font-bold hover:shadow-2xl hover:scale-105 transition-all">Reserve My Spot →</a>
     </div>
   </header>
 
-  <!-- Stats -->
-  <section class="-mt-12 px-4">
-    <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">24,827</div><div class="text-xs text-muted uppercase tracking-wider mt-1">On the list</div></div>
-      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">62</div><div class="text-xs text-muted uppercase tracking-wider mt-1">Countries</div></div>
-      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">3,420</div><div class="text-xs text-muted uppercase tracking-wider mt-1">Agents joining</div></div>
-      <div class="bg-white rounded-2xl p-5 text-center shadow-lg card-hover"><div class="text-3xl font-extrabold text-primary">73d</div><div class="text-xs text-muted uppercase tracking-wider mt-1">Until launch</div></div>
+  <!-- A GLIMPSE OF ISHFADI (dynamic screenshot gallery) -->
+  <section id="glimpse" class="py-16 features-bg">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto text-center mb-10">
+        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-secondary/15 text-secondary mb-3" data-i18n="glimpse.badge">A glimpse</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-primary mb-3" data-i18n="glimpse.title">A glimpse of the ISHFADI platform</h2>
+        <p class="text-gray-600" data-i18n="glimpse.subtitle">Previews of the pages, dashboards and flows we're building for launch. Tap any image to view in full.</p>
+      </div>
+
+      <div id="galleryGrid" class="gallery-grid max-w-6xl mx-auto" role="list" aria-label="ISHFADI platform previews">
+        <div class="gallery-empty" data-i18n="glimpse.empty">Screenshots will appear here as they are added. Drop images into <code>/public/assets/previews/</code> and list them in <code>index.json</code>.</div>
+      </div>
     </div>
   </section>
 
-  <!-- Form -->
-  <section id="join" class="py-20 px-4">
-    <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-8 md:p-10 border border-slate-100">
-      <div id="formWrap">
-        <h2 class="text-2xl md:text-3xl font-bold text-primary mb-1">Claim your early access</h2>
-        <p class="text-muted mb-8">Takes 30 seconds. We'll email you when your city goes live.</p>
-        <form id="waitlistForm" class="space-y-5">
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">First name</label><input required name="firstName" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
-            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Last name</label><input required name="lastName" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
+  <!-- LIVE STATISTICS -->
+  <section class="py-16">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold text-primary mb-2" data-i18n="stats.title">Reservations so far</h2>
+        <p class="text-gray-600" data-i18n="stats.subtitle">Live count of the ISHFADI early community.</p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
+        <div class="stat-card"><div class="stat-num" data-counter="reserved">0</div><div class="stat-lbl" data-i18n="stats.reserved">Reserved Accounts</div></div>
+        <div class="stat-card"><div class="stat-num" data-counter="countries">0</div><div class="stat-lbl" data-i18n="stats.countries">Countries</div></div>
+        <div class="stat-card"><div class="stat-num" data-counter="cities">0</div><div class="stat-lbl" data-i18n="stats.cities">Cities</div></div>
+        <div class="stat-card"><div class="stat-num" data-counter="buyers">0</div><div class="stat-lbl" data-i18n="stats.buyers">Future Buyers</div></div>
+        <div class="stat-card"><div class="stat-num" data-counter="hosts">0</div><div class="stat-lbl" data-i18n="stats.hosts">Future Hosts</div></div>
+        <div class="stat-card"><div class="stat-num" data-counter="agents">0</div><div class="stat-lbl" data-i18n="stats.agents">Future Agents</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESERVATION FORM -->
+  <section id="reserve" class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-8">
+          <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-secondary/15 text-secondary mb-3" data-i18n="reserve.badge">Reserve now</span>
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-2" data-i18n="reserve.title">Reserve your ISHFADI account</h2>
+          <p class="text-gray-600" data-i18n="reserve.subtitle">Takes less than a minute. Verify your email, and you're in.</p>
+        </div>
+
+        <!-- SUCCESS PANEL -->
+        <div id="successPanel" class="feature-card fade-in" role="status" aria-live="polite">
+          <div class="text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-success/15 text-success flex items-center justify-center mb-4">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <h3 class="text-2xl font-bold text-primary mb-1" data-i18n="success.title">Reservation successful</h3>
+            <p class="text-gray-600 mb-6" data-i18n="success.subtitle">Welcome to ISHFADI. Please check your email to verify your account.</p>
           </div>
-          <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Email</label><input required type="email" name="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" placeholder="you@example.com" /></div>
-          <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">I'm joining as</label>
-            <div class="grid grid-cols-3 gap-3">
-              <label class="role-card cursor-pointer"><input type="radio" name="role" value="buyer" class="hidden peer" checked><div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 text-center"><div class="text-2xl mb-1">🔍</div><div class="text-sm font-semibold text-slate-700">Seeker</div></div></label>
-              <label class="role-card cursor-pointer"><input type="radio" name="role" value="seller" class="hidden peer"><div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 text-center"><div class="text-2xl mb-1">🏠</div><div class="text-sm font-semibold text-slate-700">Host</div></div></label>
-              <label class="role-card cursor-pointer"><input type="radio" name="role" value="agent" class="hidden peer"><div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 text-center"><div class="text-2xl mb-1">🤝</div><div class="text-sm font-semibold text-slate-700">Agent</div></div></label>
+
+          <!-- Downloadable reservation card -->
+          <div class="flex justify-center mb-5">
+            <div id="reservationCard" class="rescard">
+              <div class="rescard-inner">
+                <div class="rescard-brand">
+                  <img src="/icons/logo.png" alt="ISHFADI logo">
+                  <div>
+                    <div class="b-name">ISHFADI</div>
+                    <div class="b-tag" data-i18n="rescard.tag">Pre-launch Reservation</div>
+                  </div>
+                </div>
+                <div class="rescard-body">
+                  <div class="rescard-title" data-i18n="success.reservationId">Reservation ID</div>
+                  <div class="rescard-id" id="rcId">ISH-000000</div>
+                  <dl class="rescard-grid">
+                    <div><dt data-i18n="success.name">Full Name</dt><dd id="rcName">—</dd></div>
+                    <div><dt data-i18n="success.date">Registration Date</dt><dd id="rcDate">—</dd></div>
+                    <div><dt data-i18n="success.country">Country</dt><dd id="rcCountry">—</dd></div>
+                    <div><dt data-i18n="success.roles">Selected Roles</dt><dd id="rcRoles">—</dd></div>
+                    <div><dt data-i18n="success.status">Reservation Status</dt><dd><span class="rescard-badge reserved" id="rcStatus" data-i18n="success.reserved">Reserved</span></dd></div>
+                    <div><dt data-i18n="success.email">Email Verification</dt><dd><span class="rescard-badge reserved" id="rcEmailStatus" data-i18n="success.pending">Pending</span></dd></div>
+                  </dl>
+                  <div class="rescard-qr">
+                    <div class="qr-box" id="rcQr" aria-hidden="true"></div>
+                    <div>
+                      <div style="font-weight:700;color:#1e3a5f;font-size:.95rem" data-i18n="rescard.launchingSoon">Launching Soon</div>
+                      <div style="font-size:.8rem;color:#64748b;margin-top:2px;line-height:1.4" data-i18n="rescard.scan">Scan to visit www.ishfadi.com and follow launch updates.</div>
+                    </div>
+                  </div>
+                  <div class="rescard-foot">
+                    <span>www.ishfadi.com</span>
+                    <span data-i18n="rescard.keep">Keep your credentials safe.</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Country</label>
-              <select required name="country" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white">
-                <option value="">Select…</option><option>United Arab Emirates</option><option>Saudi Arabia</option><option>Egypt</option><option>Jordan</option><option>Qatar</option><option>Kuwait</option><option>Oman</option><option>Bahrain</option><option>Morocco</option><option>Turkey</option><option>United Kingdom</option><option>United States</option><option>Other</option>
+
+          <div class="bg-primary/5 border border-primary/10 rounded-xl p-4 text-sm text-slate-700 mb-5" data-i18n="success.message">
+            When ISHFADI officially launches, simply sign in using the same email address and password you created today. You will not need to register again. Please keep your login credentials safe.
+          </div>
+
+          <div class="flex flex-wrap gap-3 justify-center">
+            <button type="button" class="btn-secondary" id="copyIdBtn" data-i18n="success.copy">Copy Reservation ID</button>
+            <button type="button" class="btn-primary" id="downloadIdBtn" data-i18n="success.download">Download Reservation Card</button>
+            <button type="button" class="btn-secondary" id="resendBtn" data-i18n="success.resend">Resend Verification Email</button>
+          </div>
+
+          <!-- Timeline -->
+          <div class="mt-10">
+            <h4 class="text-lg font-bold text-primary text-center mb-6" data-i18n="timeline.title">Your reservation timeline</h4>
+            <div class="timeline" id="reservationTimeline">
+              <div class="tl-step done" data-step="1"><div class="tl-dot">✓</div><div class="tl-title" data-i18n="timeline.s1t">Account Reserved</div><div class="tl-desc" data-i18n="timeline.s1d">Your reservation is confirmed with a unique ID.</div></div>
+              <div class="tl-step current" data-step="2"><div class="tl-dot">2</div><div class="tl-title" data-i18n="timeline.s2t">Email Verified</div><div class="tl-desc" data-i18n="timeline.s2d">Confirm your email to lock in your account.</div></div>
+              <div class="tl-step" data-step="3"><div class="tl-dot">3</div><div class="tl-title" data-i18n="timeline.s3t">Waiting for Launch</div><div class="tl-desc" data-i18n="timeline.s3d">Sit tight — we'll notify you the moment ISHFADI is live.</div></div>
+              <div class="tl-step" data-step="4"><div class="tl-dot">4</div><div class="tl-title" data-i18n="timeline.s4t">ISHFADI Launch</div><div class="tl-desc" data-i18n="timeline.s4d">The platform opens to the founding community.</div></div>
+              <div class="tl-step" data-step="5"><div class="tl-dot">5</div><div class="tl-title" data-i18n="timeline.s5t">Sign In</div><div class="tl-desc" data-i18n="timeline.s5d">Use the same email and password to sign in — no re-registration.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM -->
+        <form id="reservationForm" class="feature-card" novalidate>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="field-label" for="fName" data-i18n="form.fullName">Full Name</label>
+              <input class="input-field" type="text" id="fName" name="fullName" autocomplete="name" required minlength="2" maxlength="100">
+              <p class="field-error" data-error-for="fName"></p>
+            </div>
+            <div>
+              <label class="field-label" for="fEmail" data-i18n="form.email">Email Address</label>
+              <input class="input-field" type="email" id="fEmail" name="email" autocomplete="email" required maxlength="255" inputmode="email">
+              <p class="field-error" data-error-for="fEmail"></p>
+            </div>
+            <div>
+              <label class="field-label" for="fPhone" data-i18n="form.phone">Phone Number</label>
+              <input class="input-field" type="tel" id="fPhone" name="phone" autocomplete="tel" required minlength="6" maxlength="30" inputmode="tel" placeholder="+1 555 123 4567">
+              <p class="field-error" data-error-for="fPhone"></p>
+            </div>
+            <div>
+              <label class="field-label" for="fCountry" data-i18n="form.country">Country</label>
+              <select class="input-field" id="fCountry" name="country" required>
+                <option value="" data-i18n="form.selectCountry">Select a country</option>
               </select>
+              <p class="field-error" data-error-for="fCountry"></p>
             </div>
-            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">City</label><input required name="city" placeholder="e.g. Dubai" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Referral code <span class="text-muted normal-case">(optional)</span></label><input name="referral" placeholder="ISHFADI2024" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" /></div>
-            <div><label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">How did you hear?</label>
-              <select name="source" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white">
-                <option value="">Choose one…</option><option>Friend / Family</option><option>Instagram</option><option>TikTok</option><option>Twitter / X</option><option>LinkedIn</option><option>Google Search</option><option>Podcast / News</option><option>Other</option>
-              </select>
+            <div>
+              <label class="field-label" for="fCity" data-i18n="form.city">City</label>
+              <input class="input-field" type="text" id="fCity" name="city" autocomplete="address-level2" required minlength="2" maxlength="80">
+              <p class="field-error" data-error-for="fCity"></p>
+            </div>
+            <div>
+              <label class="field-label" for="fPassword" data-i18n="form.password">Password</label>
+              <input class="input-field" type="password" id="fPassword" name="password" autocomplete="new-password" required minlength="8" maxlength="72">
+              <p class="field-error" data-error-for="fPassword"></p>
+            </div>
+            <div>
+              <label class="field-label" for="fConfirm" data-i18n="form.confirmPassword">Confirm Password</label>
+              <input class="input-field" type="password" id="fConfirm" name="confirmPassword" autocomplete="new-password" required minlength="8" maxlength="72">
+              <p class="field-error" data-error-for="fConfirm"></p>
             </div>
           </div>
-          <label class="flex items-start gap-2 text-sm text-slate-600"><input type="checkbox" required class="mt-1"> I agree to the <a href="terms-of-service.html" class="text-secondary underline">Terms</a> and <a href="privacy-policy.html" class="text-secondary underline">Privacy Policy</a>.</label>
-          <button class="w-full py-4 bg-primary text-white rounded-xl font-bold hover:bg-[#2d4a6f] hover:scale-[1.01] transition-all text-lg">Join the Waiting List</button>
+
+          <fieldset class="mt-6">
+            <legend class="field-label" data-i18n="form.rolesTitle">I want to (select all that apply)</legend>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="role-card" data-role-card>
+                <input type="checkbox" name="roles" value="buyer" data-role-input>
+                <span class="role-icon" aria-hidden="true">🔍</span>
+                <span>
+                  <span class="block font-semibold text-slate-800" data-i18n="form.roleBuyer">Find a Place</span>
+                  <span class="block text-xs text-slate-500 mt-0.5" data-i18n="form.roleBuyerDesc">Browse verified listings worldwide.</span>
+                </span>
+                <span class="role-tick" aria-hidden="true"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+              </label>
+              <label class="role-card" data-role-card>
+                <input type="checkbox" name="roles" value="host" data-role-input>
+                <span class="role-icon" aria-hidden="true">🏠</span>
+                <span>
+                  <span class="block font-semibold text-slate-800" data-i18n="form.roleHost">Become a Host</span>
+                  <span class="block text-xs text-slate-500 mt-0.5" data-i18n="form.roleHostDesc">List your property to seekers globally.</span>
+                </span>
+                <span class="role-tick" aria-hidden="true"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+              </label>
+              <label class="role-card" data-role-card>
+                <input type="checkbox" name="roles" value="agent" data-role-input>
+                <span class="role-icon" aria-hidden="true">🤝</span>
+                <span>
+                  <span class="block font-semibold text-slate-800" data-i18n="form.roleAgent">Become an Agent</span>
+                  <span class="block text-xs text-slate-500 mt-0.5" data-i18n="form.roleAgentDesc">Represent hosts and clients professionally.</span>
+                </span>
+                <span class="role-tick" aria-hidden="true"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+              </label>
+            </div>
+            <p class="field-error" data-error-for="roles"></p>
+          </fieldset>
+
+          <div id="hostBlock" class="mt-5 hidden-imp p-4 border border-primary/15 rounded-xl bg-primary/5">
+            <p class="field-label" data-i18n="form.hostType">Host type</p>
+            <div class="flex flex-wrap gap-3 mb-3">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="hostType" value="individual" checked class="w-4 h-4">
+                <span data-i18n="form.individual">Individual</span>
+              </label>
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="hostType" value="company" class="w-4 h-4">
+                <span data-i18n="form.company">Company</span>
+              </label>
+            </div>
+            <div id="companyBlock" class="hidden-imp">
+              <label class="field-label" for="fCompany" data-i18n="form.companyName">Company Name</label>
+              <input class="input-field" type="text" id="fCompany" name="companyName" maxlength="150">
+              <p class="text-xs text-slate-500 mt-2" data-i18n="form.companyNote">Company registration documents will be uploaded after launch inside your dashboard.</p>
+            </div>
+          </div>
+
+          <input type="hidden" name="preferredLang" id="fLang" value="en">
+
+          <div class="mt-5">
+            <div id="turnstileContainer"></div>
+            <p class="field-error" data-error-for="captcha"></p>
+          </div>
+
+          <div class="mt-5 space-y-2 text-sm">
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" id="fTerms" required class="mt-1 w-4 h-4">
+              <span data-i18n-html="form.terms">I agree to the <a href="#" class="text-primary underline">Terms of Service</a>.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" id="fPrivacy" required class="mt-1 w-4 h-4">
+              <span data-i18n-html="form.privacy">I have read the <a href="#" class="text-primary underline">Privacy Policy</a>.</span>
+            </label>
+            <p class="field-error" data-error-for="terms"></p>
+          </div>
+
+          <div class="mt-6">
+            <button type="submit" class="btn-primary w-full" id="submitBtn">
+              <span data-i18n="form.submit">Reserve My Account</span>
+              <svg class="w-4 h-4 rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </button>
+            <p class="text-xs text-slate-500 text-center mt-3" data-i18n="form.footer">By reserving, you'll receive a verification email. Only verified accounts become active reservations.</p>
+          </div>
         </form>
       </div>
-      <div id="successWrap" class="hidden text-center py-6">
-        <div class="success-pop w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center mb-5"><svg class="w-10 h-10 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
-        <h3 class="text-2xl font-bold text-primary mb-2">You're on the list! 🎉</h3>
-        <p class="text-muted mb-6">Position <span class="font-bold text-primary" id="position">#24,828</span>. We'll email you the moment your city goes live.</p>
-        <div class="bg-slate-50 rounded-xl p-4 mb-4"><div class="text-xs text-muted uppercase tracking-wider font-semibold">Your referral code</div><div class="flex items-center justify-between gap-3 mt-2"><code class="font-mono font-bold text-primary text-lg" id="refCode">ISHFADI-XXXX</code><button onclick="navigator.clipboard.writeText(document.getElementById('refCode').textContent); this.textContent='Copied ✓'" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold">Copy</button></div></div>
-        <p class="text-xs text-muted">Refer 3 friends and skip 1,000 spots in the queue.</p>
+    </div>
+  </section>
+
+  <!-- WHY JOIN EARLY -->
+  <section id="why" class="py-16 features-bg">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-bold text-primary mb-3" data-i18n="why.title">Why reserve early</h2>
+        <p class="text-gray-600" data-i18n="why.subtitle">The early community gets the best of what's coming.</p>
       </div>
-    </div>
-  </section>
-
-  <!-- Benefits -->
-  <section class="py-16 bg-white">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold text-primary">Early-bird perks</h2><p class="text-muted mt-2">Exclusive to waiting-list members.</p></div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🚀</div><h3 class="font-bold text-primary mb-1">Day-one access</h3><p class="text-sm text-muted">Skip the queue and use ISHFADI before the public.</p></div>
-        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">💎</div><h3 class="font-bold text-primary mb-1">Founder badge</h3><p class="text-sm text-muted">A permanent profile badge that says you were here first.</p></div>
-        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🎁</div><h3 class="font-bold text-primary mb-1">3 free verifications</h3><p class="text-sm text-muted">Verify your first listings on the house.</p></div>
-        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">📈</div><h3 class="font-bold text-primary mb-1">2x referral rewards</h3><p class="text-sm text-muted">Double credits for everyone you bring on board.</p></div>
-        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🛎️</div><h3 class="font-bold text-primary mb-1">Priority support</h3><p class="text-sm text-muted">Direct line to the founding team for the first year.</p></div>
-        <div class="bg-slate-50 rounded-2xl p-6 card-hover border border-slate-100"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 text-2xl">🌍</div><h3 class="font-bold text-primary mb-1">Vote on cities</h3><p class="text-sm text-muted">Help us prioritize the next launch markets.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Roadmap -->
-  <section class="py-16 bg-slate-50">
-    <div class="max-w-4xl mx-auto px-4">
-      <div class="text-center mb-10"><h2 class="text-3xl md:text-4xl font-bold text-primary">Launch roadmap</h2></div>
-      <ol class="relative border-l-2 border-secondary/30 pl-8 space-y-8">
-        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-success border-4 border-white shadow"></div><div class="text-xs font-bold text-success uppercase tracking-widest">✓ Done</div><h3 class="font-bold text-primary mt-1">Waiting list open</h3><p class="text-sm text-muted">24k+ joined.</p></li>
-        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-secondary border-4 border-white shadow"></div><div class="text-xs font-bold text-secondary uppercase tracking-widest">Now</div><h3 class="font-bold text-primary mt-1">Agent onboarding</h3><p class="text-sm text-muted">Certifying agents in 12 markets.</p></li>
-        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-slate-300 border-4 border-white shadow"></div><div class="text-xs font-bold text-muted uppercase tracking-widest">+30 days</div><h3 class="font-bold text-primary mt-1">Closed beta</h3><p class="text-sm text-muted">Invitations roll out by city.</p></li>
-        <li><div class="absolute -left-[42px] w-5 h-5 rounded-full bg-slate-300 border-4 border-white shadow"></div><div class="text-xs font-bold text-muted uppercase tracking-widest">+73 days</div><h3 class="font-bold text-primary mt-1">Public launch</h3><p class="text-sm text-muted">Global access, mobile apps, referral payouts.</p></li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- Testimonials -->
-  <section class="py-16 bg-white">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="text-center mb-10"><h2 class="text-3xl md:text-4xl font-bold text-primary">From early members</h2></div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100"><div class="text-secondary mb-3">★★★★★</div><p class="text-slate-700 text-sm">"The verification idea alone made me sign up — finally a fraud-free platform."</p><div class="mt-4 text-xs"><div class="font-bold text-primary">Noor A.</div><div class="text-muted">Seeker · Cairo</div></div></div>
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100"><div class="text-secondary mb-3">★★★★★</div><p class="text-slate-700 text-sm">"Excited to list my properties on a network where every lead is real."</p><div class="mt-4 text-xs"><div class="font-bold text-primary">Hassan M.</div><div class="text-muted">Host · Dubai</div></div></div>
-        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100"><div class="text-secondary mb-3">★★★★★</div><p class="text-slate-700 text-sm">"The commission and referral model is the cleanest I've seen in the industry."</p><div class="mt-4 text-xs"><div class="font-bold text-primary">Reem S.</div><div class="text-muted">Agent · Riyadh</div></div></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3 class="font-semibold text-slate-800 mb-1" data-i18n="why.f1t">Reserve your account early</h3><p class="text-sm text-slate-600" data-i18n="why.f1d">Lock in your identity on ISHFADI before the crowd arrives.</p></div>
+        <div class="feature-card"><div class="feature-icon">🔒</div><h3 class="font-semibold text-slate-800 mb-1" data-i18n="why.f2t">Keep your username</h3><p class="text-sm text-slate-600" data-i18n="why.f2d">Your email and account are yours forever — no one else can claim them.</p></div>
+        <div class="feature-card"><div class="feature-icon">💫</div><h3 class="font-semibold text-slate-800 mb-1" data-i18n="why.f3t">Founding community</h3><p class="text-sm text-slate-600" data-i18n="why.f3d">Join the very first members shaping ISHFADI's global network.</p></div>
+        <div class="feature-card"><div class="feature-icon">🌍</div><h3 class="font-semibold text-slate-800 mb-1" data-i18n="why.f4t">Global opportunities</h3><p class="text-sm text-slate-600" data-i18n="why.f4d">Discover accommodations and clients across borders, cities and continents.</p></div>
+        <div class="feature-card"><div class="feature-icon">✅</div><h3 class="font-semibold text-slate-800 mb-1" data-i18n="why.f5t">Trusted hosts &amp; verified agents</h3><p class="text-sm text-slate-600" data-i18n="why.f5d">A community where hosts and agents are verified for real trust.</p></div>
+        <div class="feature-card"><div class="feature-icon">🚀</div><h3 class="font-semibold text-slate-800 mb-1" data-i18n="why.f6t">Faster onboarding at launch</h3><p class="text-sm text-slate-600" data-i18n="why.f6d">Skip the queue on day one. Sign in and start using ISHFADI immediately.</p></div>
       </div>
     </div>
   </section>
 
   <!-- FAQ -->
-  <section class="py-16 bg-slate-50">
-    <div class="max-w-3xl mx-auto px-4">
-      <div class="text-center mb-8"><h2 class="text-3xl md:text-4xl font-bold text-primary">Frequently asked</h2></div>
-      <div class="space-y-3">
-        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">Is the waiting list free?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">100% free, with no payment required at any step.</p></details>
-        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">How do I move up the queue?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">Share your referral code — each signup moves you up by 333 spots.</p></details>
-        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">When will my city launch?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">We open city by city based on member demand — you'll get an email the day we go live.</p></details>
-        <details class="bg-white rounded-xl p-5 border border-slate-100 group"><summary class="font-semibold text-primary cursor-pointer flex justify-between items-center">Can I unsubscribe?<span class="group-open:rotate-180 transition text-secondary">▼</span></summary><p class="text-muted mt-3 text-sm">Yes, one click in any email.</p></details>
+  <section id="faq" class="py-16">
+    <div class="container mx-auto px-4 max-w-3xl">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold text-primary mb-2" data-i18n="faq.title">Frequently asked questions</h2>
+        <p class="text-gray-600" data-i18n="faq.subtitle">Everything you need to know before launch.</p>
+      </div>
+      <div>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q1">Will I need to register again after launch?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a1">No. Your account has already been reserved. When ISHFADI officially launches, simply sign in using the same email and password you created today. Please keep your login credentials safe.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q2">Can I have multiple roles?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a2">Yes. ISHFADI allows one account to be a buyer, host and agent at the same time — any combination.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q3">When will verification happen?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a3">Email verification happens now, right after reservation. Identity verification for hosts, companies and agents takes place after launch inside your dashboard — you will upload the required documents for review by the ISHFADI administration.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q4">Can I edit my information later?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a4">Yes. Once the platform launches, you'll be able to update your profile from your dashboard at any time.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q5">How will I know when ISHFADI launches?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a5">You'll receive an email announcement at the address you reserved with, and our social channels will go live the same day. If you've installed ISHFADI on your phone, you'll be able to open it directly from your home screen.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q6">Can companies register?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a6">Yes. Select "Become a Host" and choose "Company", then enter your company name. You will upload company registration documents after launch, inside the host dashboard.</div></details>
       </div>
     </div>
   </section>
 
-  <!-- Community / Footer -->
-  <footer class="bg-primary text-white py-12 px-4">
-    <div class="max-w-6xl mx-auto text-center">
-      <h3 class="text-2xl font-bold mb-3">Join the community</h3>
-      <p class="text-white/70 mb-6">Follow us for launch updates and behind-the-scenes.</p>
-      <div class="flex justify-center gap-4 mb-8">
-        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">𝕏</a>
-        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">IG</a>
-        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">in</a>
-        <a href="#" class="w-11 h-11 rounded-full bg-white/10 hover:bg-secondary hover:text-primary transition flex items-center justify-center">TT</a>
+  <!-- LAUNCH FOOTER -->
+  <footer id="contact" class="footer-launch text-white py-14">
+    <div class="container mx-auto px-4">
+      <div class="grid gap-8 md:grid-cols-4 mb-10">
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="inline-flex items-center justify-center w-14 h-14 bg-white rounded-xl p-0.5 shrink-0">
+              <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
+            </span>
+            <span class="text-2xl font-bold">ISHFADI</span>
+          </div>
+          <p class="text-white/75 text-sm leading-relaxed max-w-md" data-i18n="footer.about">Building the future of global accommodation. Reserve your account today and sign in the moment we launch.</p>
+          <div class="mt-6">
+            <p class="footer-heading" data-i18n="footer.follow">Follow ISHFADI</p>
+            <div class="social-grid max-w-xs" role="list" aria-label="Follow ISHFADI on social media">
+              <a href="https://facebook.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg></a>
+              <a href="https://instagram.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram" role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></a>
+              <a href="https://linkedin.com/company/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.1c.5-.9 1.8-1.9 3.7-1.9 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4V9z"/></svg></a>
+              <a href="https://tiktok.com/@ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="TikTok" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.4 1.9 1.6 3.4 3.5 3.8v2.6c-1.4 0-2.7-.4-3.9-1.1v6.4a5.7 5.7 0 1 1-5.7-5.7c.3 0 .7 0 1 .1V12c-.3-.1-.6-.2-1-.2a2.9 2.9 0 1 0 2.9 2.9V3h3.2z"/></svg></a>
+              <a href="https://t.me/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Telegram" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.8-.5l2.4-2.4 4.9 3.6c.9.5 1.5.2 1.8-.8l3.3-15.4c.3-1.3-.4-1.9-1.7-1.4z"/></svg></a>
+              <a href="https://chat.whatsapp.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="WhatsApp" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A10.4 10.4 0 0 0 3.4 16.2L2 22l5.9-1.5a10.4 10.4 0 0 0 12.6-17zM12 20.1a8.5 8.5 0 0 1-4.3-1.2l-.3-.2-3.5.9.9-3.4-.2-.3a8.5 8.5 0 1 1 7.4 4.2z"/></svg></a>
+              <a href="https://youtube.com/@ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="YouTube" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 12s0-3.5-.4-5.2a2.8 2.8 0 0 0-2-2C18.8 4.4 12 4.4 12 4.4s-6.8 0-8.6.4a2.8 2.8 0 0 0-2 2C1 8.5 1 12 1 12s0 3.5.4 5.2a2.8 2.8 0 0 0 2 2c1.8.4 8.6.4 8.6.4s6.8 0 8.6-.4a2.8 2.8 0 0 0 2-2C23 15.5 23 12 23 12zM10 15.5v-7l6 3.5-6 3.5z"/></svg></a>
+              <a href="https://x.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="X (Twitter)" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading" data-i18n="footer.quickLinks">Quick Links</h4>
+          <ul class="footer-list">
+            <li><a href="#home" data-i18n="nav.home">Home</a></li>
+            <li><a href="#reserve" data-i18n="nav.reserve">Reserve Account</a></li>
+            <li><a href="#glimpse" data-i18n="nav.glimpse">A Glimpse</a></li>
+            <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+            <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
+            <li><a href="#" data-i18n="footer.privacy">Privacy Policy</a></li>
+            <li><a href="#" data-i18n="footer.terms">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading" data-i18n="footer.contact">Contact</h4>
+          <ul class="footer-list">
+            <li><a href="mailto:official@ishfadi.com">official@ishfadi.com</a></li>
+            <li><a href="https://www.ishfadi.com" target="_blank" rel="noopener">www.ishfadi.com</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="text-xs text-white/50">© 2026 ISHFADI · <a href="privacy-policy.html" class="hover:text-white">Privacy</a> · <a href="terms-of-service.html" class="hover:text-white">Terms</a> · <a href="safety-tips.html" class="hover:text-white">Safety</a></div>
+
+      <div class="border-t border-white/15 pt-8 text-center text-white/70 space-y-1">
+        <p>&copy; 2026 ISHFADI</p>
+        <p data-i18n="footer.tagline">Building the future of global accommodation.</p>
+        <p class="text-secondary font-semibold" data-i18n="footer.launching">Launching Soon.</p>
+      </div>
     </div>
   </footer>
 
+  <!-- Toast host -->
+  <div id="toastContainer" class="fixed top-20 end-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Lightbox -->
+  <div class="lb-overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview">
+    <button class="lb-btn lb-close" id="lbClose" aria-label="Close preview">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <button class="lb-btn lb-zoom" id="lbZoom" aria-label="Toggle zoom">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.3-4.3M11 8v6M8 11h6M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+    </button>
+    <button class="lb-btn lb-nav lb-prev" id="lbPrev" aria-label="Previous image">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <button class="lb-btn lb-nav lb-next" id="lbNext" aria-label="Next image">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <div class="lb-img-wrap"><img class="lb-img" id="lbImg" alt=""></div>
+    <div class="lb-count" id="lbCount">1 / 1</div>
+  </div>
+
+  <!-- APP CONFIG -->
   <script>
-    // Countdown
-    (function(){
-      const target = new Date(); target.setDate(target.getDate() + 73); target.setHours(0,0,0,0);
-      function tick(){
-        const diff = Math.max(0, target - new Date());
-        const d = Math.floor(diff/86400000), h = Math.floor(diff/3600000)%24, m = Math.floor(diff/60000)%60, s = Math.floor(diff/1000)%60;
-        const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=String(v).padStart(2,'0');};
-        set('cd-days',d); set('cd-hours',h); set('cd-mins',m); set('cd-secs',s);
+    /* ==========================================================
+       TODO: PASTE YOUR SUPABASE PROJECT KEYS HERE
+       Both values are safe to expose in the browser.
+       ========================================================== */
+    window.ISHFADI_CONFIG = {
+      SUPABASE_URL:        'https://kialcvnywshkklzsecok.supabase.co',
+      SUPABASE_ANON_KEY:   'sb_publishable_u2hfeDzlslgK5ZJq-zHYRQ_G1nuhl_9',
+      TURNSTILE_SITE_KEY:  '0x4AAAAAADucVlyj1x8eOYu6',                                       // TODO — set once you have your Cloudflare Turnstile site key
+      LAUNCH_DATE_ISO:     '2026-09-01T09:00:00Z',                   // TODO — set your launch date
+      SITE_URL:            'https://www.ishfadi.com'
+    };
+  </script>
+
+  <!-- ============================================
+       I18N ENGINE
+       ============================================ -->
+  <script>
+  (function () {
+    'use strict';
+    const LANGUAGES = {
+      en: { code:'en', name:'English',  native:'English',  dir:'ltr', sub:'English' },
+      fr: { code:'fr', name:'French',   native:'Français', dir:'ltr', sub:'French'  },
+      ar: { code:'ar', name:'Arabic',   native:'العربية',  dir:'rtl', sub:'Arabic'  }
+    };
+    const FALLBACK = 'en';
+    const STORAGE_KEY = 'ishfadi.lang';
+
+    const T = {
+      en: {
+        meta:{ title:'ISHFADI Launch Portal — Reserve Your Account', description:'Reserve your ISHFADI account before launch. Sign in on day one with the same credentials.' },
+        lang:{ label:'Language' },
+        a11y:{ skip:'Skip to reservation form' },
+        nav:{ home:'Home', glimpse:'A Glimpse', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account' },
+        hero:{ badge:'Pre-launch · Early Access', title1:'Reserve Your ISHFADI Account', title2:'Today',
+          subtitle:'Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.',
+          countdownLabel:'Launching in', days:'Days', hours:'Hours', minutes:'Minutes', seconds:'Seconds',
+          ctaReserve:'Reserve My Account', ctaLearn:'Learn More' },
+        glimpse:{ badge:'A glimpse', title:'A glimpse of the ISHFADI platform', subtitle:"Previews of the pages, dashboards and flows we're building for launch. Tap any image to view in full.", empty:'Screenshots will appear here as they are added.' },
+        stats:{ title:'Reservations so far', subtitle:'Live count of the ISHFADI early community.', reserved:'Reserved Accounts', countries:'Countries', cities:'Cities', buyers:'Future Buyers', hosts:'Future Hosts', agents:'Future Agents' },
+        reserve:{ badge:'Reserve now', title:'Reserve your ISHFADI account', subtitle:"Takes less than a minute. Verify your email, and you're in." },
+        form:{ fullName:'Full Name', email:'Email Address', phone:'Phone Number', country:'Country', selectCountry:'Select a country', city:'City', password:'Password', confirmPassword:'Confirm Password', rolesTitle:'I want to (select all that apply)',
+          roleBuyer:'Find a Place', roleBuyerDesc:'Browse verified listings worldwide.',
+          roleHost:'Become a Host', roleHostDesc:'List your property to seekers globally.',
+          roleAgent:'Become an Agent', roleAgentDesc:'Represent hosts and clients professionally.',
+          hostType:'Host type', individual:'Individual', company:'Company', companyName:'Company Name',
+          companyNote:'Company registration documents will be uploaded after launch inside your dashboard.',
+          terms:'I agree to the <a href="#" class="text-primary underline">Terms of Service</a>.',
+          privacy:'I have read the <a href="#" class="text-primary underline">Privacy Policy</a>.',
+          submit:'Reserve My Account',
+          footer:"By reserving, you'll receive a verification email. Only verified accounts become active reservations." },
+        errors:{ required:'This field is required.', email:'Please enter a valid email address.', phone:'Please enter a valid phone number.', minLen:'Must be at least {n} characters.',
+          passwordWeak:'Password must be at least 8 characters, including a letter and a number.',
+          passwordMatch:'Passwords do not match.', rolesRequired:'Please select at least one role.',
+          captchaRequired:'Please complete the human verification.', termsRequired:'You must accept the Terms and Privacy Policy.',
+          configMissing:'Supabase is not configured yet. Add your keys in ISHFADI_CONFIG.',
+          generic:'Something went wrong. Please try again.', rateLimit:'Too many attempts. Please try again in a few minutes.',
+          emailTaken:'This email is already reserved. Please sign in after launch.', offline:"You're offline. Please reconnect and try again." },
+        success:{ title:'Reservation successful', subtitle:'Welcome to ISHFADI. Please check your email to verify your account.',
+          reservationId:'Reservation ID', name:'Full Name', date:'Registration Date', country:'Country', roles:'Selected Roles', email:'Email Verification', status:'Reservation Status',
+          reserved:'Reserved', verified:'Verified', pending:'Pending',
+          message:'When ISHFADI officially launches, simply sign in using the same email address and password you created today. You will not need to register again. Please keep your login credentials safe.',
+          copy:'Copy Reservation ID', download:'Download Reservation Card', resend:'Resend Verification Email',
+          copied:'Reservation ID copied.', resent:'Verification email sent again.', downloadFail:'Could not generate image. Please try again.',
+          mustVerify:'Please verify your email first. Open the confirmation link we sent to your inbox, then return here to save your reservation card.' },
+        rescard:{ tag:'Pre-launch Reservation', launchingSoon:'Launching Soon', scan:'Scan to visit www.ishfadi.com and follow launch updates.', keep:'Keep your credentials safe.' },
+        timeline:{ title:'Your reservation timeline',
+          s1t:'Account Reserved', s1d:'Your reservation is confirmed with a unique ID.',
+          s2t:'Email Verified', s2d:'Confirm your email to lock in your account.',
+          s3t:'Waiting for Launch', s3d:"Sit tight — we'll notify you the moment ISHFADI is live.",
+          s4t:'ISHFADI Launch', s4d:'The platform opens to the founding community.',
+          s5t:'Sign In', s5d:'Use the same email and password to sign in — no re-registration.' },
+        why:{ title:'Why reserve early', subtitle:"The early community gets the best of what's coming.",
+          f1t:'Reserve your account early', f1d:'Lock in your identity on ISHFADI before the crowd arrives.',
+          f2t:'Keep your username', f2d:'Your email and account are yours forever.',
+          f3t:'Founding community', f3d:"Join the very first members shaping ISHFADI's global network.",
+          f4t:'Global opportunities', f4d:'Discover accommodations and clients across borders, cities and continents.',
+          f5t:'Trusted hosts & verified agents', f5d:'A community where hosts and agents are verified for real trust.',
+          f6t:'Faster onboarding at launch', f6d:'Skip the queue on day one. Sign in and start using ISHFADI immediately.' },
+        faq:{ title:'Frequently asked questions', subtitle:'Everything you need to know before launch.',
+          q1:'Will I need to register again after launch?', a1:'No. Your account has already been reserved. When ISHFADI officially launches, simply sign in using the same email and password you created today. Please keep your login credentials safe.',
+          q2:'Can I have multiple roles?', a2:'Yes. ISHFADI allows one account to be a buyer, host and agent at the same time — any combination.',
+          q3:'When will verification happen?', a3:'Email verification happens now, right after reservation. Identity verification for hosts, companies and agents takes place after launch inside your dashboard — you will upload the required documents for review by the ISHFADI administration.',
+          q4:'Can I edit my information later?', a4:"Yes. Once the platform launches, you'll be able to update your profile from your dashboard at any time.",
+          q5:'How will I know when ISHFADI launches?', a5:"You'll receive an email announcement at the address you reserved with, and our social channels will go live the same day. If you've installed ISHFADI on your phone, you'll be able to open it directly from your home screen.",
+          q6:'Can companies register?', a6:'Yes. Select "Become a Host" and choose "Company", then enter your company name. You will upload company registration documents after launch, inside the host dashboard.' },
+        footer:{ about:'Building the future of global accommodation. Reserve your account today and sign in the moment we launch.',
+          follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
+          privacy:'Privacy Policy', terms:'Terms of Service',
+          tagline:'Building the future of global accommodation.', launching:'Launching Soon.' },
+        toast:{ langSwitched:'Language switched to {lang}' }
+      },
+
+      fr: {
+        meta:{ title:'Portail de lancement ISHFADI — Réservez votre compte', description:'Réservez votre compte ISHFADI avant le lancement. Connectez-vous dès le premier jour avec les mêmes identifiants.' },
+        lang:{ label:'Langue' },
+        a11y:{ skip:'Aller au formulaire de réservation' },
+        nav:{ home:'Accueil', glimpse:'Aperçu', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte' },
+        hero:{ badge:'Pré-lancement · Accès anticipé', title1:'Réservez votre compte ISHFADI', title2:"aujourd'hui",
+          subtitle:"Les personnes qui réservent leur compte aujourd'hui pourront simplement se connecter après le lancement officiel avec le même e-mail et mot de passe — aucune nouvelle inscription requise.",
+          countdownLabel:'Lancement dans', days:'Jours', hours:'Heures', minutes:'Minutes', seconds:'Secondes',
+          ctaReserve:'Réserver mon compte', ctaLearn:'En savoir plus' },
+        glimpse:{ badge:'Aperçu', title:'Un aperçu de la plateforme ISHFADI', subtitle:'Aperçus des pages, tableaux de bord et parcours que nous construisons pour le lancement. Touchez une image pour la voir en plein écran.', empty:'Les captures apparaîtront ici au fur et à mesure.' },
+        stats:{ title:'Réservations à ce jour', subtitle:'Compteur en direct de la communauté ISHFADI.', reserved:'Comptes réservés', countries:'Pays', cities:'Villes', buyers:'Futurs acheteurs', hosts:'Futurs hôtes', agents:'Futurs agents' },
+        reserve:{ badge:'Réservez maintenant', title:'Réservez votre compte ISHFADI', subtitle:"En moins d'une minute. Vérifiez votre e-mail et c'est prêt." },
+        form:{ fullName:'Nom complet', email:'Adresse e-mail', phone:'Numéro de téléphone', country:'Pays', selectCountry:'Sélectionnez un pays', city:'Ville', password:'Mot de passe', confirmPassword:'Confirmez le mot de passe',
+          rolesTitle:"Je souhaite (sélectionnez tout ce qui s'applique)",
+          roleBuyer:'Trouver un logement', roleBuyerDesc:'Parcourez des annonces vérifiées à travers le monde.',
+          roleHost:'Devenir hôte', roleHostDesc:'Publiez votre bien auprès de chercheurs internationaux.',
+          roleAgent:'Devenir agent', roleAgentDesc:'Représentez hôtes et clients avec professionnalisme.',
+          hostType:"Type d'hôte", individual:'Particulier', company:'Société', companyName:'Nom de la société',
+          companyNote:"Les documents d'enregistrement de la société seront téléversés après le lancement depuis votre tableau de bord.",
+          terms:"J'accepte les <a href=\"#\" class=\"text-primary underline\">Conditions d'utilisation</a>.",
+          privacy:"J'ai lu la <a href=\"#\" class=\"text-primary underline\">Politique de confidentialité</a>.",
+          submit:'Réserver mon compte',
+          footer:'En réservant, vous recevrez un e-mail de vérification. Seuls les comptes vérifiés deviennent des réservations actives.' },
+        errors:{ required:'Ce champ est requis.', email:'Adresse e-mail invalide.', phone:'Numéro de téléphone invalide.',
+          minLen:'Doit contenir au moins {n} caractères.',
+          passwordWeak:'Le mot de passe doit contenir au moins 8 caractères, dont une lettre et un chiffre.',
+          passwordMatch:'Les mots de passe ne correspondent pas.', rolesRequired:'Veuillez sélectionner au moins un rôle.',
+          captchaRequired:'Veuillez compléter la vérification humaine.',
+          termsRequired:'Vous devez accepter les Conditions et la Politique de confidentialité.',
+          configMissing:"Supabase n'est pas encore configuré.", generic:'Une erreur est survenue. Veuillez réessayer.',
+          rateLimit:'Trop de tentatives. Veuillez réessayer dans quelques minutes.',
+          emailTaken:'Cet e-mail est déjà réservé. Connectez-vous après le lancement.',
+          offline:'Vous êtes hors ligne. Reconnectez-vous et réessayez.' },
+        success:{ title:'Réservation réussie', subtitle:'Bienvenue sur ISHFADI. Vérifiez votre e-mail pour activer votre compte.',
+          reservationId:'ID de réservation', name:'Nom complet', date:"Date d'inscription", country:'Pays', roles:'Rôles sélectionnés', email:'Vérification e-mail', status:'Statut de la réservation',
+          reserved:'Réservé', verified:'Vérifié', pending:'En attente',
+          message:"Lors du lancement officiel d'ISHFADI, connectez-vous simplement avec le même e-mail et mot de passe créés aujourd'hui. Aucune nouvelle inscription ne sera nécessaire. Conservez précieusement vos identifiants.",
+          copy:"Copier l'ID de réservation", download:'Télécharger la carte de réservation', resend:"Renvoyer l'e-mail de vérification",
+          copied:'ID copié.', resent:'E-mail de vérification renvoyé.', downloadFail:"Impossible de générer l'image. Réessayez.",
+          mustVerify:"Veuillez d'abord vérifier votre e-mail. Ouvrez le lien de confirmation que nous vous avons envoyé, puis revenez ici pour enregistrer votre carte." },
+        rescard:{ tag:'Réservation pré-lancement', launchingSoon:'Bientôt disponible', scan:'Scannez pour visiter www.ishfadi.com et suivre les actualités.', keep:'Conservez vos identifiants en lieu sûr.' },
+        timeline:{ title:'Chronologie de votre réservation',
+          s1t:'Compte réservé', s1d:'Votre réservation est confirmée avec un ID unique.',
+          s2t:'E-mail vérifié', s2d:'Confirmez votre e-mail pour valider votre compte.',
+          s3t:'En attente du lancement', s3d:'Nous vous préviendrons dès le lancement.',
+          s4t:'Lancement ISHFADI', s4d:'La plateforme ouvre à la communauté fondatrice.',
+          s5t:'Connexion', s5d:'Utilisez le même e-mail et mot de passe — aucune nouvelle inscription.' },
+        why:{ title:'Pourquoi réserver en avance', subtitle:'La communauté anticipée profite du meilleur à venir.',
+          f1t:'Réservation anticipée', f1d:'Réservez votre identité avant les autres.',
+          f2t:'Gardez votre identifiant', f2d:'Votre e-mail et compte vous appartiennent à vie.',
+          f3t:'Communauté fondatrice', f3d:'Rejoignez les tout premiers membres.',
+          f4t:'Opportunités mondiales', f4d:'Découvrez biens et clients à travers le monde.',
+          f5t:'Hôtes et agents vérifiés', f5d:"Une communauté où hôtes et agents sont vérifiés.",
+          f6t:'Onboarding accéléré', f6d:"Sautez la file d'attente le jour J." },
+        faq:{ title:'Questions fréquentes', subtitle:'Tout ce qu\'il faut savoir avant le lancement.',
+          q1:"Devrai-je m'inscrire à nouveau après le lancement ?", a1:"Non. Votre compte est déjà réservé. Connectez-vous simplement avec le même e-mail et mot de passe créés aujourd'hui. Conservez vos identifiants en lieu sûr.",
+          q2:'Puis-je avoir plusieurs rôles ?', a2:'Oui. ISHFADI permet à un seul compte d\'être acheteur, hôte et agent en même temps — toutes les combinaisons sont possibles.',
+          q3:"Quand aura lieu la vérification ?", a3:"La vérification de l'e-mail a lieu maintenant, juste après la réservation. La vérification d'identité pour les hôtes, sociétés et agents se fera après le lancement depuis votre tableau de bord.",
+          q4:'Puis-je modifier mes informations plus tard ?', a4:'Oui. Après le lancement, vous pourrez mettre à jour votre profil à tout moment.',
+          q5:"Comment saurai-je que le lancement d'ISHFADI est effectif ?", a5:"Vous recevrez un e-mail à l'adresse de votre réservation, et nos réseaux sociaux seront activés le même jour. Si vous avez installé ISHFADI sur votre téléphone, vous pourrez l'ouvrir directement.",
+          q6:'Les sociétés peuvent-elles s\'inscrire ?', a6:'Oui. Sélectionnez « Devenir hôte » puis « Société » et saisissez le nom de votre société. Vous téléverserez les documents après le lancement.' },
+        footer:{ about:"Nous construisons l'avenir du logement mondial. Réservez votre compte aujourd'hui et connectez-vous dès le lancement.",
+          follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
+          privacy:'Politique de confidentialité', terms:'Conditions d\'utilisation',
+          tagline:"Nous construisons l'avenir du logement mondial.", launching:'Bientôt disponible.' },
+        toast:{ langSwitched:'Langue changée en {lang}' }
+      },
+
+      ar: {
+        meta:{ title:'بوابة إطلاق إشفادي — احجز حسابك', description:'احجز حسابك في إشفادي قبل الإطلاق. سجّل الدخول في اليوم الأول بنفس بيانات الاعتماد.' },
+        lang:{ label:'اللغة' },
+        a11y:{ skip:'انتقل إلى نموذج الحجز' },
+        nav:{ home:'الرئيسية', glimpse:'لمحة', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا' },
+        hero:{ badge:'قبل الإطلاق · وصول مبكر', title1:'احجز حسابك في إشفادي', title2:'اليوم',
+          subtitle:'من يحجز حسابه اليوم يمكنه ببساطة تسجيل الدخول بعد الإطلاق الرسمي بنفس البريد وكلمة المرور — دون الحاجة للتسجيل من جديد.',
+          countdownLabel:'يتم الإطلاق خلال', days:'أيام', hours:'ساعات', minutes:'دقائق', seconds:'ثوانٍ',
+          ctaReserve:'احجز حسابي', ctaLearn:'اعرف المزيد' },
+        glimpse:{ badge:'لمحة', title:'لمحة عن منصة إشفادي', subtitle:'صور من الصفحات ولوحات التحكم والتدفقات التي نبنيها للإطلاق. اضغط على أي صورة لعرضها بالحجم الكامل.', empty:'ستظهر لقطات الشاشة هنا فور إضافتها.' },
+        stats:{ title:'الحجوزات حتى الآن', subtitle:'عدّاد مباشر لمجتمع إشفادي المبكر.', reserved:'الحسابات المحجوزة', countries:'دول', cities:'مدن', buyers:'مشترون مستقبليون', hosts:'مضيفون مستقبليون', agents:'وكلاء مستقبليون' },
+        reserve:{ badge:'احجز الآن', title:'احجز حسابك في إشفادي', subtitle:'أقل من دقيقة. تحقّق من بريدك وستكون جاهزًا.' },
+        form:{ fullName:'الاسم الكامل', email:'البريد الإلكتروني', phone:'رقم الهاتف', country:'الدولة', selectCountry:'اختر دولة', city:'المدينة', password:'كلمة المرور', confirmPassword:'تأكيد كلمة المرور',
+          rolesTitle:'أرغب في (اختر كل ما ينطبق)',
+          roleBuyer:'البحث عن منزل', roleBuyerDesc:'تصفّح إعلانات موثّقة حول العالم.',
+          roleHost:'أن أصبح مضيفًا', roleHostDesc:'انشر عقارك ليصل إلى الباحثين عالميًا.',
+          roleAgent:'أن أصبح وكيلًا', roleAgentDesc:'مثّل المضيفين والعملاء بطريقة احترافية.',
+          hostType:'نوع المضيف', individual:'فرد', company:'شركة', companyName:'اسم الشركة',
+          companyNote:'ستُرفع مستندات تسجيل الشركة بعد الإطلاق من داخل لوحة التحكم.',
+          terms:'أوافق على <a href="#" class="text-primary underline">شروط الخدمة</a>.',
+          privacy:'قرأت <a href="#" class="text-primary underline">سياسة الخصوصية</a>.',
+          submit:'احجز حسابي',
+          footer:'بالحجز ستتلقّى رسالة تحقق. تُصبح الحسابات المتحقّق منها فقط حجوزات فعّالة.' },
+        errors:{ required:'هذا الحقل مطلوب.', email:'يرجى إدخال بريد إلكتروني صحيح.', phone:'يرجى إدخال رقم هاتف صحيح.', minLen:'يجب أن يحتوي على {n} أحرف على الأقل.',
+          passwordWeak:'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل تشمل حرفًا ورقمًا.',
+          passwordMatch:'كلمتا المرور غير متطابقتين.', rolesRequired:'يرجى اختيار دور واحد على الأقل.',
+          captchaRequired:'يرجى إكمال التحقق البشري.', termsRequired:'يجب الموافقة على الشروط وسياسة الخصوصية.',
+          configMissing:'لم يتم إعداد Supabase بعد.', generic:'حدث خطأ ما. حاول مرة أخرى.',
+          rateLimit:'محاولات كثيرة. حاول مرة أخرى بعد قليل.', emailTaken:'هذا البريد محجوز بالفعل. سجّل الدخول بعد الإطلاق.',
+          offline:'أنت غير متصل بالإنترنت. أعد الاتصال وحاول مجددًا.' },
+        success:{ title:'تم الحجز بنجاح', subtitle:'مرحبًا بك في إشفادي. يرجى التحقق من بريدك لتفعيل حسابك.',
+          reservationId:'رقم الحجز', name:'الاسم الكامل', date:'تاريخ التسجيل', country:'الدولة', roles:'الأدوار المختارة', email:'التحقق من البريد', status:'حالة الحجز',
+          reserved:'محجوز', verified:'موثّق', pending:'قيد الانتظار',
+          message:'عند الإطلاق الرسمي لإشفادي، سجّل الدخول ببساطة باستخدام نفس البريد وكلمة المرور اللتين أنشأتهما اليوم. لن تحتاج إلى التسجيل مجددًا. احتفظ ببيانات الدخول في مكان آمن.',
+          copy:'نسخ رقم الحجز', download:'تنزيل بطاقة الحجز', resend:'إعادة إرسال رسالة التحقق',
+          copied:'تم نسخ رقم الحجز.', resent:'تم إعادة إرسال رسالة التحقق.', downloadFail:'تعذّر إنشاء الصورة. حاول مرة أخرى.',
+          mustVerify:'يرجى تأكيد بريدك الإلكتروني أولاً. افتح رابط التأكيد الذي أرسلناه إلى بريدك، ثم عد إلى هنا لحفظ بطاقة الحجز.' },
+        rescard:{ tag:'حجز ما قبل الإطلاق', launchingSoon:'قريبًا', scan:'امسح للانتقال إلى www.ishfadi.com ومتابعة أخبار الإطلاق.', keep:'احتفظ بيانات دخولك بأمان.' },
+        timeline:{ title:'المخطط الزمني لحجزك',
+          s1t:'تم حجز الحساب', s1d:'تم تأكيد حجزك برقم فريد.',
+          s2t:'تم التحقق من البريد', s2d:'أكّد بريدك لتثبيت الحساب.',
+          s3t:'بانتظار الإطلاق', s3d:'سنعلمك فور إطلاق إشفادي.',
+          s4t:'إطلاق إشفادي', s4d:'تُفتح المنصة للمجتمع المؤسِّس.',
+          s5t:'تسجيل الدخول', s5d:'استخدم نفس البريد وكلمة المرور — دون تسجيل جديد.' },
+        why:{ title:'لماذا الحجز مبكرًا', subtitle:'المجتمع المبكر يحصل على أفضل ما هو قادم.',
+          f1t:'احجز حسابك مبكرًا', f1d:'ثبّت هويتك في إشفادي قبل الجميع.',
+          f2t:'احتفظ باسم المستخدم', f2d:'بريدك وحسابك لك للأبد.',
+          f3t:'المجتمع المؤسِّس', f3d:'انضم إلى أوائل الأعضاء الذين يشكّلون شبكة إشفادي.',
+          f4t:'فرص عالمية', f4d:'اكتشف مساكن وعملاء عبر الحدود.',
+          f5t:'مضيفون ووكلاء موثوقون', f5d:'مجتمع موثّق من المضيفين والوكلاء.',
+          f6t:'انضمام أسرع عند الإطلاق', f6d:'تجاوز الطابور في اليوم الأول.' },
+        faq:{ title:'الأسئلة الشائعة', subtitle:'كل ما تحتاج معرفته قبل الإطلاق.',
+          q1:'هل سأحتاج للتسجيل مجددًا بعد الإطلاق؟', a1:'لا. حسابك محجوز بالفعل. عند إطلاق إشفادي، سجّل الدخول ببساطة بنفس البريد وكلمة المرور اللذين أنشأتهما اليوم. احتفظ بيانات الدخول بأمان.',
+          q2:'هل يمكنني اختيار عدة أدوار؟', a2:'نعم. يسمح إشفادي لحساب واحد بأن يكون مشتريًا ومضيفًا ووكيلًا في نفس الوقت — بأي تركيبة.',
+          q3:'متى تتم عملية التحقق؟', a3:'يتم التحقق من البريد الآن مباشرة بعد الحجز. أما التحقق من الهوية للمضيفين والشركات والوكلاء فيتم بعد الإطلاق من داخل لوحة التحكم عبر رفع المستندات المطلوبة للمراجعة.',
+          q4:'هل يمكنني تعديل بياناتي لاحقًا؟', a4:'نعم. بعد إطلاق المنصة يمكنك تحديث ملفك الشخصي في أي وقت.',
+          q5:'كيف سأعرف بموعد إطلاق إشفادي؟', a5:'ستصلك رسالة بريد إلى العنوان الذي حجزت به، وستنشط قنواتنا الاجتماعية في اليوم نفسه. إذا كنت قد ثبّت إشفادي على هاتفك، ستتمكن من فتحه مباشرة من الشاشة الرئيسية.',
+          q6:'هل يمكن للشركات التسجيل؟', a6:'نعم. اختر "أن أصبح مضيفًا" ثم "شركة"، وأدخل اسم شركتك. ستُرفع مستندات تسجيل الشركة بعد الإطلاق من لوحة تحكم المضيف.' },
+        footer:{ about:'نبني مستقبل الإقامة العالمية. احجز حسابك اليوم وسجّل الدخول لحظة الإطلاق.',
+          follow:'تابع إشفادي', quickLinks:'روابط سريعة', contact:'تواصل',
+          privacy:'سياسة الخصوصية', terms:'شروط الخدمة',
+          tagline:'نبني مستقبل الإقامة العالمية.', launching:'قريبًا.' },
+        toast:{ langSwitched:'تم تغيير اللغة إلى {lang}' }
+      }
+    };
+
+    let currentLang = FALLBACK;
+
+    function detectLanguage() {
+      try { const saved = localStorage.getItem(STORAGE_KEY); if (saved && LANGUAGES[saved]) return saved; } catch(e) {}
+      const cands = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
+      for (const raw of cands) { const code = String(raw||'').toLowerCase().split('-')[0]; if (LANGUAGES[code]) return code; }
+      return FALLBACK;
+    }
+
+    function t(key, vars) {
+      const parts = key.split('.');
+      let node = T[currentLang] || T[FALLBACK];
+      for (const p of parts) { node = node && node[p]; if (node == null) break; }
+      if (node == null) { node = T[FALLBACK]; for (const p of parts) { node = node && node[p]; if (node == null) break; } }
+      let str = (typeof node === 'string') ? node : key;
+      if (vars) Object.keys(vars).forEach(k => { str = str.replace(new RegExp('\\{'+k+'\\}','g'), vars[k]); });
+      return str;
+    }
+    window.t = t;
+    window.getCurrentLang = () => currentLang;
+
+    function applyDOMTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const attr = el.getAttribute('data-i18n-attr');
+        const val = t(key);
+        if (attr) el.setAttribute(attr, val);
+        else el.textContent = val;
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))); });
+      document.querySelectorAll('option[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+      const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', t('meta.description'));
+      const fl = document.getElementById('fLang'); if (fl) fl.value = currentLang;
+    }
+    window.applyDOMTranslations = applyDOMTranslations;
+
+    function setLanguage(lang, opts) {
+      if (!LANGUAGES[lang]) lang = FALLBACK;
+      const meta = LANGUAGES[lang];
+      const html = document.documentElement;
+      document.body.classList.add('lang-switching');
+      const fadeTargets = document.querySelectorAll('nav, section, footer, header');
+      fadeTargets.forEach(n => n.classList.add('switch-fade'));
+
+      setTimeout(() => {
+        currentLang = lang;
+        html.setAttribute('lang', lang);
+        html.setAttribute('dir', meta.dir);
+        try { localStorage.setItem(STORAGE_KEY, lang); } catch(e) {}
+        document.title = t('meta.title');
+        applyDOMTranslations();
+        renderLanguageSwitchers();
+        if (typeof window.renderCountries === 'function') window.renderCountries();
+        fadeTargets.forEach(n => n.classList.remove('switch-fade'));
+        document.body.classList.remove('lang-switching');
+        if (opts && opts.announce) showToast(t('toast.langSwitched', { lang: meta.native }));
+      }, 120);
+    }
+    window.setLanguage = setLanguage;
+
+    function renderLanguageSwitchers() {
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const menu = sw.querySelector('.lang-menu');
+        const labelEl = sw.querySelector('.lang-current-label');
+        if (labelEl) labelEl.textContent = LANGUAGES[currentLang].native;
+        if (!menu) return;
+        menu.innerHTML = Object.values(LANGUAGES).map(l => `
+          <button type="button" role="option" class="lang-option" data-lang="${l.code}" aria-current="${l.code === currentLang ? 'true' : 'false'}">
+            <span>
+              <span class="lang-name">${l.native}</span>
+              <span class="lang-sub">${t('lang.label')} · ${l.code.toUpperCase()}</span>
+            </span>
+            <svg class="check w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </button>
+        `).join('');
+        menu.querySelectorAll('.lang-option').forEach(btn => {
+          btn.addEventListener('click', () => { const code = btn.getAttribute('data-lang'); closeAllLangMenus(); setLanguage(code, { announce: true }); });
+        });
+      });
+    }
+
+    function closeAllLangMenus() {
+      document.querySelectorAll('.lang-switcher.open').forEach(s => { s.classList.remove('open'); const trig = s.querySelector('.lang-trigger'); if (trig) trig.setAttribute('aria-expanded', 'false'); });
+    }
+
+    function wireLangSwitchers() {
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const trigger = sw.querySelector('.lang-trigger'); if (!trigger) return;
+        trigger.addEventListener('click', e => {
+          e.stopPropagation();
+          const isOpen = sw.classList.contains('open'); closeAllLangMenus();
+          if (!isOpen) { sw.classList.add('open'); trigger.setAttribute('aria-expanded','true'); }
+        });
+        trigger.addEventListener('keydown', e => {
+          if (e.key === 'Escape') { closeAllLangMenus(); trigger.focus(); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); sw.classList.add('open'); trigger.setAttribute('aria-expanded','true'); const f = sw.querySelector('.lang-option'); if (f) f.focus(); }
+        });
+      });
+      document.addEventListener('click', e => { if (!e.target.closest('.lang-switcher')) closeAllLangMenus(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllLangMenus(); });
+    }
+
+    function showToast(message, type) {
+      const c = document.getElementById('toastContainer'); if (!c) return;
+      const el = document.createElement('div');
+      el.className = 'toast fade-in ' + (type || '');
+      el.setAttribute('role','status');
+      el.style.pointerEvents = 'auto';
+      el.textContent = message;
+      c.appendChild(el);
+      setTimeout(() => { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),320); }, 3400);
+    }
+    window.showToast = showToast;
+
+    currentLang = detectLanguage();
+    document.addEventListener('DOMContentLoaded', () => {
+      document.documentElement.setAttribute('lang', currentLang);
+      document.documentElement.setAttribute('dir', LANGUAGES[currentLang].dir);
+      document.title = t('meta.title');
+      applyDOMTranslations();
+      wireLangSwitchers();
+      renderLanguageSwitchers();
+
+      const mb = document.getElementById('mobileMenuBtn');
+      const mm = document.getElementById('mobileMenu');
+      if (mb && mm) {
+        mb.addEventListener('click', () => {
+          const open = !mm.classList.contains('hidden');
+          mm.classList.toggle('hidden');
+          mb.setAttribute('aria-expanded', String(!open));
+        });
+        // Close mobile menu when a nav link is clicked
+        mm.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+          mm.classList.add('hidden'); mb.setAttribute('aria-expanded','false');
+        }));
+      }
+    });
+  })();
+  </script>
+
+  <!-- ============================================
+       APP: countries / countdown / gallery / lightbox / timeline / form / PWA
+       ============================================ -->
+  <script>
+  (function () {
+    'use strict';
+
+    // ----- Countries (ISO-3166 alpha-2) -----
+    const COUNTRIES = [
+      ["AF","Afghanistan","Afghanistan","أفغانستان"],
+      ["AL","Albania","Albanie","ألبانيا"],
+      ["DZ","Algeria","Algérie","الجزائر"],
+      ["AD","Andorra","Andorre","أندورا"],
+      ["AO","Angola","Angola","أنغولا"],
+      ["AG","Antigua and Barbuda","Antigua-et-Barbuda","أنتيغوا وبربودا"],
+      ["AR","Argentina","Argentine","الأرجنتين"],
+      ["AM","Armenia","Arménie","أرمينيا"],
+      ["AU","Australia","Australie","أستراليا"],
+      ["AT","Austria","Autriche","النمسا"],
+      ["AZ","Azerbaijan","Azerbaïdjan","أذربيجان"],
+      ["BS","Bahamas","Bahamas","الباهاما"],
+      ["BH","Bahrain","Bahreïn","البحرين"],
+      ["BD","Bangladesh","Bangladesh","بنغلاديش"],
+      ["BB","Barbados","Barbade","بربادوس"],
+      ["BY","Belarus","Biélorussie","بيلاروسيا"],
+      ["BE","Belgium","Belgique","بلجيكا"],
+      ["BZ","Belize","Belize","بليز"],
+      ["BJ","Benin","Bénin","بنين"],
+      ["BT","Bhutan","Bhoutan","بوتان"],
+      ["BO","Bolivia","Bolivie","بوليفيا"],
+      ["BA","Bosnia and Herzegovina","Bosnie-Herzégovine","البوسنة والهرسك"],
+      ["BW","Botswana","Botswana","بوتسوانا"],
+      ["BR","Brazil","Brésil","البرازيل"],
+      ["BN","Brunei","Brunei","بروناي"],
+      ["BG","Bulgaria","Bulgarie","بلغاريا"],
+      ["BF","Burkina Faso","Burkina Faso","بوركينا فاسو"],
+      ["BI","Burundi","Burundi","بوروندي"],
+      ["CV","Cabo Verde","Cap-Vert","الرأس الأخضر"],
+      ["KH","Cambodia","Cambodge","كمبوديا"],
+      ["CM","Cameroon","Cameroun","الكاميرون"],
+      ["CA","Canada","Canada","كندا"],
+      ["CF","Central African Republic","République centrafricaine","جمهورية أفريقيا الوسطى"],
+      ["TD","Chad","Tchad","تشاد"],
+      ["CL","Chile","Chili","تشيلي"],
+      ["CN","China","Chine","الصين"],
+      ["CO","Colombia","Colombie","كولومبيا"],
+      ["KM","Comoros","Comores","جزر القمر"],
+      ["CG","Congo","Congo","الكونغو"],
+      ["CD","Congo (DRC)","Congo (RDC)","جمهورية الكونغو الديمقراطية"],
+      ["CR","Costa Rica","Costa Rica","كوستاريكا"],
+      ["CI","Côte d'Ivoire","Côte d'Ivoire","ساحل العاج"],
+      ["HR","Croatia","Croatie","كرواتيا"],
+      ["CU","Cuba","Cuba","كوبا"],
+      ["CY","Cyprus","Chypre","قبرص"],
+      ["CZ","Czechia","Tchéquie","التشيك"],
+      ["DK","Denmark","Danemark","الدنمارك"],
+      ["DJ","Djibouti","Djibouti","جيبوتي"],
+      ["DM","Dominica","Dominique","دومينيكا"],
+      ["DO","Dominican Republic","République dominicaine","جمهورية الدومينيكان"],
+      ["EC","Ecuador","Équateur","الإكوادور"],
+      ["EG","Egypt","Égypte","مصر"],
+      ["SV","El Salvador","Salvador","السلفادور"],
+      ["GQ","Equatorial Guinea","Guinée équatoriale","غينيا الاستوائية"],
+      ["ER","Eritrea","Érythrée","إريتريا"],
+      ["EE","Estonia","Estonie","إستونيا"],
+      ["SZ","Eswatini","Eswatini","إسواتيني"],
+      ["ET","Ethiopia","Éthiopie","إثيوبيا"],
+      ["FJ","Fiji","Fidji","فيجي"],
+      ["FI","Finland","Finlande","فنلندا"],
+      ["FR","France","France","فرنسا"],
+      ["GA","Gabon","Gabon","الغابون"],
+      ["GM","Gambia","Gambie","غامبيا"],
+      ["GE","Georgia","Géorgie","جورجيا"],
+      ["DE","Germany","Allemagne","ألمانيا"],
+      ["GH","Ghana","Ghana","غانا"],
+      ["GR","Greece","Grèce","اليونان"],
+      ["GD","Grenada","Grenade","غرينادا"],
+      ["GT","Guatemala","Guatemala","غواتيمالا"],
+      ["GN","Guinea","Guinée","غينيا"],
+      ["GW","Guinea-Bissau","Guinée-Bissau","غينيا بيساو"],
+      ["GY","Guyana","Guyana","غيانا"],
+      ["HT","Haiti","Haïti","هايتي"],
+      ["HN","Honduras","Honduras","هندوراس"],
+      ["HU","Hungary","Hongrie","المجر"],
+      ["IS","Iceland","Islande","آيسلندا"],
+      ["IN","India","Inde","الهند"],
+      ["ID","Indonesia","Indonésie","إندونيسيا"],
+      ["IR","Iran","Iran","إيران"],
+      ["IQ","Iraq","Irak","العراق"],
+      ["IE","Ireland","Irlande","أيرلندا"],
+      ["IL","Israel","Israël","إسرائيل"],
+      ["IT","Italy","Italie","إيطاليا"],
+      ["JM","Jamaica","Jamaïque","جامايكا"],
+      ["JP","Japan","Japon","اليابان"],
+      ["JO","Jordan","Jordanie","الأردن"],
+      ["KZ","Kazakhstan","Kazakhstan","كازاخستان"],
+      ["KE","Kenya","Kenya","كينيا"],
+      ["KI","Kiribati","Kiribati","كيريباتي"],
+      ["KP","North Korea","Corée du Nord","كوريا الشمالية"],
+      ["KR","South Korea","Corée du Sud","كوريا الجنوبية"],
+      ["KW","Kuwait","Koweït","الكويت"],
+      ["KG","Kyrgyzstan","Kirghizistan","قيرغيزستان"],
+      ["LA","Laos","Laos","لاوس"],
+      ["LV","Latvia","Lettonie","لاتفيا"],
+      ["LB","Lebanon","Liban","لبنان"],
+      ["LS","Lesotho","Lesotho","ليسوتو"],
+      ["LR","Liberia","Libéria","ليبيريا"],
+      ["LY","Libya","Libye","ليبيا"],
+      ["LI","Liechtenstein","Liechtenstein","ليختنشتاين"],
+      ["LT","Lithuania","Lituanie","ليتوانيا"],
+      ["LU","Luxembourg","Luxembourg","لوكسمبورغ"],
+      ["MG","Madagascar","Madagascar","مدغشقر"],
+      ["MW","Malawi","Malawi","مالاوي"],
+      ["MY","Malaysia","Malaisie","ماليزيا"],
+      ["MV","Maldives","Maldives","المالديف"],
+      ["ML","Mali","Mali","مالي"],
+      ["MT","Malta","Malte","مالطا"],
+      ["MH","Marshall Islands","Îles Marshall","جزر مارشال"],
+      ["MR","Mauritania","Mauritanie","موريتانيا"],
+      ["MU","Mauritius","Maurice","موريشيوس"],
+      ["MX","Mexico","Mexique","المكسيك"],
+      ["FM","Micronesia","Micronésie","ميكرونيزيا"],
+      ["MD","Moldova","Moldavie","مولدوفا"],
+      ["MC","Monaco","Monaco","موناكو"],
+      ["MN","Mongolia","Mongolie","منغوليا"],
+      ["ME","Montenegro","Monténégro","الجبل الأسود"],
+      ["MA","Morocco","Maroc","المغرب"],
+      ["MZ","Mozambique","Mozambique","موزمبيق"],
+      ["MM","Myanmar","Myanmar","ميانمار"],
+      ["NA","Namibia","Namibie","ناميبيا"],
+      ["NR","Nauru","Nauru","ناورو"],
+      ["NP","Nepal","Népal","نيبال"],
+      ["NL","Netherlands","Pays-Bas","هولندا"],
+      ["NZ","New Zealand","Nouvelle-Zélande","نيوزيلندا"],
+      ["NI","Nicaragua","Nicaragua","نيكاراغوا"],
+      ["NE","Niger","Niger","النيجر"],
+      ["NG","Nigeria","Nigéria","نيجيريا"],
+      ["MK","North Macedonia","Macédoine du Nord","مقدونيا الشمالية"],
+      ["NO","Norway","Norvège","النرويج"],
+      ["OM","Oman","Oman","عُمان"],
+      ["PK","Pakistan","Pakistan","باكستان"],
+      ["PW","Palau","Palaos","بالاو"],
+      ["PS","Palestine","Palestine","فلسطين"],
+      ["PA","Panama","Panama","بنما"],
+      ["PG","Papua New Guinea","Papouasie-Nouvelle-Guinée","بابوا غينيا الجديدة"],
+      ["PY","Paraguay","Paraguay","باراغواي"],
+      ["PE","Peru","Pérou","بيرو"],
+      ["PH","Philippines","Philippines","الفلبين"],
+      ["PL","Poland","Pologne","بولندا"],
+      ["PT","Portugal","Portugal","البرتغال"],
+      ["QA","Qatar","Qatar","قطر"],
+      ["RO","Romania","Roumanie","رومانيا"],
+      ["RU","Russia","Russie","روسيا"],
+      ["RW","Rwanda","Rwanda","رواندا"],
+      ["KN","Saint Kitts and Nevis","Saint-Kitts-et-Nevis","سانت كيتس ونيفيس"],
+      ["LC","Saint Lucia","Sainte-Lucie","سانت لوسيا"],
+      ["VC","Saint Vincent and the Grenadines","Saint-Vincent-et-les-Grenadines","سانت فينسنت والغرينادين"],
+      ["WS","Samoa","Samoa","ساموا"],
+      ["SM","San Marino","Saint-Marin","سان مارينو"],
+      ["ST","Sao Tome and Principe","Sao Tomé-et-Principe","ساو تومي وبرينسيبي"],
+      ["SA","Saudi Arabia","Arabie saoudite","السعودية"],
+      ["SN","Senegal","Sénégal","السنغال"],
+      ["RS","Serbia","Serbie","صربيا"],
+      ["SC","Seychelles","Seychelles","سيشل"],
+      ["SL","Sierra Leone","Sierra Leone","سيراليون"],
+      ["SG","Singapore","Singapour","سنغافورة"],
+      ["SK","Slovakia","Slovaquie","سلوفاكيا"],
+      ["SI","Slovenia","Slovénie","سلوفينيا"],
+      ["SB","Solomon Islands","Îles Salomon","جزر سليمان"],
+      ["SO","Somalia","Somalie","الصومال"],
+      ["ZA","South Africa","Afrique du Sud","جنوب أفريقيا"],
+      ["SS","South Sudan","Soudan du Sud","جنوب السودان"],
+      ["ES","Spain","Espagne","إسبانيا"],
+      ["LK","Sri Lanka","Sri Lanka","سريلانكا"],
+      ["SD","Sudan","Soudan","السودان"],
+      ["SR","Suriname","Suriname","سورينام"],
+      ["SE","Sweden","Suède","السويد"],
+      ["CH","Switzerland","Suisse","سويسرا"],
+      ["SY","Syria","Syrie","سوريا"],
+      ["TW","Taiwan","Taïwan","تايوان"],
+      ["TJ","Tajikistan","Tadjikistan","طاجيكستان"],
+      ["TZ","Tanzania","Tanzanie","تنزانيا"],
+      ["TH","Thailand","Thaïlande","تايلاند"],
+      ["TL","Timor-Leste","Timor oriental","تيمور الشرقية"],
+      ["TG","Togo","Togo","توغو"],
+      ["TO","Tonga","Tonga","تونغا"],
+      ["TT","Trinidad and Tobago","Trinité-et-Tobago","ترينيداد وتوباغو"],
+      ["TN","Tunisia","Tunisie","تونس"],
+      ["TR","Türkiye","Turquie","تركيا"],
+      ["TM","Turkmenistan","Turkménistan","تركمانستان"],
+      ["TV","Tuvalu","Tuvalu","توفالو"],
+      ["UG","Uganda","Ouganda","أوغندا"],
+      ["UA","Ukraine","Ukraine","أوكرانيا"],
+      ["AE","United Arab Emirates","Émirats arabes unis","الإمارات"],
+      ["GB","United Kingdom","Royaume-Uni","المملكة المتحدة"],
+      ["US","United States","États-Unis","الولايات المتحدة"],
+      ["UY","Uruguay","Uruguay","الأوروغواي"],
+      ["UZ","Uzbekistan","Ouzbékistan","أوزبكستان"],
+      ["VU","Vanuatu","Vanuatu","فانواتو"],
+      ["VA","Vatican City","Vatican","الفاتيكان"],
+      ["VE","Venezuela","Venezuela","فنزويلا"],
+      ["VN","Vietnam","Vietnam","فيتنام"],
+      ["YE","Yemen","Yémen","اليمن"],
+      ["ZM","Zambia","Zambie","زامبيا"],
+      ["ZW","Zimbabwe","Zimbabwe","زيمبابوي"]
+    ];
+
+    function renderCountries() {
+      const sel = document.getElementById('fCountry'); if (!sel) return;
+      const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
+      const idx = lang === 'fr' ? 2 : lang === 'ar' ? 3 : 1;
+      const current = sel.value;
+      const placeholder = sel.querySelector('option[value=""]');
+      sel.innerHTML = '';
+      if (placeholder) sel.appendChild(placeholder);
+      const sorted = COUNTRIES.slice().sort((a,b) => a[idx].localeCompare(b[idx], lang));
+      sorted.forEach(([code,en,fr,ar]) => {
+        const o = document.createElement('option');
+        o.value = code; o.textContent = idx===2?fr:idx===3?ar:en; o.dataset.en = en;
+        if (code === current) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+    window.renderCountries = renderCountries;
+    function countryEnglishName(code) { const row = COUNTRIES.find(c => c[0] === code); return row ? row[1] : code; }
+
+    // ----- Countdown -----
+    function initCountdown() {
+      const target = new Date(window.ISHFADI_CONFIG.LAUNCH_DATE_ISO).getTime();
+      if (isNaN(target)) return;
+      const cells = { days: document.querySelector('[data-cd="days"]'), hours: document.querySelector('[data-cd="hours"]'), minutes: document.querySelector('[data-cd="minutes"]'), seconds: document.querySelector('[data-cd="seconds"]') };
+      const pad = n => String(n).padStart(2,'0');
+      function tick() {
+        const diff = Math.max(0, target - Date.now());
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        if (cells.days) cells.days.textContent = pad(d);
+        if (cells.hours) cells.hours.textContent = pad(h);
+        if (cells.minutes) cells.minutes.textContent = pad(m);
+        if (cells.seconds) cells.seconds.textContent = pad(s);
       }
       tick(); setInterval(tick, 1000);
-    })();
-    // Form
-    document.getElementById('waitlistForm').addEventListener('submit', function(e){
+    }
+
+    // ----- Gallery + Lightbox -----
+    let galleryItems = [];
+    let lbIndex = 0;
+    let lbZoomed = false;
+
+    async function loadGallery() {
+      const grid = document.getElementById('galleryGrid');
+      if (!grid) return;
+      let items = [];
+      try {
+        const res = await fetch('/assets/previews/index.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            items = data.map((entry, i) => {
+              if (typeof entry === 'string') return { src: '/assets/previews/' + entry, label: entry.replace(/\.[a-z]+$/i,'').replace(/[-_]/g,' ') };
+              return { src: entry.src || ('/assets/previews/' + entry.file), label: entry.label || ('Preview ' + (i+1)) };
+            });
+          }
+        }
+      } catch (e) { /* silent */ }
+
+      galleryItems = items;
+      if (!items.length) return; // keep empty-state placeholder
+      grid.innerHTML = '';
+      items.forEach((item, i) => {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'gallery-item';
+        el.setAttribute('role','listitem');
+        el.setAttribute('aria-label', 'Open preview: ' + item.label);
+        el.innerHTML = `<img src="${item.src}" alt="${item.label}" loading="lazy" decoding="async"><span class="g-label">${item.label}</span>`;
+        el.addEventListener('click', () => openLightbox(i));
+        grid.appendChild(el);
+      });
+    }
+
+    function openLightbox(i) {
+      if (!galleryItems.length) return;
+      lbIndex = i; lbZoomed = false;
+      const lb = document.getElementById('lightbox');
+      updateLightbox();
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('lbClose').focus();
+    }
+    function closeLightbox() {
+      const lb = document.getElementById('lightbox');
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    function updateLightbox() {
+      const item = galleryItems[lbIndex];
+      const img = document.getElementById('lbImg');
+      img.src = item.src; img.alt = item.label;
+      img.classList.remove('zoomed'); img.style.transform = ''; lbZoomed = false;
+      document.getElementById('lbCount').textContent = (lbIndex + 1) + ' / ' + galleryItems.length;
+      const single = galleryItems.length < 2;
+      document.getElementById('lbPrev').style.display = single ? 'none' : '';
+      document.getElementById('lbNext').style.display = single ? 'none' : '';
+    }
+    function nextLb() { if (!galleryItems.length) return; lbIndex = (lbIndex + 1) % galleryItems.length; updateLightbox(); }
+    function prevLb() { if (!galleryItems.length) return; lbIndex = (lbIndex - 1 + galleryItems.length) % galleryItems.length; updateLightbox(); }
+    function toggleZoom() {
+      const img = document.getElementById('lbImg');
+      lbZoomed = !lbZoomed;
+      img.classList.toggle('zoomed', lbZoomed);
+      img.style.transform = lbZoomed ? 'scale(1.8)' : '';
+    }
+    function wireLightbox() {
+      document.getElementById('lbClose').addEventListener('click', closeLightbox);
+      document.getElementById('lbNext').addEventListener('click', nextLb);
+      document.getElementById('lbPrev').addEventListener('click', prevLb);
+      document.getElementById('lbZoom').addEventListener('click', toggleZoom);
+      document.getElementById('lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
+      document.addEventListener('keydown', (e) => {
+        const lb = document.getElementById('lightbox');
+        if (!lb.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        else if (e.key === 'ArrowRight') nextLb();
+        else if (e.key === 'ArrowLeft') prevLb();
+        else if (e.key === '+' || e.key === '=' || e.key === '-') toggleZoom();
+      });
+      // Swipe
+      let sx = 0, sy = 0, dx = 0;
+      const wrap = document.querySelector('.lb-img-wrap');
+      wrap.addEventListener('touchstart', (e) => { if (e.touches.length !== 1) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; dx = 0; }, {passive:true});
+      wrap.addEventListener('touchmove',  (e) => { if (e.touches.length !== 1) return; dx = e.touches[0].clientX - sx; }, {passive:true});
+      wrap.addEventListener('touchend',   () => { if (Math.abs(dx) > 50) { if (dx < 0) nextLb(); else prevLb(); } });
+    }
+
+    // ----- Supabase -----
+    let supabase = null;
+    function isConfigured() {
+      const c = window.ISHFADI_CONFIG;
+      return c && c.SUPABASE_URL && !/YOUR-PROJECT-ID/i.test(c.SUPABASE_URL) && c.SUPABASE_ANON_KEY && !/YOUR-SUPABASE/i.test(c.SUPABASE_ANON_KEY);
+    }
+    function initSupabase() {
+      if (!isConfigured() || !window.supabase) return null;
+      if (supabase) return supabase;
+      supabase = window.supabase.createClient(window.ISHFADI_CONFIG.SUPABASE_URL, window.ISHFADI_CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+      return supabase;
+    }
+
+    // ----- Stats -----
+    function animateCount(el, target) {
+      const start = parseInt(el.textContent, 10) || 0;
+      const dur = 900; const t0 = performance.now();
+      function step(t) { const p = Math.min(1, (t - t0) / dur); el.textContent = String(Math.round(start + (target - start) * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(step); }
+      requestAnimationFrame(step);
+    }
+    async function refreshStats() {
+      const els = { reserved: document.querySelector('[data-counter="reserved"]'), countries: document.querySelector('[data-counter="countries"]'), cities: document.querySelector('[data-counter="cities"]'), buyers: document.querySelector('[data-counter="buyers"]'), hosts: document.querySelector('[data-counter="hosts"]'), agents: document.querySelector('[data-counter="agents"]') };
+      const client = initSupabase(); if (!client) return;
+      try {
+        const { data, error } = await client.from('reservation_stats').select('*').single();
+        if (error || !data) return;
+        Object.keys(els).forEach(k => { if (els[k] && data[k] != null) animateCount(els[k], Number(data[k])); });
+      } catch(e) { /* silent */ }
+    }
+
+    // ----- Turnstile -----
+    let turnstileWidgetId = null;
+    let turnstileToken = null;
+    function loadTurnstile() {
+      const key = window.ISHFADI_CONFIG.TURNSTILE_SITE_KEY; if (!key) return;
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__turnstileReady&render=explicit';
+      s.async = true; s.defer = true; document.head.appendChild(s);
+      window.__turnstileReady = function () {
+        const container = document.getElementById('turnstileContainer'); if (!container) return;
+        turnstileWidgetId = window.turnstile.render(container, {
+          sitekey: key,
+          callback: token => { turnstileToken = token; clearError('captcha'); },
+          'error-callback': () => { turnstileToken = null; },
+          'expired-callback': () => { turnstileToken = null; }
+        });
+      };
+    }
+
+    // ----- Form -----
+    function setError(name, msg) {
+      const el = document.querySelector(`[data-error-for="${name}"]`); if (el) el.textContent = msg || '';
+      const input = document.getElementById(name.startsWith('f') ? name : ('f' + name.charAt(0).toUpperCase() + name.slice(1)));
+      if (input && input.setAttribute) input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    }
+    function clearError(name) { setError(name, ''); }
+    function clearAllErrors() { document.querySelectorAll('.field-error').forEach(e => e.textContent = ''); document.querySelectorAll('.input-field[aria-invalid="true"]').forEach(i => i.setAttribute('aria-invalid','false')); }
+
+    function validate(data) {
+      const errs = {};
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phoneRe = /^[\d+\-() ]{6,30}$/;
+      if (!data.fullName || data.fullName.trim().length < 2) errs.fName = window.t('errors.minLen', { n: 2 });
+      if (!emailRe.test(data.email || '')) errs.fEmail = window.t('errors.email');
+      if (!phoneRe.test(data.phone || '')) errs.fPhone = window.t('errors.phone');
+      if (!data.country) errs.fCountry = window.t('errors.required');
+      if (!data.city || data.city.trim().length < 2) errs.fCity = window.t('errors.minLen', { n: 2 });
+      if (!data.password || data.password.length < 8 || !/[A-Za-z]/.test(data.password) || !/\d/.test(data.password)) errs.fPassword = window.t('errors.passwordWeak');
+      if (data.password !== data.confirmPassword) errs.fConfirm = window.t('errors.passwordMatch');
+      if (!data.roles || !data.roles.length) errs.roles = window.t('errors.rolesRequired');
+      if (!data.termsAccepted) errs.terms = window.t('errors.termsRequired');
+      if (window.ISHFADI_CONFIG.TURNSTILE_SITE_KEY && !turnstileToken) errs.captcha = window.t('errors.captchaRequired');
+      return errs;
+    }
+
+    function readForm() {
+      const form = document.getElementById('reservationForm');
+      const fd = new FormData(form);
+      const roles = Array.from(form.querySelectorAll('input[name="roles"]:checked')).map(i => i.value);
+      return {
+        fullName: (fd.get('fullName')||'').toString().trim(),
+        email: (fd.get('email')||'').toString().trim().toLowerCase(),
+        phone: (fd.get('phone')||'').toString().trim(),
+        country: (fd.get('country')||'').toString(),
+        city: (fd.get('city')||'').toString().trim(),
+        password: (fd.get('password')||'').toString(),
+        confirmPassword: (fd.get('confirmPassword')||'').toString(),
+        roles,
+        hostType: roles.includes('host') ? (fd.get('hostType')||'individual').toString() : null,
+        companyName: (roles.includes('host') && (fd.get('hostType')==='company')) ? ((fd.get('companyName')||'').toString().trim() || null) : null,
+        preferredLang: (fd.get('preferredLang')||'en').toString(),
+        termsAccepted: document.getElementById('fTerms').checked && document.getElementById('fPrivacy').checked
+      };
+    }
+
+    async function handleSubmit(e) {
       e.preventDefault();
-      const code = 'ISHFADI-' + Math.random().toString(36).slice(2,6).toUpperCase();
-      document.getElementById('refCode').textContent = code;
-      document.getElementById('formWrap').classList.add('hidden');
-      document.getElementById('successWrap').classList.remove('hidden');
-      window.scrollTo({ top: document.getElementById('successWrap').offsetTop - 100, behavior: 'smooth' });
+      clearAllErrors();
+
+      if (!navigator.onLine) { window.showToast(window.t('errors.offline'), 'error'); return; }
+
+      const data = readForm();
+      const errs = validate(data);
+      if (Object.keys(errs).length) {
+        Object.entries(errs).forEach(([k,msg]) => setError(k, msg));
+        const firstErrEl = document.querySelector('[aria-invalid="true"], .field-error:not(:empty)');
+        if (firstErrEl) firstErrEl.scrollIntoView({ behavior:'smooth', block:'center' });
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true; const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span>...</span>';
+
+      if (!isConfigured()) {
+        // Demo mode — TODO keys not set. Show local success card so UI can be reviewed.
+        window.showToast(window.t('errors.configMissing'), 'error');
+        showSuccess({
+          reservationId: 'ISH-DEMO' + String(Math.floor(Math.random()*9000)+1000),
+          createdAt: new Date().toISOString(),
+          fullName: data.fullName, country: countryEnglishName(data.country),
+          roles: data.roles, email: data.email, verified: false
+        });
+        btn.disabled = false; btn.innerHTML = originalHTML;
+        return;
+      }
+
+      try {
+        const client = initSupabase();
+
+        // Single atomic call: every field the account needs travels as
+        // signUp metadata. A database trigger creates the profile row in
+        // the SAME transaction as the auth user — there is no second,
+        // separate write that can fail and leave a half-filled account.
+        const { data: signUpData, error: signUpErr } = await client.auth.signUp({
+          email: data.email, password: data.password,
+          options: {
+            emailRedirectTo: window.location.origin + '/waiting-list.html?verified=1',
+            captchaToken: turnstileToken || undefined,
+            data: {
+              full_name: data.fullName,
+              phone: data.phone,
+              country_code: data.country,
+              country_name: countryEnglishName(data.country),
+              city: data.city,
+              roles: data.roles,
+              host_type: data.hostType,
+              company_name: data.companyName,
+              preferred_lang: data.preferredLang,
+              turnstile_verified: !!turnstileToken
+            }
+          }
+        });
+
+        if (signUpErr) {
+          const msg = /already registered|already exists|duplicate/i.test(signUpErr.message) ? window.t('errors.emailTaken')
+                     : /rate/i.test(signUpErr.message) ? window.t('errors.rateLimit')
+                     : /captcha/i.test(signUpErr.message) ? window.t('errors.captchaRequired')
+                     : signUpErr.message || window.t('errors.generic');
+          window.showToast(msg, 'error');
+          if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
+          turnstileToken = null;
+          btn.disabled = false; btn.innerHTML = originalHTML; return;
+        }
+
+        const newUserId = signUpData.user ? signUpData.user.id : null;
+        if (!newUserId) {
+          window.showToast(window.t('errors.generic'), 'error');
+          btn.disabled = false; btn.innerHTML = originalHTML; return;
+        }
+
+        // Fetch the reservation card the trigger just created. No client
+        // session exists yet (email confirmation is required), so this
+        // goes through a narrowly-scoped RPC keyed by the UUID we just
+        // received back — never a raw table read.
+        const { data: card, error: cardErr } = await client
+          .rpc('get_reservation_card', { p_user_id: newUserId })
+          .single();
+
+        if (cardErr || !card) {
+          // The account and profile were created successfully (the trigger
+          // already guaranteed that) — this is only a display hiccup.
+          window.showToast(window.t('success.checkEmail') || window.t('errors.generic'), 'success');
+          showSuccess({
+            reservationId: null, createdAt: new Date().toISOString(),
+            fullName: data.fullName, country: countryEnglishName(data.country),
+            roles: data.roles, email: data.email, verified: false
+          });
+        } else {
+          showSuccess({
+            reservationId: card.reservation_id, createdAt: card.created_at,
+            fullName: card.full_name, country: card.country_name,
+            roles: card.roles, email: card.email, verified: card.email_verified
+          });
+        }
+
+        refreshStats();
+      } catch (err) {
+        window.showToast(window.t('errors.generic'), 'error');
+        btn.disabled = false; btn.innerHTML = originalHTML;
+      }
+    }
+
+    function rolesLabel(roles) {
+      return roles.map(r => window.t('form.role' + (r==='buyer'?'Buyer':r==='host'?'Host':'Agent'))).join(', ');
+    }
+
+    function renderQR(text) {
+      const box = document.getElementById('rcQr'); if (!box || !window.QRCode) return;
+      box.innerHTML = '';
+      try { new QRCode(box, { text, width: 220, height: 220, colorDark: '#1e3a5f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
+    }
+
+    const RESERVATION_STORAGE_KEY = 'ishfadi.reservation.v1';
+    let lastInfo = null;
+
+    function persistReservation(info) {
+      try { localStorage.setItem(RESERVATION_STORAGE_KEY, JSON.stringify(info)); } catch(e) {}
+    }
+    function loadPersistedReservation() {
+      try { const raw = localStorage.getItem(RESERVATION_STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
+    }
+
+    function showSuccess(info) {
+      lastInfo = info;
+      persistReservation(info);
+      const form = document.getElementById('reservationForm');
+      const panel = document.getElementById('successPanel');
+      form.classList.add('hidden-imp');
+      panel.classList.add('show');
+
+      // Reservation card
+      document.getElementById('rcId').textContent = info.reservationId;
+      document.getElementById('rcName').textContent = info.fullName;
+      document.getElementById('rcDate').textContent = new Date(info.createdAt).toLocaleString(window.getCurrentLang());
+      document.getElementById('rcCountry').textContent = info.country;
+      document.getElementById('rcRoles').textContent = rolesLabel(info.roles);
+      document.getElementById('rcStatus').textContent = window.t('success.reserved');
+      const em = document.getElementById('rcEmailStatus');
+      em.textContent = info.verified ? window.t('success.verified') : window.t('success.pending');
+      em.className = 'rescard-badge ' + (info.verified ? 'verified' : 'reserved');
+      renderQR(window.ISHFADI_CONFIG.SITE_URL || 'https://www.ishfadi.com');
+
+      // Reflect verification state on download button + timeline
+      applyVerificationUI(!!info.verified);
+
+      // Animate timeline
+      const steps = document.querySelectorAll('#reservationTimeline .tl-step');
+      steps.forEach((s, i) => setTimeout(() => s.classList.add('visible'), 120 * i));
+
+      panel.scrollIntoView({ behavior:'smooth', block:'start' });
+
+      document.getElementById('copyIdBtn').onclick = async () => {
+        try { await navigator.clipboard.writeText(info.reservationId); window.showToast(window.t('success.copied'), 'success'); } catch(e) {}
+      };
+      document.getElementById('downloadIdBtn').onclick = downloadReservationCard;
+      document.getElementById('resendBtn').onclick = resendVerification;
+    }
+
+    function applyVerificationUI(verified) {
+      const btn = document.getElementById('downloadIdBtn');
+      if (btn) {
+        btn.classList.toggle('opacity-60', !verified);
+        btn.setAttribute('aria-disabled', verified ? 'false' : 'true');
+        btn.title = verified ? '' : (window.t('success.mustVerify') || 'Verify your email to unlock the reservation card.');
+      }
+      const em = document.getElementById('rcEmailStatus');
+      if (em) {
+        em.textContent = verified ? window.t('success.verified') : window.t('success.pending');
+        em.className = 'rescard-badge ' + (verified ? 'verified' : 'reserved');
+      }
+      const step2 = document.querySelector('#reservationTimeline .tl-step[data-step="2"]');
+      const step3 = document.querySelector('#reservationTimeline .tl-step[data-step="3"]');
+      if (step2) {
+        if (verified) {
+          step2.classList.remove('current');
+          step2.classList.add('done');
+          const dot = step2.querySelector('.tl-dot'); if (dot) dot.textContent = '✓';
+          if (step3) step3.classList.add('current');
+        }
+      }
+    }
+
+    async function markVerifiedIfPossible() {
+      // 1) Ask Supabase (works if the confirmation link established a session in this tab)
+      try {
+        const client = initSupabase && initSupabase();
+        if (client && client.auth && client.auth.getUser) {
+          const { data } = await client.auth.getUser();
+          if (data && data.user && data.user.email_confirmed_at) return true;
+        }
+      } catch(e) {}
+      // 2) Fallback: trust the ?verified=1 redirect we control (Supabase sends users back here after confirming)
+      const p = new URLSearchParams(window.location.search);
+      return p.get('verified') === '1';
+    }
+
+    async function downloadReservationCard() {
+      const btn = document.getElementById('downloadIdBtn');
+      const node = document.getElementById('reservationCard');
+      if (!node || !window.html2canvas) { window.showToast(window.t('success.downloadFail'),'error'); return; }
+
+      // Gate: must be email-verified
+      if (!lastInfo || !lastInfo.verified) {
+        const verified = await markVerifiedIfPossible();
+        if (verified && lastInfo) {
+          lastInfo.verified = true;
+          persistReservation(lastInfo);
+          applyVerificationUI(true);
+        } else {
+          window.showToast(window.t('success.mustVerify') || 'Please verify your email first. Check your inbox and click the confirmation link to unlock your reservation card.', 'error');
+          return;
+        }
+      }
+
+      btn.disabled = true;
+      try {
+        const canvas = await window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        const link = document.createElement('a');
+        link.download = 'ISHFADI-' + (lastInfo && lastInfo.reservationId || 'reservation') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link); link.click(); link.remove();
+      } catch(e) {
+        window.showToast(window.t('success.downloadFail'), 'error');
+      } finally { btn.disabled = false; }
+    }
+
+    async function resendVerification() {
+      if (!lastInfo) return;
+      const btn = document.getElementById('resendBtn');
+      btn.disabled = true;
+      const client = initSupabase();
+      if (!client) { window.showToast(window.t('success.resent'), 'success'); btn.disabled = false; return; }
+      try {
+        await client.auth.resend({ type: 'signup', email: lastInfo.email, options: { emailRedirectTo: window.location.origin + '/waiting-list.html?verified=1' } });
+        window.showToast(window.t('success.resent'), 'success');
+      } catch(e) { window.showToast(window.t('errors.generic'), 'error'); }
+      finally { setTimeout(() => btn.disabled = false, 3000); }
+    }
+
+    // ----- Roles UI -----
+    function wireRolesUI() {
+      document.querySelectorAll('[data-role-card]').forEach(card => {
+        const input = card.querySelector('[data-role-input]');
+        function sync() { card.classList.toggle('selected', input.checked); toggleHostBlock(); clearError('roles'); }
+        input.addEventListener('change', sync); sync();
+      });
+    }
+    function toggleHostBlock() {
+      const isHost = document.querySelector('input[name="roles"][value="host"]').checked;
+      const hb = document.getElementById('hostBlock');
+      hb.classList.toggle('hidden-imp', !isHost);
+      if (!isHost) document.getElementById('companyBlock').classList.add('hidden-imp');
+      else toggleCompanyBlock();
+    }
+    function toggleCompanyBlock() {
+      const selected = document.querySelector('input[name="hostType"]:checked');
+      const isCompany = selected && selected.value === 'company';
+      document.getElementById('companyBlock').classList.toggle('hidden-imp', !isCompany);
+    }
+
+    async function handleVerifiedParam() {
+      const p = new URLSearchParams(window.location.search);
+      const verifiedFlag = p.get('verified') === '1';
+      const saved = loadPersistedReservation();
+      if (saved) {
+        // Restore success panel so users landing from the verification email see their card
+        saved.verified = saved.verified || verifiedFlag;
+        showSuccess(saved);
+        // Double-check with Supabase in case the confirmation link established a session
+        const verified = await markVerifiedIfPossible();
+        if (verified && !saved.verified) {
+          saved.verified = true;
+          persistReservation(saved);
+          applyVerificationUI(true);
+        }
+      }
+      if (verifiedFlag) {
+        setTimeout(() => window.showToast(window.t('success.verified') + ' ✓', 'success'), 400);
+        // Clean the URL
+        try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch(e) {}
+      }
+    }
+
+    // ----- PWA -----
+    let deferredPrompt = null;
+    function showManualBtn(show) { const b = document.getElementById('pwaInstallBtn'); if (b) b.classList.toggle('show', !!show); }
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; showManualBtn(true); });
+    window.addEventListener('appinstalled', () => { deferredPrompt = null; showManualBtn(false); });
+    window.__pwa = {
+      promptInstall: async () => {
+        if (!deferredPrompt) {
+          if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) alert("To install ISHFADI: tap the Share icon, then 'Add to Home Screen'.");
+          return;
+        }
+        try { deferredPrompt.prompt(); await deferredPrompt.userChoice; } catch(e) {}
+        deferredPrompt = null; showManualBtn(false);
+      }
+    };
+    // Register SW (skip in Lovable/preview iframes to avoid stale caches)
+    if ('serviceWorker' in navigator && location.protocol !== 'blob:') {
+      const host = location.hostname || '';
+      const inPreview = host.startsWith('id-preview--') || host.startsWith('preview--') || host.endsWith('.lovableproject.com') || host.endsWith('.lovableproject-dev.com') || host.endsWith('.beta.lovable.dev');
+      const inIframe = window.top !== window.self;
+      if (!inPreview && !inIframe) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(()=>{}); });
+      }
+    }
+
+    // ----- Smooth scroll for hash links -----
+    function wireSmoothScroll() {
+      document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', (e) => {
+          const id = a.getAttribute('href').slice(1);
+          if (!id) return;
+          const target = document.getElementById(id);
+          if (target) { e.preventDefault(); target.scrollIntoView({ behavior:'smooth', block:'start' }); history.replaceState(null, '', '#' + id); }
+        });
+      });
+    }
+
+    // ----- Boot -----
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCountries();
+      initCountdown();
+      wireRolesUI();
+      document.querySelectorAll('input[name="hostType"]').forEach(r => r.addEventListener('change', toggleCompanyBlock));
+      document.getElementById('reservationForm').addEventListener('submit', handleSubmit);
+
+      ['fName','fEmail','fPhone','fCountry','fCity','fPassword','fConfirm'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => setError(id, ''));
+      });
+      document.getElementById('fTerms').addEventListener('change', () => clearError('terms'));
+      document.getElementById('fPrivacy').addEventListener('change', () => clearError('terms'));
+
+      loadTurnstile();
+      loadGallery();
+      wireLightbox();
+      wireSmoothScroll();
+      refreshStats();
+      handleVerifiedParam();
     });
+  })();
   </script>
 </body>
 </html>
