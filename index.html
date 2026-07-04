@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title data-i18n="meta.title">ISHFADI Launch Portal — Reserve Your Account</title>
   <meta name="description" data-i18n-attr="content" data-i18n="meta.description" content="Reserve your ISHFADI account before launch. When ISHFADI goes live, simply sign in — no need to register again.">
-  <link rel="canonical" href="/waiting-list.html">
+  <link rel="canonical" href="/">
   <meta name="robots" content="index,follow">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ISHFADI Launch Portal — Reserve Your Account">
   <meta property="og:description" content="Reserve your ISHFADI account before launch. Sign in with the same credentials on day one.">
-  <meta property="og:url" content="/waiting-list.html">
+  <meta property="og:url" content="/">
   <meta property="og:image" content="/icons/icon-512.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ISHFADI Launch Portal">
@@ -26,7 +26,7 @@
     "@type": "WebSite",
     "name": "ISHFADI",
     "url": "/",
-    "potentialAction": { "@type": "RegisterAction", "target": "/waiting-list.html" }
+    "potentialAction": { "@type": "RegisterAction", "target": "/#reserve" }
   }
   </script>
 
@@ -1577,73 +1577,62 @@
       }
 
       try {
-        const client = initSupabase();
+        const cfg = window.ISHFADI_CONFIG;
+        const endpoint = cfg.SUPABASE_URL + '/functions/v1/reserve-account';
 
-        // Single atomic call: every field the account needs travels as
-        // signUp metadata. A database trigger creates the profile row in
-        // the SAME transaction as the auth user — there is no second,
-        // separate write that can fail and leave a half-filled account.
-        const { data: signUpData, error: signUpErr } = await client.auth.signUp({
-          email: data.email, password: data.password,
-          options: {
-            emailRedirectTo: window.location.origin + '/waiting-list.html?verified=1',
-            captchaToken: turnstileToken || undefined,
-            data: {
-              full_name: data.fullName,
-              phone: data.phone,
-              country_code: data.country,
-              country_name: countryEnglishName(data.country),
-              city: data.city,
-              roles: data.roles,
-              host_type: data.hostType,
-              company_name: data.companyName,
-              preferred_lang: data.preferredLang,
-              turnstile_verified: !!turnstileToken
-            }
-          }
+        // The frontend never talks to Supabase Auth directly. Every
+        // signup goes through this Edge Function, which re-validates
+        // everything server-side, verifies Turnstile itself against
+        // Cloudflare, enforces IP rate limiting, and only then creates
+        // the account.
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': cfg.SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            fullName: data.fullName,
+            email: data.email,
+            password: data.password,
+            phone: data.phone,
+            countryCode: data.country,
+            countryName: countryEnglishName(data.country),
+            city: data.city,
+            roles: data.roles,
+            hostType: data.hostType,
+            companyName: data.companyName,
+            preferredLanguage: data.preferredLang,
+            termsAccepted: data.termsAccepted,
+            privacyAccepted: data.termsAccepted,
+            turnstileToken: turnstileToken
+          })
         });
 
-        if (signUpErr) {
-          const msg = /already registered|already exists|duplicate/i.test(signUpErr.message) ? window.t('errors.emailTaken')
-                     : /rate/i.test(signUpErr.message) ? window.t('errors.rateLimit')
-                     : /captcha/i.test(signUpErr.message) ? window.t('errors.captchaRequired')
-                     : signUpErr.message || window.t('errors.generic');
+        const result = await res.json().catch(() => null);
+
+        if (!res.ok || !result || !result.success) {
+          const errMsg = (result && result.error) || '';
+          const msg = res.status === 409 ? window.t('errors.emailTaken')
+                     : res.status === 429 ? window.t('errors.rateLimit')
+                     : /robot verification/i.test(errMsg) ? window.t('errors.captchaRequired')
+                     : errMsg || window.t('errors.generic');
           window.showToast(msg, 'error');
           if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
           turnstileToken = null;
           btn.disabled = false; btn.innerHTML = originalHTML; return;
         }
 
-        const newUserId = signUpData.user ? signUpData.user.id : null;
-        if (!newUserId) {
-          window.showToast(window.t('errors.generic'), 'error');
-          btn.disabled = false; btn.innerHTML = originalHTML; return;
-        }
-
-        // Fetch the reservation card the trigger just created. No client
-        // session exists yet (email confirmation is required), so this
-        // goes through a narrowly-scoped RPC keyed by the UUID we just
-        // received back — never a raw table read.
-        const { data: card, error: cardErr } = await client
-          .rpc('get_reservation_card', { p_user_id: newUserId })
-          .single();
-
-        if (cardErr || !card) {
-          // The account and profile were created successfully (the trigger
-          // already guaranteed that) — this is only a display hiccup.
-          window.showToast(window.t('success.checkEmail') || window.t('errors.generic'), 'success');
-          showSuccess({
-            reservationId: null, createdAt: new Date().toISOString(),
-            fullName: data.fullName, country: countryEnglishName(data.country),
-            roles: data.roles, email: data.email, verified: false
-          });
-        } else {
-          showSuccess({
-            reservationId: card.reservation_id, createdAt: card.created_at,
-            fullName: card.full_name, country: card.country_name,
-            roles: card.roles, email: card.email, verified: card.email_verified
-          });
-        }
+        const r = result.reservation;
+        showSuccess({
+          reservationId: result.reservationId,
+          createdAt: r ? r.registrationDate : new Date().toISOString(),
+          fullName: data.fullName,
+          country: r ? r.country : countryEnglishName(data.country),
+          roles: r ? r.roles : data.roles,
+          email: data.email,
+          verified: false
+        });
 
         refreshStats();
       } catch (err) {
@@ -1783,7 +1772,7 @@
       const client = initSupabase();
       if (!client) { window.showToast(window.t('success.resent'), 'success'); btn.disabled = false; return; }
       try {
-        await client.auth.resend({ type: 'signup', email: lastInfo.email, options: { emailRedirectTo: window.location.origin + '/waiting-list.html?verified=1' } });
+        await client.auth.resend({ type: 'signup', email: lastInfo.email, options: { emailRedirectTo: window.location.origin + '/?verified=1' } });
         window.showToast(window.t('success.resent'), 'success');
       } catch(e) { window.showToast(window.t('errors.generic'), 'error'); }
       finally { setTimeout(() => btn.disabled = false, 3000); }
