@@ -1473,7 +1473,7 @@
       const els = { reserved: document.querySelector('[data-counter="reserved"]'), countries: document.querySelector('[data-counter="countries"]'), cities: document.querySelector('[data-counter="cities"]'), buyers: document.querySelector('[data-counter="buyers"]'), hosts: document.querySelector('[data-counter="hosts"]'), agents: document.querySelector('[data-counter="agents"]') };
       const client = initSupabase(); if (!client) return;
       try {
-        const { data, error } = await client.from('reservation_stats').select('*').single();
+        const { data, error } = await client.rpc('get_reservation_stats').single();
         if (error || !data) return;
         Object.keys(els).forEach(k => { if (els[k] && data[k] != null) animateCount(els[k], Number(data[k])); });
       } catch(e) { /* silent */ }
