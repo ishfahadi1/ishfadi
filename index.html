@@ -264,8 +264,13 @@
     .rescard-grid dt { color:#64748b; font-size:.75rem; text-transform: uppercase; letter-spacing:.06em; }
     .rescard-grid dd { color:#0f172a; font-weight:600; margin-top:2px; }
     .rescard-qr { display:flex; align-items:center; gap: 18px; margin-top: 20px; padding-top: 18px; border-top:1px dashed #e5e7eb; }
-    .rescard-qr .qr-box { width:110px; height:110px; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; }
+    .rescard-qr .qr-box { width:110px; height:110px; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; direction:ltr; }
     .rescard-qr .qr-box canvas, .rescard-qr .qr-box img { width:100%; height:100%; display:block; }
+    .pw-field-wrap { position:relative; }
+    .pw-field-wrap .input-field { padding-inline-end: 44px; }
+    .pw-toggle-btn { position:absolute; inset-block:0; inset-inline-end:0; width:40px; display:flex; align-items:center; justify-content:center; background:transparent; border:0; cursor:pointer; color:#64748b; }
+    .pw-toggle-btn:hover { color:#1e3a5f; }
+    .pw-toggle-btn:focus-visible { outline:2px solid #1e3a5f; outline-offset:-2px; border-radius:6px; }
     .rescard-foot { margin-top: 20px; display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:#64748b; }
     .rescard-badge { display:inline-block; padding: 4px 10px; border-radius: 999px; font-size:.7rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
     .rescard-badge.reserved { background: rgba(245, 158, 11, .12); color:#b45309; }
@@ -535,12 +540,24 @@
             </div>
             <div>
               <label class="field-label" for="fPassword" data-i18n="form.password">Password</label>
-              <input class="input-field" type="password" id="fPassword" name="password" autocomplete="new-password" required minlength="8" maxlength="72">
+              <div class="pw-field-wrap">
+                <input class="input-field" type="password" id="fPassword" name="password" autocomplete="new-password" required minlength="8" maxlength="72">
+                <button type="button" class="pw-toggle-btn" data-pw-toggle-for="fPassword" aria-label="Show password" aria-pressed="false">
+                  <svg class="pw-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.29 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
               <p class="field-error" data-error-for="fPassword"></p>
             </div>
             <div>
               <label class="field-label" for="fConfirm" data-i18n="form.confirmPassword">Confirm Password</label>
-              <input class="input-field" type="password" id="fConfirm" name="confirmPassword" autocomplete="new-password" required minlength="8" maxlength="72">
+              <div class="pw-field-wrap">
+                <input class="input-field" type="password" id="fConfirm" name="confirmPassword" autocomplete="new-password" required minlength="8" maxlength="72">
+                <button type="button" class="pw-toggle-btn" data-pw-toggle-for="fConfirm" aria-label="Show password" aria-pressed="false">
+                  <svg class="pw-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.29 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
               <p class="field-error" data-error-for="fConfirm"></p>
             </div>
           </div>
@@ -1025,6 +1042,10 @@
         applyDOMTranslations();
         renderLanguageSwitchers();
         if (typeof window.renderCountries === 'function') window.renderCountries();
+        const successPanel = document.getElementById('successPanel');
+        if (successPanel && successPanel.classList.contains('show') && typeof renderQR === 'function') {
+          renderQR(window.ISHFADI_CONFIG.SITE_URL || 'https://www.ishfadi.com');
+        }
         fadeTargets.forEach(n => n.classList.remove('switch-fade'));
         document.body.classList.remove('lang-switching');
         if (opts && opts.announce) showToast(t('toast.langSwitched', { lang: meta.native }));
@@ -1779,6 +1800,23 @@
     }
 
     // ----- Roles UI -----
+    function wirePasswordToggles() {
+      document.querySelectorAll('[data-pw-toggle-for]').forEach(btn => {
+        const input = document.getElementById(btn.getAttribute('data-pw-toggle-for'));
+        if (!input) return;
+        const showIcon = btn.querySelector('.pw-icon-show');
+        const hideIcon = btn.querySelector('.pw-icon-hide');
+        btn.addEventListener('click', () => {
+          const nowVisible = input.type === 'password';
+          input.type = nowVisible ? 'text' : 'password';
+          btn.setAttribute('aria-pressed', nowVisible ? 'true' : 'false');
+          btn.setAttribute('aria-label', nowVisible ? (window.t('form.hidePassword') || 'Hide password') : (window.t('form.showPassword') || 'Show password'));
+          if (showIcon) showIcon.style.display = nowVisible ? 'none' : '';
+          if (hideIcon) hideIcon.style.display = nowVisible ? '' : 'none';
+        });
+      });
+    }
+
     function wireRolesUI() {
       document.querySelectorAll('[data-role-card]').forEach(card => {
         const input = card.querySelector('[data-role-input]');
@@ -1803,11 +1841,43 @@
       const p = new URLSearchParams(window.location.search);
       const verifiedFlag = p.get('verified') === '1';
       const saved = loadPersistedReservation();
-      if (saved) {
-        // Restore success panel so users landing from the verification email see their card
+
+      // Prefer fresh, authoritative data straight from the backend whenever
+      // the confirmation link just established a session in THIS browser.
+      // This is what makes verification work correctly even when the link
+      // is opened on a different device than the one used to register --
+      // that device has no localStorage entry for this reservation at all.
+      let fetched = null;
+      try {
+        const client = initSupabase && initSupabase();
+        if (client && client.auth && client.auth.getUser) {
+          const { data: userData } = await client.auth.getUser();
+          if (userData && userData.user) {
+            const { data: card } = await client
+              .rpc('get_reservation_card', { p_user_id: userData.user.id })
+              .single();
+            if (card) {
+              fetched = {
+                reservationId: card.reservation_id,
+                createdAt: card.created_at,
+                fullName: card.full_name,
+                country: card.country_name,
+                roles: card.roles,
+                email: card.email,
+                verified: card.email_verified
+              };
+            }
+          }
+        }
+      } catch (e) {}
+
+      if (fetched) {
+        showSuccess(fetched);
+      } else if (saved) {
+        // Same-device fallback when no fresh verification session exists
+        // (e.g. just returning to the page later without clicking a link).
         saved.verified = saved.verified || verifiedFlag;
         showSuccess(saved);
-        // Double-check with Supabase in case the confirmation link established a session
         const verified = await markVerifiedIfPossible();
         if (verified && !saved.verified) {
           saved.verified = true;
@@ -1815,6 +1885,7 @@
           applyVerificationUI(true);
         }
       }
+
       if (verifiedFlag) {
         setTimeout(() => window.showToast(window.t('success.verified') + ' ✓', 'success'), 400);
         // Clean the URL
@@ -1864,6 +1935,7 @@
       renderCountries();
       initCountdown();
       wireRolesUI();
+      wirePasswordToggles();
       document.querySelectorAll('input[name="hostType"]').forEach(r => r.addEventListener('change', toggleCompanyBlock));
       document.getElementById('reservationForm').addEventListener('submit', handleSubmit);
 
