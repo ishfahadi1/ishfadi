@@ -3,7 +3,7 @@
   "name": "ISHFADI - Global Accommodation & Relocation Platform",
   "short_name": "ISHFADI",
   "description": "Helping people relocate, discover trusted properties, and connect with opportunities anywhere in the world.",
-  "start_url": "/waiting-list.html",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "display_override": [
