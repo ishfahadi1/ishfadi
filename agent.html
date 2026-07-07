@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title data-i18n="meta.title">ISHFADI Agent Dashboard</title>
+  <meta name="description" data-i18n-attr="content" data-i18n="meta.description" content="Manage your ISHFADI agent profile, referrals and rank.">
+  <link rel="canonical" href="/agent.html">
+  <meta name="robots" content="noindex,nofollow">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ISHFADI Agent Dashboard">
+  <meta property="og:description" content="Manage your ISHFADI agent profile, referrals and rank.">
+  <meta property="og:image" content="/icons/icon-512.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ISHFADI">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  <!-- Same vendor libs as index.html — do not swap -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a5f',
+            'primary-2': '#254772',
+            secondary: '#d4a574',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            muted: '#64748b'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Design system — mirrors index.html so the dashboard feels native */
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html[lang="ar"] body { font-family: 'Cairo', system-ui, -apple-system, sans-serif; }
+
+    :focus-visible { outline: 2px solid #1e3a5f; outline-offset: 2px; border-radius: 4px; }
+
+    .card-hover { transition: all 0.3s; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+    @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+
+    html[dir="rtl"] body { text-align: right; }
+    html[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+    /* Language switcher (identical to index.html) */
+    .lang-switcher { position: relative; }
+    .lang-trigger {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 0.85rem; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+      background: #ffffff; color: #1e3a5f; font-weight: 600; font-size: 0.875rem;
+      cursor: pointer; transition: all 0.2s ease; line-height: 1;
+    }
+    .lang-trigger:hover { border-color: #1e3a5f; box-shadow: 0 4px 12px rgba(30,58,95,0.08); }
+    .lang-trigger .chev { transition: transform 0.2s ease; }
+    .lang-switcher.open .lang-trigger .chev { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 0.5rem); min-width: 200px;
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.875rem;
+      box-shadow: 0 20px 40px rgba(15,23,42,0.12); padding: 0.4rem;
+      opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease; z-index: 60;
+    }
+    html[dir="ltr"] .lang-menu { right: 0; }
+    html[dir="rtl"] .lang-menu { left: 0; }
+    .lang-switcher.open .lang-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.6rem;
+      background: transparent; border: none; cursor: pointer; text-align: start;
+      color: #334155; font-size: 0.9rem; font-weight: 500;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .lang-option:hover, .lang-option:focus-visible { background: rgba(30,58,95,0.06); color: #1e3a5f; outline: none; }
+    .lang-option[aria-current="true"] { background: rgba(30,58,95,0.08); color: #1e3a5f; font-weight: 600; }
+    .lang-option .check { opacity: 0; color: #1e3a5f; }
+    .lang-option[aria-current="true"] .check { opacity: 1; }
+    .lang-name { display: block; font-size: 0.95rem; }
+    .lang-sub { display: block; font-size: 0.72rem; color: #94a3b8; font-weight: 400; margin-top: 1px; }
+    .lang-switching main, .lang-switching nav, .lang-switching footer, .lang-switching section { transition: opacity 0.18s ease; }
+    .lang-switching .switch-fade { opacity: 0.35; }
+
+    /* Shared component tokens (index.html) */
+    .btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.85rem 1.5rem; background:#1e3a5f; color:#fff; font-weight:600; border-radius:.75rem; box-shadow: 0 10px 25px -8px rgba(30,58,95,.5); transition: all .2s ease; border: none; cursor:pointer; min-height:44px; }
+    .btn-primary:hover:not(:disabled) { background:#254772; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-secondary { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.85rem 1.5rem; background:#fff; color:#1e3a5f; font-weight:600; border-radius:.75rem; border:1px solid #cbd5e1; transition: all .2s ease; cursor:pointer; min-height:44px; }
+    .btn-secondary:hover { background:#f8fafc; }
+    .btn-secondary:disabled { opacity:.5; cursor:not-allowed; }
+
+    .input-field { width: 100%; padding: .75rem 1rem; border: 1px solid #e5e7eb; border-radius: .75rem; background: #fff; color: #0f172a; font-size: .95rem; transition: border-color .15s ease, box-shadow .15s ease; min-height:44px; }
+    .input-field:focus { outline: none; border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,.15); }
+    .input-field[readonly] { background:#f8fafc; color:#475569; }
+    .field-label { display:block; font-size:.85rem; font-weight:600; color:#334155; margin-bottom:.4rem; }
+
+    .stat-card { background:#fff; border:1px solid #e5e7eb; border-radius: 1rem; padding: 1.5rem; text-align:center; transition: all .3s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15,23,42,.08); }
+    .stat-num { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; color:#1e3a5f; line-height:1.1; font-variant-numeric: tabular-nums; }
+    .stat-lbl { font-size:.85rem; color:#64748b; margin-top:.4rem; }
+
+    .feature-card { background:#fff; border:1px solid #e5e7eb; border-radius:1rem; padding:1.5rem; height:100%; transition: all .3s ease; }
+    .feature-card:hover { border-color: rgba(30,58,95,.2); }
+    .feature-icon { width:48px; height:48px; border-radius:12px; background: linear-gradient(135deg,#1e3a5f,#254772); color:#fff; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; font-size:1.4rem; flex-shrink:0; }
+
+    .toast { background: #1e3a5f; color:#fff; font-size:.9rem; font-weight:500; padding:.85rem 1.1rem; border-radius:.85rem; box-shadow: 0 18px 40px rgba(15,23,42,.25); max-width: 360px; }
+    .toast.error { background:#ef4444; }
+    .toast.success { background:#22c55e; }
+
+    /* Footer (identical) */
+    .footer-launch { background: linear-gradient(180deg, #142c4a 0%, #1e3a5f 100%); }
+    .footer-heading { font-weight: 700; color: #fff; margin-bottom: .9rem; font-size: 0.9rem; letter-spacing: 0.03em; text-transform: uppercase; }
+    .footer-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-list a { color: rgba(255,255,255,0.75); font-size: 0.9rem; transition: color 0.18s ease, transform 0.18s ease; }
+    .footer-list a:hover { color: #fff; }
+    .social-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; max-width: 100%; }
+    .social-link { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; flex: 0 0 52px; border-radius: 14px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12); transition: all 0.2s ease; padding: 6px; }
+    .social-link:hover { background: #d4a574; border-color: #d4a574; transform: translateY(-2px); }
+    .social-link svg { width: 24px; height: 24px; }
+
+    /* Agent-specific — built with existing tokens */
+    .verify-badge { display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .7rem; border-radius:9999px; font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+    .verify-badge.verified { background: rgba(34,197,94,.12); color:#15803d; }
+    .verify-badge.pending  { background: rgba(245,158,11,.12); color:#b45309; }
+
+    .rank-chip { display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .7rem; border-radius:9999px; font-size:.75rem; font-weight:700; background: linear-gradient(135deg, rgba(212,165,116,.18), rgba(212,165,116,.32)); color:#8a5a1a; border:1px solid rgba(212,165,116,.4); }
+
+    .welcome-card {
+      background:
+        linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(45,74,111,0.92) 55%, rgba(212,165,116,0.35) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      color:#fff; border-radius:1.25rem; padding:1.75rem;
+      box-shadow: 0 24px 60px -20px rgba(30,58,95,.45);
+    }
+
+    .avatar { width:96px; height:96px; border-radius:9999px; overflow:hidden; background: linear-gradient(135deg,#d4a574,#b78955); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:2rem; border:3px solid rgba(255,255,255,.35); box-shadow: 0 10px 30px rgba(0,0,0,.2); flex-shrink:0; }
+    .avatar img { width:100%; height:100%; object-fit: cover; display:block; }
+    .avatar-sm { width:40px; height:40px; border-radius:9999px; overflow:hidden; background: linear-gradient(135deg,#d4a574,#b78955); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; flex-shrink:0; }
+    .avatar-sm img { width:100%; height:100%; object-fit:cover; display:block; }
+
+    /* Referral card (screenshot target) — mirrors index rescard */
+    .refcard {
+      width: 100%; max-width: 720px; background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border-radius: 24px; padding: 32px; color: #0f172a;
+      box-shadow: 0 30px 80px -20px rgba(30,58,95,.35);
+      border: 1px solid #e5e7eb; position: relative; overflow: hidden;
+    }
+    .refcard::before { content:""; position:absolute; inset:0 0 auto 0; height:120px; background: linear-gradient(135deg,#1e3a5f 0%, #254772 60%, #2c5687 100%); }
+    .refcard-inner { position: relative; z-index: 1; }
+    .refcard-brand { display:flex; align-items:center; gap:12px; color:#fff; }
+    .refcard-brand img { width: 64px; height: 64px; object-fit: contain; background:#fff; border-radius:12px; padding:2px; }
+    .refcard-brand .b-name { font-size: 1.4rem; font-weight: 800; letter-spacing: .04em; }
+    .refcard-brand .b-tag { font-size:.7rem; text-transform:uppercase; letter-spacing:.15em; color:rgba(255,255,255,.75); }
+    .refcard-body { margin-top: 44px; background:#fff; border-radius: 18px; padding: 22px; border:1px solid #e5e7eb; box-shadow: 0 12px 30px rgba(15,23,42,.06); }
+    .refcard-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.7rem; font-weight: 800; color:#1e3a5f; letter-spacing: .1em; word-break: break-all; }
+    .refcard-qr { display:flex; align-items:center; gap: 18px; margin-top: 20px; padding-top: 18px; border-top:1px dashed #e5e7eb; flex-wrap:wrap; }
+    .refcard-qr .qr-box { width:130px; height:130px; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; direction:ltr; flex-shrink:0; }
+    .refcard-qr .qr-box canvas, .refcard-qr .qr-box img { width:100%; height:100%; display:block; }
+    .refcard-foot { margin-top: 20px; display:flex; justify-content:space-between; align-items:center; font-size:.75rem; color:#64748b; gap:8px; flex-wrap:wrap; }
+
+    /* Table */
+    .ref-table { width:100%; border-collapse: separate; border-spacing: 0; font-size:.9rem; }
+    .ref-table thead th { text-align:start; padding:.85rem 1rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; color:#64748b; background:#f8fafc; border-bottom:1px solid #e5e7eb; font-weight:700; white-space:nowrap; }
+    .ref-table tbody td { padding:.9rem 1rem; border-bottom:1px solid #f1f5f9; color:#0f172a; }
+    .ref-table tbody tr:hover td { background: rgba(30,58,95,0.02); }
+    .ref-status { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .6rem; border-radius:9999px; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+    .ref-status.verified { background: rgba(34,197,94,.12); color:#15803d; }
+    .ref-status.pending  { background: rgba(245,158,11,.12); color:#b45309; }
+    .ref-status.rejected { background: rgba(239,68,68,.12); color:#b91c1c; }
+
+    /* Sidebar nav */
+    .side-item { display:flex; align-items:center; gap:.75rem; width:100%; padding:.7rem .9rem; border-radius:.75rem; color:#334155; font-weight:500; font-size:.92rem; transition: all .15s ease; text-align:start; background:transparent; border:none; cursor:pointer; min-height:44px; }
+    .side-item:hover { background: rgba(30,58,95,.06); color:#1e3a5f; }
+    .side-item.active { background: rgba(30,58,95,.09); color:#1e3a5f; font-weight:700; }
+    .side-item svg { width:20px; height:20px; flex-shrink:0; }
+
+    /* Pending checklist */
+    .verify-check { display:flex; align-items:flex-start; gap:.85rem; padding:1rem; border:1px solid #e5e7eb; border-radius:.9rem; background:#fff; transition: all .2s ease; }
+    .verify-check + .verify-check { margin-top:.6rem; }
+    .verify-check .vc-icon {
+      width:36px; height:36px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:.9rem; flex-shrink:0;
+      background:#f1f5f9; color:#94a3b8; border:1px solid #e5e7eb;
+    }
+    .verify-check .vc-body { flex:1; min-width:0; }
+    .verify-check .vc-title { font-weight:600; color:#0f172a; font-size:.95rem; }
+    .verify-check .vc-desc { font-size:.82rem; color:#64748b; margin-top:.15rem; }
+    .verify-check .vc-status { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; white-space:nowrap; }
+    .verify-check[data-state="done"] { border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.05); }
+    .verify-check[data-state="done"] .vc-icon { background:#22c55e; color:#fff; border-color:#22c55e; }
+    .verify-check[data-state="done"] .vc-status { color:#15803d; }
+    .verify-check[data-state="active"] { border-color: rgba(30,58,95,.45); box-shadow: 0 8px 20px -10px rgba(30,58,95,.35); }
+    .verify-check[data-state="active"] .vc-icon { background:#1e3a5f; color:#fff; border-color:#1e3a5f; animation: pulse 2s infinite; }
+    .verify-check[data-state="active"] .vc-status { color:#1e3a5f; }
+    .verify-check[data-state="pending"] .vc-status { color:#b45309; }
+
+    /* Pending page */
+    .pending-illu {
+      width: clamp(180px, 30vw, 260px); aspect-ratio:1;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 30% 30%, rgba(212,165,116,.35), transparent 60%),
+                  linear-gradient(135deg, rgba(30,58,95,.9), rgba(45,74,111,.85));
+      display:inline-flex; align-items:center; justify-content:center; color:#fff;
+      box-shadow: 0 30px 60px -15px rgba(30,58,95,.35);
+    }
+
+    /* Skeleton loaders */
+    .skeleton {
+      background: linear-gradient(90deg, #f1f5f9 0px, #e2e8f0 40px, #f1f5f9 80px);
+      background-size: 800px 100%;
+      animation: shimmer 1.4s linear infinite;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .skeleton-line { height:14px; width:100%; }
+    .skeleton-num  { height:2rem; width:60%; margin: 0 auto; }
+    .skeleton-row td { padding:1rem; }
+    .skeleton-row .skeleton { display:block; }
+
+    /* Layout helpers */
+    .min-h-screen-safe { min-height: 100dvh; }
+    @supports not (min-height: 100dvh) { .min-h-screen-safe { min-height: 100vh; } }
+    .sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+    /* Mobile sidebar */
+    #sideDrawer { transition: transform .28s ease; }
+    @media (max-width: 1023px) {
+      #sideDrawer { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); }
+      html[dir="rtl"] #sideDrawer { inset: 0 0 0 auto; transform: translateX(100%); }
+      #sideDrawer.open { transform: translateX(0); }
+      #sideBackdrop { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 65; display:none; }
+      #sideBackdrop.open { display:block; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-800 min-h-screen-safe">
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:bg-white focus:text-primary focus:px-3 focus:py-2 focus:rounded-lg focus:shadow" data-i18n="a11y.skip">Skip to content</a>
+
+  <!-- Top nav (same shell as index.html) -->
+  <nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50" aria-label="Primary">
+    <div class="container mx-auto px-4 h-20 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 md:gap-3">
+        <button id="sideToggle" class="lg:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="sideDrawer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <a href="/index.html" class="flex items-center gap-2.5 shrink-0" aria-label="ISHFADI home">
+          <span class="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white ring-1 ring-primary/15 shadow-sm p-1 shrink-0">
+            <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
+          </span>
+          <span class="text-xl md:text-2xl font-bold text-primary tracking-tight whitespace-nowrap">ISHFADI</span>
+        </a>
+      </div>
+
+      <div class="hidden md:flex items-center gap-6 shrink-0">
+        <a href="#dashboard" data-section="dashboard" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="#referrals" data-section="referrals" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.referrals">Referrals</a>
+        <a href="#profile" data-section="profile" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.profile">Profile</a>
+        <a href="#settings" data-section="settings" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.settings">Settings</a>
+      </div>
+
+      <div class="flex items-center gap-2 md:gap-3">
+        <div class="lang-switcher" id="langSwitcherDesktop">
+          <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            <span class="lang-current-label">English</span>
+            <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-2 pl-2 border-s border-gray-200 ps-3">
+          <span class="avatar-sm" id="navAvatar" aria-hidden="true"></span>
+          <div class="hidden md:block leading-tight">
+            <p class="text-sm font-semibold text-primary" id="navName">—</p>
+            <p class="text-[11px] text-gray-500" data-i18n="nav.roleAgent">Agent</p>
+          </div>
+        </div>
+
+        <button type="button" id="logoutBtn" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors" aria-label="Sign out">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span data-i18n="nav.logout">Sign out</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Full-screen loader while we resolve session + profile -->
+  <div id="bootLoader" class="fixed inset-0 z-[80] flex items-center justify-center bg-white" role="status" aria-live="polite">
+    <div class="text-center">
+      <div class="w-14 h-14 mx-auto rounded-full border-4 border-primary/20 border-t-primary animate-spin" aria-hidden="true"></div>
+      <p class="mt-4 text-sm text-gray-500" data-i18n="boot.loading">Loading your dashboard…</p>
+    </div>
+  </div>
+
+  <!-- Full-page error state (no data returned from backend) -->
+  <div id="bootError" class="hidden pt-28 pb-16 min-h-screen-safe">
+    <div class="container mx-auto px-4">
+      <div class="max-w-md mx-auto text-center feature-card">
+        <div class="feature-icon mx-auto" aria-hidden="true">!</div>
+        <h1 class="text-xl font-bold text-primary" data-i18n="boot.errorTitle">We couldn't load your dashboard</h1>
+        <p class="mt-2 text-sm text-gray-600" data-i18n="boot.error">Something went wrong. Please check your connection and try again.</p>
+        <div class="mt-5 flex flex-wrap justify-center gap-3">
+          <button type="button" class="btn-primary" id="bootRetryBtn" data-i18n="boot.retry">Retry</button>
+          <a href="/index.html" class="btn-secondary" data-i18n="pending.backHome">Back to home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       PENDING STATE
+       Backend contract:
+         verification_status: 'pending' | 'verified' | 'rejected'
+         verification_steps: {
+           email_verified: bool, phone_verified: bool,
+           national_id_verified: bool, criminal_record_verified: bool,
+           admin_review_status: 'pending' | 'approved' | 'rejected'
+         }
+       ================================================================ -->
+  <main id="pendingPage" class="hidden pt-28 pb-16 min-h-screen-safe">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center fade-in">
+        <div class="pending-illu mx-auto animate-float" aria-hidden="true">
+          <svg class="w-20 h-20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+
+        <span class="verify-badge pending mt-6 inline-flex" role="status">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="3"/></svg>
+          <span data-i18n="pending.badge">Verification pending</span>
+        </span>
+
+        <h1 class="mt-4 text-3xl md:text-4xl font-bold text-primary" data-i18n="pending.title">We are reviewing your application</h1>
+        <p class="mt-3 text-gray-600 max-w-2xl mx-auto" data-i18n="pending.subtitle">
+          Thank you for applying to become an ISHFADI Agent. Our team is verifying your profile and documents. You'll receive an email as soon as your account is approved.
+        </p>
+
+        <!-- Verification checklist — populated from backend, no fake progress -->
+        <div class="mt-8 max-w-xl mx-auto text-start" id="pendingChecklist" aria-live="polite">
+          <!-- Rendered by renderPendingChecklist(); each item has stable data-step key -->
+        </div>
+
+        <div class="mt-8 grid sm:grid-cols-2 gap-4 max-w-xl mx-auto text-start">
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">✉</div>
+            <p class="font-semibold text-primary" data-i18n="pending.emailTitle">Email notification</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="pending.emailDesc">We'll email you at your registered address as soon as a decision is made.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">⏱</div>
+            <p class="font-semibold text-primary" data-i18n="pending.etaTitle">Estimated approval</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="pending.etaDesc">Most applications are reviewed within 24–72 hours.</p>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a href="/index.html" class="btn-secondary" data-i18n="pending.backHome">Back to home</a>
+          <button type="button" class="btn-primary" id="pendingLogoutBtn" data-i18n="nav.logout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================================================================
+       VERIFIED DASHBOARD
+       ================================================================ -->
+  <div id="dashboardWrap" class="hidden pt-20">
+    <div id="sideBackdrop" aria-hidden="true"></div>
+
+    <div class="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
+      <div class="lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
+        <!-- Sidebar -->
+        <aside id="sideDrawer" class="bg-white lg:bg-transparent lg:border-0 border-e w-72 lg:w-auto lg:sticky lg:top-24 self-start lg:h-[calc(100dvh-7rem)] overflow-y-auto" aria-label="Dashboard navigation">
+          <div class="p-4 lg:p-0">
+            <div class="lg:hidden flex items-center justify-between mb-4">
+              <span class="text-lg font-bold text-primary" data-i18n="nav.dashboard">Dashboard</span>
+              <button id="sideClose" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Close menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <nav class="flex flex-col gap-1" aria-label="Dashboard sections">
+              <button type="button" class="side-item active" data-section="dashboard">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"/></svg>
+                <span data-i18n="nav.dashboard">Dashboard</span>
+              </button>
+              <button type="button" class="side-item" data-section="referrals">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                <span data-i18n="nav.referrals">Referrals</span>
+              </button>
+              <button type="button" class="side-item" data-section="rank">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.79 5.523a1 1 0 00.95.69h5.807c.969 0 1.371 1.24.588 1.81l-4.7 3.415a1 1 0 00-.363 1.118l1.79 5.523c.3.921-.755 1.688-1.54 1.118l-4.7-3.415a1 1 0 00-1.175 0l-4.7 3.415c-.784.57-1.838-.197-1.539-1.118l1.79-5.523a1 1 0 00-.363-1.118L2.885 10.95c-.783-.57-.38-1.81.588-1.81h5.807a1 1 0 00.95-.69l1.79-5.523z"/></svg>
+                <span data-i18n="nav.rank">Rank</span>
+              </button>
+              <button type="button" class="side-item" data-section="payments">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M5 6h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"/></svg>
+                <span data-i18n="nav.payments">Payments</span>
+              </button>
+
+              <!-- Master-agent shells — hidden until backend confirms verification_agent_status === 'certified' -->
+              <div class="master-only hidden">
+                <div class="my-3 border-t"></div>
+                <p class="px-3 text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-1" data-i18n="nav.masterSection">Master agent</p>
+                <button type="button" class="side-item" data-section="assignments">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span data-i18n="nav.assignments">Assignments</span>
+                </button>
+                <button type="button" class="side-item" data-section="inspections">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.244-4.243a8 8 0 1111.315 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <span data-i18n="nav.inspections">Inspections</span>
+                </button>
+                <button type="button" class="side-item" data-section="reports">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span data-i18n="nav.reports">Reports</span>
+                </button>
+              </div>
+
+              <div class="my-3 border-t"></div>
+              <button type="button" class="side-item" data-section="profile">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span data-i18n="nav.profile">Profile</span>
+              </button>
+              <button type="button" class="side-item" data-section="settings">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span data-i18n="nav.settings">Settings</span>
+              </button>
+              <div class="my-3 border-t"></div>
+              <button type="button" class="side-item" id="sideLogoutBtn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <span data-i18n="nav.logout">Sign out</span>
+              </button>
+            </nav>
+          </div>
+        </aside>
+
+        <main id="main" class="mt-6 lg:mt-0 space-y-6">
+
+          <!-- ================= DASHBOARD PANE ================= -->
+          <section data-pane="dashboard" class="fade-in space-y-6">
+            <!-- Welcome card -->
+            <div class="welcome-card">
+              <div class="flex flex-col md:flex-row md:items-center gap-6">
+                <span class="avatar" id="welcomeAvatar" aria-hidden="true"></span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-white/70 text-sm" data-i18n="welcome.hello">Welcome back,</p>
+                  <div class="flex flex-wrap items-center gap-3 mt-1">
+                    <h1 id="welcomeName" class="text-2xl md:text-3xl font-bold truncate">—</h1>
+                    <span class="verify-badge verified" title="Verified agent">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 10-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>
+                      <span data-i18n="welcome.verified">Verified agent</span>
+                    </span>
+                  </div>
+                  <p class="text-white/85 mt-2 text-sm">
+                    <span id="welcomeLocation">—</span>
+                    <span class="mx-2 opacity-50" aria-hidden="true">·</span>
+                    <span data-i18n="welcome.joined">Joined</span> <span id="welcomeJoined">—</span>
+                  </p>
+                  <p class="text-white/85 text-sm mt-1">
+                    <span data-i18n="welcome.resId">Reservation ID:</span>
+                    <span id="welcomeResId" class="font-mono font-semibold text-white">—</span>
+                  </p>
+                </div>
+                <div class="flex flex-col items-start md:items-end gap-2 shrink-0">
+                  <span class="rank-chip">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l2.6 5.3 5.9.9-4.2 4.1 1 5.8L10 14.8 4.7 17.1l1-5.8L1.5 7.2l5.9-.9L10 1z"/></svg>
+                    <span data-i18n="welcome.rank">Rank:</span>
+                    <span id="welcomeRank">—</span>
+                  </span>
+                  <button type="button" class="btn-primary bg-white !text-primary hover:!bg-white/90" data-goto="referrals">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-5.464 2.684m5.464-2.684a3 3 0 10-5.464-2.684m5.464 2.684L15 9m3.316 6.658L15 15"/></svg>
+                    <span data-i18n="welcome.shareLink">Share my referral link</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stat cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" data-stat-group="1">
+              <div class="stat-card"><div class="stat-num" data-stat="total">—</div><div class="stat-lbl" data-i18n="stats.total">Total referrals</div></div>
+              <div class="stat-card"><div class="stat-num" data-stat="verified" style="color:#15803d">—</div><div class="stat-lbl" data-i18n="stats.verified">Verified</div></div>
+              <div class="stat-card"><div class="stat-num" data-stat="pending"  style="color:#b45309">—</div><div class="stat-lbl" data-i18n="stats.pending">Pending</div></div>
+              <div class="stat-card"><div class="stat-num" data-stat="rejected" style="color:#b91c1c">—</div><div class="stat-lbl" data-i18n="stats.rejected">Rejected</div></div>
+            </div>
+
+            <!-- Quick referral snippet -->
+            <div class="feature-card">
+              <div class="flex flex-wrap items-center gap-3 mb-3">
+                <div class="feature-icon" style="margin-bottom:0" aria-hidden="true">🔗</div>
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-lg font-bold text-primary" data-i18n="referral.quickTitle">Your permanent referral link</h2>
+                  <p class="text-sm text-gray-500" data-i18n="referral.quickSub">Share it anywhere. Every reservation using it is tied to you.</p>
+                </div>
+                <button type="button" class="btn-secondary" data-goto="referrals" data-i18n="referral.openFull">Open referral center</button>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <label for="quickRefLink" class="sr-only" data-i18n="referral.linkLabel">Referral link</label>
+                <input id="quickRefLink" class="input-field" readonly value="">
+                <button type="button" class="btn-primary" data-copy-target="quickRefLink" data-i18n="referral.copy">Copy link</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= REFERRALS PANE ================= -->
+          <section data-pane="referrals" class="fade-in space-y-6 hidden">
+
+            <div class="grid lg:grid-cols-[1fr_320px] gap-6">
+              <div class="feature-card">
+                <h2 class="text-xl font-bold text-primary mb-1" data-i18n="referral.title">Referral center</h2>
+                <p class="text-sm text-gray-500 mb-5" data-i18n="referral.subtitle">Your permanent code, sharing tools and downloadable card.</p>
+
+                <label class="field-label" data-i18n="referral.codeLabel">Permanent referral code</label>
+                <div class="flex flex-wrap gap-2 items-center mb-4">
+                  <span id="refCode" class="font-mono text-2xl font-extrabold text-primary tracking-widest">—</span>
+                  <button type="button" class="btn-secondary" id="copyCodeBtn" data-i18n="referral.copyCode">Copy code</button>
+                </div>
+
+                <label class="field-label" for="refLink" data-i18n="referral.linkLabel">Referral link</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input id="refLink" class="input-field font-mono text-sm" readonly value="">
+                  <div class="flex gap-2">
+                    <button type="button" class="btn-secondary" data-copy-target="refLink" aria-label="Copy referral link">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span data-i18n="referral.copy">Copy</span>
+                    </button>
+                    <button type="button" class="btn-primary" id="shareBtn" aria-label="Share referral link">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                      <span data-i18n="referral.share">Share</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-6 grid sm:grid-cols-3 gap-3">
+                  <button type="button" class="btn-secondary" id="dlQrBtn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                    <span data-i18n="referral.downloadQR">Download QR</span>
+                  </button>
+                  <button type="button" class="btn-secondary" id="dlCardBtn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM7 8h10M7 12h10M7 16h6"/></svg>
+                    <span data-i18n="referral.downloadCard">Download card</span>
+                  </button>
+                  <button type="button" class="btn-secondary" id="regenQrBtn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M4 20l6-6M20 4l-6 6"/></svg>
+                    <span data-i18n="referral.regenQR">Refresh QR</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Downloadable referral card -->
+              <div class="flex justify-center">
+                <div id="referralCard" class="refcard">
+                  <div class="refcard-inner">
+                    <div class="refcard-brand">
+                      <img src="/icons/logo.png" alt="ISHFADI logo" crossorigin="anonymous">
+                      <div>
+                        <div class="b-name">ISHFADI</div>
+                        <div class="b-tag" data-i18n="referral.cardTag">Official Agent Referral</div>
+                      </div>
+                    </div>
+                    <div class="refcard-body">
+                      <div class="text-xs uppercase tracking-widest text-gray-500" data-i18n="referral.codeLabel">Permanent referral code</div>
+                      <div class="refcard-code mt-1" id="cardCode">—</div>
+                      <div class="mt-3 text-sm text-gray-600" id="cardAgent">—</div>
+                      <div class="refcard-qr">
+                        <div class="qr-box" id="cardQr" aria-hidden="true"></div>
+                        <div class="min-w-0">
+                          <div style="font-weight:700;color:#1e3a5f;font-size:.95rem" data-i18n="referral.cardCTA">Scan to reserve your ISHFADI account</div>
+                          <div class="mt-1 text-xs text-gray-500 break-all" id="cardLinkText">—</div>
+                        </div>
+                      </div>
+                      <div class="refcard-foot">
+                        <span>www.ishfadi.com</span>
+                        <span data-i18n="referral.cardFoot">Sponsored by an ISHFADI Agent</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" data-stat-group="2">
+              <div class="stat-card"><div class="stat-num" data-stat="total">—</div><div class="stat-lbl" data-i18n="stats.total">Total referrals</div></div>
+              <div class="stat-card"><div class="stat-num" data-stat="verified" style="color:#15803d">—</div><div class="stat-lbl" data-i18n="stats.verified">Verified</div></div>
+              <div class="stat-card"><div class="stat-num" data-stat="pending"  style="color:#b45309">—</div><div class="stat-lbl" data-i18n="stats.pending">Pending</div></div>
+              <div class="stat-card"><div class="stat-num" data-stat="rejected" style="color:#b91c1c">—</div><div class="stat-lbl" data-i18n="stats.rejected">Rejected</div></div>
+            </div>
+
+            <!-- Table -->
+            <div class="feature-card p-0 overflow-hidden">
+              <div class="p-5 flex flex-wrap gap-3 items-center border-b">
+                <h2 class="text-lg font-bold text-primary flex-1 min-w-0" data-i18n="referral.tableTitle">People you referred</h2>
+                <div class="relative">
+                  <label for="refSearch" class="sr-only" data-i18n="referral.searchLabel">Search referrals</label>
+                  <input id="refSearch" type="search" class="input-field" style="padding-inline-start:2.4rem; min-width:220px" data-i18n-placeholder="referral.searchPh">
+                  <svg class="w-4 h-4 text-gray-400 absolute top-1/2 -translate-y-1/2" style="inset-inline-start:.75rem" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="ref-table" id="refTable">
+                  <thead>
+                    <tr>
+                      <th style="width:64px" data-i18n="table.photo">Photo</th>
+                      <th data-i18n="table.name">Full name</th>
+                      <th data-i18n="table.country">Country</th>
+                      <th data-i18n="table.city">City</th>
+                      <th data-i18n="table.status">Status</th>
+                      <th data-i18n="table.date">Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody id="refTbody" aria-live="polite"></tbody>
+                </table>
+                <div id="refEmpty" class="hidden p-10 text-center text-gray-500" data-i18n="referral.empty">No referrals yet. Share your link to get started.</div>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 p-4 border-t bg-gray-50/60">
+                <p class="text-xs text-gray-500" id="pageInfo">—</p>
+                <div class="flex gap-2">
+                  <button type="button" class="btn-secondary" id="prevPage" aria-label="Previous page">‹</button>
+                  <button type="button" class="btn-secondary" id="nextPage" aria-label="Next page">›</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= RANK PANE ================= -->
+          <section data-pane="rank" class="fade-in space-y-6 hidden">
+            <div class="feature-card">
+              <div class="flex flex-wrap items-center gap-4 mb-6">
+                <div class="feature-icon" style="margin-bottom:0" aria-hidden="true">🏅</div>
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-xl font-bold text-primary" data-i18n="rank.title">Your rank</h2>
+                  <p class="text-sm text-gray-500" data-i18n="rank.subtitle">Ranks are awarded by ISHFADI based on your verified performance.</p>
+                </div>
+                <span class="rank-chip"><span data-i18n="welcome.rank">Rank:</span> <span id="rankCurrent">—</span></span>
+              </div>
+
+              <div class="grid md:grid-cols-3 gap-6 items-center">
+                <div class="text-center">
+                  <div class="text-6xl mb-2" id="rankEmoji" aria-hidden="true">🏅</div>
+                  <p class="text-2xl font-bold text-primary" id="rankName">—</p>
+                  <p class="text-sm text-gray-500 mt-1" id="rankDescription">—</p>
+                </div>
+                <div class="md:col-span-2">
+                  <div class="flex justify-between text-xs text-gray-500 mb-2">
+                    <span><span data-i18n="rank.progressTo">Progress to</span> <span id="rankNext">—</span></span>
+                    <span id="rankPct">—</span>
+                  </div>
+                  <div class="h-3 bg-gray-100 rounded-full overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="rankBarWrap">
+                    <div id="rankBar" class="h-full bg-gradient-to-r from-primary to-secondary transition-all" style="width:0%"></div>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-3" id="rankRequirement" data-i18n="rank.requirement">Rank progress is determined by the ISHFADI team.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= PAYMENTS PANE (future-ready) ================= -->
+          <section data-pane="payments" class="fade-in space-y-6 hidden">
+            <div class="feature-card">
+              <div class="flex flex-wrap items-center gap-3 mb-1">
+                <h2 class="text-xl font-bold text-primary" data-i18n="payments.title">Payments</h2>
+                <span class="verify-badge pending" role="status">
+                  <span data-i18n="payments.awaiting">Awaiting backend</span>
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 mb-5" data-i18n="payments.subtitle">Balances, payout preferences and history will appear here once payouts are enabled for your account.</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="stat-card">
+                  <div class="stat-lbl" data-i18n="payments.available">Available balance</div>
+                  <div class="stat-num mt-1" data-pay="available">—</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-lbl" data-i18n="payments.pending">Pending balance</div>
+                  <div class="stat-num mt-1" data-pay="pending" style="color:#b45309">—</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-lbl" data-i18n="payments.lifetime">Lifetime earnings</div>
+                  <div class="stat-num mt-1" data-pay="lifetime" style="color:#15803d">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-6">
+              <div class="feature-card">
+                <h3 class="text-lg font-bold text-primary mb-1" data-i18n="payments.methodTitle">Preferred payout method</h3>
+                <p class="text-sm text-gray-500 mb-4" data-i18n="payments.methodSub">Choose how you want to receive your payouts. Saved once the backend is live.</p>
+                <div class="space-y-2" role="radiogroup" aria-labelledby="payMethodTitle">
+                  <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                    <input type="radio" name="payoutMethod" value="bank" class="mt-1 w-4 h-4 accent-primary" disabled>
+                    <span class="text-sm">
+                      <span class="font-semibold text-primary" data-i18n="payments.bank">Bank account</span><br>
+                      <span class="text-gray-500" data-i18n="payments.bankD">Local or international wire transfer.</span>
+                    </span>
+                  </label>
+                  <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                    <input type="radio" name="payoutMethod" value="mobile" class="mt-1 w-4 h-4 accent-primary" disabled>
+                    <span class="text-sm">
+                      <span class="font-semibold text-primary" data-i18n="payments.mobile">Mobile money</span><br>
+                      <span class="text-gray-500" data-i18n="payments.mobileD">Fast payouts to supported mobile wallets.</span>
+                    </span>
+                  </label>
+                  <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                    <input type="radio" name="payoutMethod" value="paypal" class="mt-1 w-4 h-4 accent-primary" disabled>
+                    <span class="text-sm">
+                      <span class="font-semibold text-primary" data-i18n="payments.paypal">PayPal</span><br>
+                      <span class="text-gray-500" data-i18n="payments.paypalD">Receive payouts to your PayPal account.</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <h3 class="text-lg font-bold text-primary mb-1" data-i18n="payments.historyTitle">Payout history</h3>
+                <p class="text-sm text-gray-500 mb-4" data-i18n="payments.historySub">Every completed payout will be listed here.</p>
+                <div class="p-8 text-center text-sm text-gray-500 border border-dashed rounded-xl" data-i18n="payments.historyEmpty">
+                  No payouts yet. Your payout history will appear once processed.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= MASTER-AGENT PANES (hidden until certified) ================= -->
+          <section data-pane="assignments" class="fade-in space-y-6 hidden master-only">
+            <div class="feature-card">
+              <h2 class="text-xl font-bold text-primary mb-1" data-i18n="master.assignmentsTitle">Verification assignments</h2>
+              <p class="text-sm text-gray-500 mb-4" data-i18n="master.assignmentsSub">Assignments dispatched to you by ISHFADI.</p>
+              <div class="p-8 text-center text-sm text-gray-500 border border-dashed rounded-xl" data-i18n="master.assignmentsEmpty">No active assignments.</div>
+            </div>
+          </section>
+          <section data-pane="inspections" class="fade-in space-y-6 hidden master-only">
+            <div class="feature-card">
+              <h2 class="text-xl font-bold text-primary mb-1" data-i18n="master.inspectionsTitle">Inspection queue</h2>
+              <p class="text-sm text-gray-500 mb-4" data-i18n="master.inspectionsSub">Scheduled property visits, GPS check-in and photo capture.</p>
+              <div class="p-8 text-center text-sm text-gray-500 border border-dashed rounded-xl" data-i18n="master.inspectionsEmpty">No inspections scheduled.</div>
+            </div>
+          </section>
+          <section data-pane="reports" class="fade-in space-y-6 hidden master-only">
+            <div class="feature-card">
+              <h2 class="text-xl font-bold text-primary mb-1" data-i18n="master.reportsTitle">Verification reports</h2>
+              <p class="text-sm text-gray-500 mb-4" data-i18n="master.reportsSub">Reports you have submitted.</p>
+              <div class="p-8 text-center text-sm text-gray-500 border border-dashed rounded-xl" data-i18n="master.reportsEmpty">No reports yet.</div>
+            </div>
+          </section>
+
+          <!-- ================= PROFILE PANE ================= -->
+          <section data-pane="profile" class="fade-in space-y-6 hidden">
+            <div class="feature-card">
+              <h2 class="text-xl font-bold text-primary mb-1" data-i18n="profile.title">Your profile</h2>
+              <p class="text-sm text-gray-500 mb-6" data-i18n="profile.subtitle">Only the fields below are editable. Contact support to change other details.</p>
+
+              <form id="profileForm" class="space-y-5" novalidate>
+                <div class="flex flex-wrap items-center gap-4">
+                  <span class="avatar" id="profileAvatar" aria-hidden="true"></span>
+                  <div class="flex flex-col gap-2">
+                    <label class="btn-secondary cursor-pointer">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0l-4 4m4-4l4 4"/></svg>
+                      <span data-i18n="profile.uploadPhoto">Upload new photo</span>
+                      <input type="file" accept="image/*" id="photoInput" class="sr-only">
+                    </label>
+                    <p class="text-xs text-gray-500" data-i18n="profile.photoHint">Square photo recommended. Stored on Cloudinary after upload.</p>
+                  </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="field-label" for="pfName" data-i18n="profile.name">Full name</label>
+                    <input class="input-field" id="pfName" readonly>
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfEmail" data-i18n="profile.email">Email address</label>
+                    <input class="input-field" id="pfEmail" type="email" readonly>
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfPhone" data-i18n="profile.phone">Phone</label>
+                    <input class="input-field" id="pfPhone" type="tel" autocomplete="tel">
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfLang" data-i18n="profile.language">Preferred language</label>
+                    <select class="input-field" id="pfLang">
+                      <option value="en">English</option>
+                      <option value="fr">Français</option>
+                      <option value="ar">العربية</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfCountry" data-i18n="profile.country">Country</label>
+                    <input class="input-field" id="pfCountry" autocomplete="country-name">
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfCity" data-i18n="profile.city">City</label>
+                    <input class="input-field" id="pfCity" autocomplete="address-level2">
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfRole" data-i18n="profile.role">Role</label>
+                    <input class="input-field" id="pfRole" value="Agent" readonly>
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfVerification" data-i18n="profile.verification">Verification</label>
+                    <input class="input-field" id="pfVerification" readonly>
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfAgentCode" data-i18n="profile.agentCode">Agent code</label>
+                    <input class="input-field font-mono" id="pfAgentCode" readonly>
+                  </div>
+                  <div>
+                    <label class="field-label" for="pfJoined" data-i18n="profile.joined">Joined</label>
+                    <input class="input-field" id="pfJoined" readonly>
+                  </div>
+                </div>
+
+                <div class="flex justify-end">
+                  <button type="submit" class="btn-primary" id="profileSaveBtn" data-i18n="profile.save">Save changes</button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <!-- ================= SETTINGS PANE ================= -->
+          <section data-pane="settings" class="fade-in space-y-6 hidden">
+            <div class="feature-card">
+              <h2 class="text-xl font-bold text-primary mb-1" data-i18n="settings.title">Settings</h2>
+              <p class="text-sm text-gray-500 mb-5" data-i18n="settings.subtitle">Preferences that apply only to your account.</p>
+
+              <div class="space-y-6">
+                <div>
+                  <p class="field-label" data-i18n="settings.language">Language</p>
+                  <div class="lang-switcher inline-block" id="langSwitcherSettings">
+                    <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+                      <span class="lang-current-label">English</span>
+                      <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="field-label" data-i18n="settings.notifications">Notifications</p>
+                  <div class="space-y-2">
+                    <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                      <input type="checkbox" id="notifEmail" class="mt-1 w-4 h-4 accent-primary">
+                      <span class="text-sm">
+                        <span class="font-semibold text-primary" data-i18n="settings.notifEmailT">Email notifications</span><br>
+                        <span class="text-gray-500" data-i18n="settings.notifEmailD">Referral activity, rank changes and important account emails.</span>
+                      </span>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                      <input type="checkbox" id="notifPush" class="mt-1 w-4 h-4 accent-primary">
+                      <span class="text-sm">
+                        <span class="font-semibold text-primary" data-i18n="settings.notifPushT">Push notifications</span><br>
+                        <span class="text-gray-500" data-i18n="settings.notifPushD">Real-time updates on this device (requires permission).</span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="field-label" data-i18n="settings.account">Account preferences</p>
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                      <input type="checkbox" id="prefDirectory" class="mt-1 w-4 h-4 accent-primary">
+                      <span class="text-sm">
+                        <span class="font-semibold text-primary" data-i18n="settings.dirT">Show in agent directory</span><br>
+                        <span class="text-gray-500" data-i18n="settings.dirD">Allow verified users to discover your profile.</span>
+                      </span>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer">
+                      <input type="checkbox" id="prefWhatsapp" class="mt-1 w-4 h-4 accent-primary">
+                      <span class="text-sm">
+                        <span class="font-semibold text-primary" data-i18n="settings.waT">Show WhatsApp on public profile</span><br>
+                        <span class="text-gray-500" data-i18n="settings.waD">Faster contact for interested clients.</span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 justify-between pt-4 border-t">
+                  <button type="button" class="btn-secondary" id="settingsSaveBtn" data-i18n="settings.save">Save preferences</button>
+                  <button type="button" class="btn-primary" id="settingsSignOutBtn" style="background:#b91c1c" data-i18n="nav.logout">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </main>
+      </div>
+    </div>
+
+    <!-- Footer (identical to index.html shell) -->
+    <footer class="footer-launch text-white py-14 mt-10">
+      <div class="container mx-auto px-4">
+        <div class="grid gap-8 md:grid-cols-4 mb-10">
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="inline-flex items-center justify-center w-14 h-14 bg-white rounded-xl p-0.5 shrink-0">
+                <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
+              </span>
+              <span class="text-2xl font-bold">ISHFADI</span>
+            </div>
+            <p class="text-white/75 text-sm leading-relaxed max-w-md" data-i18n="footer.about">Building the future of global accommodation. Reserve your account today and sign in the moment we launch.</p>
+            <div class="mt-6">
+              <p class="footer-heading" data-i18n="footer.follow">Follow ISHFADI</p>
+              <div class="social-grid max-w-xs" role="list" aria-label="Follow ISHFADI on social media">
+                <a href="https://facebook.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg></a>
+                <a href="https://instagram.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram" role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></a>
+                <a href="https://linkedin.com/company/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.1c.5-.9 1.8-1.9 3.7-1.9 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4V9z"/></svg></a>
+                <a href="https://chat.whatsapp.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="WhatsApp" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A10.4 10.4 0 0 0 3.4 16.2L2 22l5.9-1.5a10.4 10.4 0 0 0 12.6-17zM12 20.1a8.5 8.5 0 0 1-4.3-1.2l-.3-.2-3.5.9.9-3.4-.2-.3a8.5 8.5 0 1 1 7.4 4.2z"/></svg></a>
+                <a href="https://x.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="X (Twitter)" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="footer-heading" data-i18n="footer.quickLinks">Quick Links</h4>
+            <ul class="footer-list">
+              <li><a href="/index.html" data-i18n="nav.home">Home</a></li>
+              <li><a href="/agent.html#dashboard" data-i18n="nav.dashboard">Dashboard</a></li>
+              <li><a href="/agent.html#referrals" data-i18n="nav.referrals">Referrals</a></li>
+              <li><a href="/agent.html#profile" data-i18n="nav.profile">Profile</a></li>
+              <li><a href="/privacy-policy.html" data-i18n="footer.privacy">Privacy Policy</a></li>
+              <li><a href="/terms-of-service.html" data-i18n="footer.terms">Terms of Service</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="footer-heading" data-i18n="footer.contact">Contact</h4>
+            <ul class="footer-list">
+              <li><a href="mailto:official@ishfadi.com">official@ishfadi.com</a></li>
+              <li><a href="https://www.ishfadi.com" target="_blank" rel="noopener">www.ishfadi.com</a></li>
+              <li><a href="/help-center.html" data-i18n="footer.help">Help Center</a></li>
+              <li><a href="/safety-tips.html" data-i18n="footer.safety">Safety Tips</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="border-t border-white/15 pt-8 text-center text-white/70 space-y-1">
+          <p>&copy; 2026 ISHFADI</p>
+          <p data-i18n="footer.tagline">Building the future of global accommodation.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toast host -->
+  <div id="toastContainer" class="fixed top-24 end-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- APP CONFIG -->
+  <script>
+    /* Reuse the same public keys that index.html ships with. If you rotate
+       them on index.html, mirror them here. */
+    window.ISHFADI_CONFIG = window.ISHFADI_CONFIG || {
+      SUPABASE_URL:      'https://kialcvnywshkklzsecok.supabase.co',
+      SUPABASE_ANON_KEY: 'sb_publishable_u2hfeDzlslgK5ZJq-zHYRQ_G1nuhl_9',
+      SITE_URL:          'https://www.ishfadi.com'
+    };
+  </script>
+
+  <!-- I18N ENGINE (same shape and storage key as index.html) -->
+  <script>
+  (function(){
+    'use strict';
+    const LANGUAGES = {
+      en: { code:'en', name:'English',  native:'English',  dir:'ltr', sub:'English' },
+      fr: { code:'fr', name:'French',   native:'Français', dir:'ltr', sub:'French'  },
+      ar: { code:'ar', name:'Arabic',   native:'العربية',  dir:'rtl', sub:'Arabic'  }
+    };
+    const FALLBACK = 'en';
+    const STORAGE_KEY = 'ishfadi.lang'; // SAME key as index.html so choice carries over
+
+    const T = {
+      en: {
+        meta: { title:'ISHFADI Agent Dashboard', description:'Manage your ISHFADI agent profile, referrals and rank.' },
+        a11y: { skip:'Skip to content' },
+        boot: { loading:'Loading your dashboard…', error:'We could not load your dashboard. Please check your connection and try again.', errorTitle:"We couldn't load your dashboard", retry:'Retry' },
+        nav: { home:'Home', dashboard:'Dashboard', referrals:'Referrals', rank:'Rank', payments:'Payments', profile:'Profile', settings:'Settings', logout:'Sign out', roleAgent:'Agent',
+               masterSection:'Master agent', assignments:'Assignments', inspections:'Inspections', reports:'Reports' },
+        welcome: { hello:'Welcome back,', verified:'Verified agent', joined:'Joined', resId:'Reservation ID:', rank:'Rank:', shareLink:'Share my referral link' },
+        stats: { total:'Total referrals', verified:'Verified', pending:'Pending', rejected:'Rejected' },
+        referral: {
+          quickTitle:'Your permanent referral link', quickSub:'Share it anywhere. Every reservation using it is tied to you.',
+          openFull:'Open referral center',
+          title:'Referral center', subtitle:'Your permanent code, sharing tools and downloadable card.',
+          codeLabel:'Permanent referral code', copyCode:'Copy code',
+          linkLabel:'Referral link', copy:'Copy', share:'Share',
+          downloadQR:'Download QR', downloadCard:'Download card', regenQR:'Refresh QR', regenDone:'QR refreshed.',
+          cardTag:'Official Agent Referral', cardCTA:'Scan to reserve your ISHFADI account', cardFoot:'Sponsored by an ISHFADI Agent',
+          tableTitle:'People you referred', empty:'No referrals yet. Share your link to get started.',
+          copied:'Referral link copied.', codeCopied:'Referral code copied.',
+          shareText:'Reserve your ISHFADI account with my referral link:',
+          searchLabel:'Search referrals', searchPh:'Search name, country…'
+        },
+        table: { photo:'Photo', name:'Full name', country:'Country', city:'City', status:'Status', date:'Registered' },
+        rank: { title:'Your rank', subtitle:'Ranks are awarded by ISHFADI based on your verified performance.', progressTo:'Progress to', requirement:'Rank progress is determined by the ISHFADI team.' },
+        payments: { title:'Payments', awaiting:'Awaiting backend',
+          subtitle:'Balances, payout preferences and history will appear here once payouts are enabled for your account.',
+          available:'Available balance', pending:'Pending balance', lifetime:'Lifetime earnings',
+          methodTitle:'Preferred payout method', methodSub:'Choose how you want to receive your payouts. Saved once the backend is live.',
+          bank:'Bank account', bankD:'Local or international wire transfer.',
+          mobile:'Mobile money', mobileD:'Fast payouts to supported mobile wallets.',
+          paypal:'PayPal', paypalD:'Receive payouts to your PayPal account.',
+          historyTitle:'Payout history', historySub:'Every completed payout will be listed here.',
+          historyEmpty:'No payouts yet. Your payout history will appear once processed.' },
+        master: {
+          assignmentsTitle:'Verification assignments', assignmentsSub:'Assignments dispatched to you by ISHFADI.', assignmentsEmpty:'No active assignments.',
+          inspectionsTitle:'Inspection queue', inspectionsSub:'Scheduled property visits, GPS check-in and photo capture.', inspectionsEmpty:'No inspections scheduled.',
+          reportsTitle:'Verification reports', reportsSub:'Reports you have submitted.', reportsEmpty:'No reports yet.'
+        },
+        profile: { title:'Your profile', subtitle:'Only the fields below are editable. Contact support to change other details.',
+          uploadPhoto:'Upload new photo', photoHint:'Square photo recommended. Stored on Cloudinary after upload.',
+          name:'Full name', email:'Email address', phone:'Phone', language:'Preferred language',
+          country:'Country', city:'City', role:'Role', verification:'Verification', agentCode:'Agent code', joined:'Joined',
+          save:'Save changes', saved:'Profile updated.', saveFail:'Could not save your profile.' },
+        settings: { title:'Settings', subtitle:'Preferences that apply only to your account.',
+          language:'Language', notifications:'Notifications', account:'Account preferences',
+          notifEmailT:'Email notifications', notifEmailD:'Referral activity, rank changes and important account emails.',
+          notifPushT:'Push notifications', notifPushD:'Real-time updates on this device (requires permission).',
+          dirT:'Show in agent directory', dirD:'Allow verified users to discover your profile.',
+          waT:'Show WhatsApp on public profile', waD:'Faster contact for interested clients.',
+          save:'Save preferences', saved:'Preferences saved.' },
+        pending: { badge:'Verification pending',
+          title:'We are reviewing your application',
+          subtitle:"Thank you for applying to become an ISHFADI Agent. Our team is verifying your profile and documents. You'll receive an email as soon as your account is approved.",
+          emailTitle:'Email notification', emailDesc:"We'll email you at your registered address as soon as a decision is made.",
+          etaTitle:'Estimated approval', etaDesc:'Most applications are reviewed within 24–72 hours.',
+          backHome:'Back to home',
+          step: {
+            email:'Email verification', emailD:'Confirm the email address you signed up with.',
+            phone:'Phone verification', phoneD:'Verify your mobile number by SMS.',
+            nid:'National ID verification', nidD:'Government-issued ID checked by our team.',
+            crim:'Criminal record verification', crimD:'Background check completed by our compliance team.',
+            admin:'Admin review', adminD:'Final decision by an ISHFADI administrator.'
+          },
+          status: { done:'Verified', pending:'Waiting', active:'In progress' }
+        },
+        footer: { about:'Building the future of global accommodation. Reserve your account today and sign in the moment we launch.',
+          follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
+          privacy:'Privacy Policy', terms:'Terms of Service', help:'Help Center', safety:'Safety Tips',
+          tagline:'Building the future of global accommodation.' },
+        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.' }
+      },
+      fr: {
+        meta: { title:'Tableau de bord Agent ISHFADI', description:'Gérez votre profil agent ISHFADI, vos parrainages et votre rang.' },
+        a11y: { skip:'Aller au contenu' },
+        boot: { loading:'Chargement de votre tableau de bord…', error:'Impossible de charger votre tableau de bord. Vérifiez votre connexion et réessayez.', errorTitle:'Impossible de charger votre tableau de bord', retry:'Réessayer' },
+        nav: { home:'Accueil', dashboard:'Tableau de bord', referrals:'Parrainages', rank:'Rang', payments:'Paiements', profile:'Profil', settings:'Paramètres', logout:'Se déconnecter', roleAgent:'Agent',
+               masterSection:'Agent master', assignments:'Missions', inspections:'Inspections', reports:'Rapports' },
+        welcome: { hello:'Bon retour,', verified:'Agent vérifié', joined:'Inscrit', resId:'ID de réservation :', rank:'Rang :', shareLink:'Partager mon lien de parrainage' },
+        stats: { total:'Parrainages', verified:'Vérifiés', pending:'En attente', rejected:'Rejetés' },
+        referral: {
+          quickTitle:'Votre lien de parrainage permanent', quickSub:'Partagez-le partout. Chaque réservation via ce lien vous est attribuée.',
+          openFull:'Ouvrir le centre',
+          title:'Centre de parrainage', subtitle:'Votre code permanent, vos outils de partage et votre carte téléchargeable.',
+          codeLabel:'Code de parrainage permanent', copyCode:'Copier le code',
+          linkLabel:'Lien de parrainage', copy:'Copier', share:'Partager',
+          downloadQR:'Télécharger le QR', downloadCard:'Télécharger la carte', regenQR:'Rafraîchir le QR', regenDone:'QR rafraîchi.',
+          cardTag:'Parrainage Agent officiel', cardCTA:'Scannez pour réserver votre compte ISHFADI', cardFoot:'Parrainé par un agent ISHFADI',
+          tableTitle:'Personnes parrainées', empty:'Aucun parrainage pour le moment. Partagez votre lien.',
+          copied:'Lien copié.', codeCopied:'Code copié.',
+          shareText:'Réservez votre compte ISHFADI avec mon lien de parrainage :',
+          searchLabel:'Rechercher un parrainage', searchPh:'Rechercher nom, pays…'
+        },
+        table: { photo:'Photo', name:'Nom complet', country:'Pays', city:'Ville', status:'Statut', date:'Inscrit le' },
+        rank: { title:'Votre rang', subtitle:'Les rangs sont attribués par ISHFADI selon vos performances vérifiées.', progressTo:'Progression vers', requirement:"La progression est décidée par l'équipe ISHFADI." },
+        payments: { title:'Paiements', awaiting:'En attente du backend',
+          subtitle:'Les soldes, préférences et historique de paiement apparaîtront ici une fois les paiements activés.',
+          available:'Solde disponible', pending:'Solde en attente', lifetime:'Gains cumulés',
+          methodTitle:'Méthode de paiement préférée', methodSub:'Choisissez comment recevoir vos paiements. Enregistré une fois le backend en ligne.',
+          bank:'Compte bancaire', bankD:'Virement local ou international.',
+          mobile:'Mobile money', mobileD:'Paiements rapides vers portefeuilles mobiles.',
+          paypal:'PayPal', paypalD:'Recevez vos paiements sur votre compte PayPal.',
+          historyTitle:'Historique des paiements', historySub:'Chaque paiement effectué sera listé ici.',
+          historyEmpty:'Aucun paiement pour le moment. Votre historique apparaîtra après traitement.' },
+        master: {
+          assignmentsTitle:'Missions de vérification', assignmentsSub:'Missions envoyées par ISHFADI.', assignmentsEmpty:'Aucune mission active.',
+          inspectionsTitle:"File d'inspections", inspectionsSub:'Visites planifiées, check-in GPS et photos.', inspectionsEmpty:'Aucune inspection planifiée.',
+          reportsTitle:'Rapports de vérification', reportsSub:'Rapports que vous avez soumis.', reportsEmpty:'Aucun rapport.'
+        },
+        profile: { title:'Votre profil', subtitle:'Seuls les champs ci-dessous sont modifiables. Contactez le support pour le reste.',
+          uploadPhoto:'Téléverser une photo', photoHint:'Photo carrée recommandée. Stockée sur Cloudinary après téléversement.',
+          name:'Nom complet', email:'E-mail', phone:'Téléphone', language:'Langue préférée',
+          country:'Pays', city:'Ville', role:'Rôle', verification:'Vérification', agentCode:'Code agent', joined:'Inscrit le',
+          save:'Enregistrer', saved:'Profil mis à jour.', saveFail:'Enregistrement impossible.' },
+        settings: { title:'Paramètres', subtitle:'Préférences liées à votre compte.',
+          language:'Langue', notifications:'Notifications', account:'Préférences du compte',
+          notifEmailT:'Notifications e-mail', notifEmailD:'Activité de parrainage, changements de rang et e-mails importants.',
+          notifPushT:'Notifications push', notifPushD:'Mises à jour en temps réel sur cet appareil (autorisation requise).',
+          dirT:"Apparaître dans l'annuaire des agents", dirD:'Permet aux utilisateurs vérifiés de vous trouver.',
+          waT:'Afficher WhatsApp sur le profil public', waD:'Contact plus rapide pour les clients intéressés.',
+          save:'Enregistrer', saved:'Préférences enregistrées.' },
+        pending: { badge:'Vérification en cours',
+          title:'Nous examinons votre candidature',
+          subtitle:"Merci d'avoir postulé comme agent ISHFADI. Notre équipe vérifie votre profil et vos documents. Vous recevrez un e-mail dès l'approbation.",
+          emailTitle:'Notification par e-mail', emailDesc:'Nous vous écrirons à votre adresse enregistrée dès la décision.',
+          etaTitle:'Approbation estimée', etaDesc:'La plupart des candidatures sont examinées sous 24 à 72 heures.',
+          backHome:"Retour à l'accueil",
+          step: {
+            email:"Vérification de l'e-mail", emailD:"Confirmez l'adresse utilisée à l'inscription.",
+            phone:'Vérification du téléphone', phoneD:'Vérifiez votre numéro par SMS.',
+            nid:"Vérification de la pièce d'identité", nidD:"Pièce d'identité contrôlée par notre équipe.",
+            crim:'Vérification du casier judiciaire', crimD:'Vérification effectuée par notre équipe conformité.',
+            admin:'Revue administrateur', adminD:'Décision finale par un administrateur ISHFADI.'
+          },
+          status: { done:'Validé', pending:'En attente', active:'En cours' }
+        },
+        footer: { about:"Construire l'avenir de l'hébergement mondial. Réservez votre compte aujourd'hui et connectez-vous dès le lancement.",
+          follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
+          privacy:'Politique de confidentialité', terms:"Conditions d'utilisation", help:"Centre d'aide", safety:'Conseils de sécurité',
+          tagline:"Construire l'avenir de l'hébergement mondial." },
+        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent." }
+      },
+      ar: {
+        meta: { title:'لوحة تحكم وكيل ISHFADI', description:'إدارة ملف الوكيل والإحالات والرتبة على ISHFADI.' },
+        a11y: { skip:'الانتقال إلى المحتوى' },
+        boot: { loading:'جارٍ تحميل لوحة التحكم…', error:'تعذّر تحميل لوحة التحكم. تحقّق من الاتصال ثم أعد المحاولة.', errorTitle:'تعذّر تحميل لوحة التحكم', retry:'إعادة المحاولة' },
+        nav: { home:'الرئيسية', dashboard:'لوحة التحكم', referrals:'الإحالات', rank:'الرتبة', payments:'المدفوعات', profile:'الملف الشخصي', settings:'الإعدادات', logout:'تسجيل الخروج', roleAgent:'وكيل',
+               masterSection:'الوكيل الرئيسي', assignments:'المهام', inspections:'التفتيش', reports:'التقارير' },
+        welcome: { hello:'مرحباً بعودتك،', verified:'وكيل موثّق', joined:'انضم في', resId:'رقم الحجز:', rank:'الرتبة:', shareLink:'شارك رابط الإحالة' },
+        stats: { total:'إجمالي الإحالات', verified:'موثّقة', pending:'قيد المراجعة', rejected:'مرفوضة' },
+        referral: {
+          quickTitle:'رابط الإحالة الدائم الخاص بك', quickSub:'شاركه في أي مكان. كل حجز عبر هذا الرابط مرتبط بك.',
+          openFull:'فتح مركز الإحالة',
+          title:'مركز الإحالة', subtitle:'رمزك الدائم وأدوات المشاركة وبطاقتك القابلة للتنزيل.',
+          codeLabel:'رمز الإحالة الدائم', copyCode:'نسخ الرمز',
+          linkLabel:'رابط الإحالة', copy:'نسخ', share:'مشاركة',
+          downloadQR:'تنزيل رمز QR', downloadCard:'تنزيل البطاقة', regenQR:'تحديث رمز QR', regenDone:'تم تحديث رمز QR.',
+          cardTag:'إحالة وكيل رسمية', cardCTA:'امسح لحجز حسابك في ISHFADI', cardFoot:'مموّل من وكيل ISHFADI',
+          tableTitle:'الأشخاص الذين أحلتهم', empty:'لا توجد إحالات بعد. شارك رابطك للبدء.',
+          copied:'تم نسخ الرابط.', codeCopied:'تم نسخ الرمز.',
+          shareText:'احجز حسابك في ISHFADI عبر رابط الإحالة الخاص بي:',
+          searchLabel:'ابحث عن إحالة', searchPh:'ابحث بالاسم أو الدولة…'
+        },
+        table: { photo:'الصورة', name:'الاسم الكامل', country:'الدولة', city:'المدينة', status:'الحالة', date:'تاريخ التسجيل' },
+        rank: { title:'رتبتك', subtitle:'تُمنح الرتب من ISHFADI بناءً على أدائك الموثّق.', progressTo:'التقدم إلى', requirement:'يتم تحديد التقدم من قِبَل فريق ISHFADI.' },
+        payments: { title:'المدفوعات', awaiting:'في انتظار الخادم',
+          subtitle:'ستظهر الأرصدة والتفضيلات وسجل المدفوعات هنا عند تفعيل المدفوعات لحسابك.',
+          available:'الرصيد المتاح', pending:'الرصيد المعلّق', lifetime:'إجمالي الأرباح',
+          methodTitle:'طريقة الدفع المفضّلة', methodSub:'اختر كيفية استلام مدفوعاتك. تُحفظ عند تفعيل الخادم.',
+          bank:'حساب بنكي', bankD:'تحويل بنكي محلي أو دولي.',
+          mobile:'محفظة إلكترونية', mobileD:'مدفوعات سريعة إلى المحافظ المدعومة.',
+          paypal:'باي بال', paypalD:'استلام المدفوعات إلى حساب باي بال.',
+          historyTitle:'سجل المدفوعات', historySub:'ستُدرج جميع المدفوعات المكتملة هنا.',
+          historyEmpty:'لا توجد مدفوعات بعد. سيظهر السجل بعد المعالجة.' },
+        master: {
+          assignmentsTitle:'مهام التحقق', assignmentsSub:'مهام مُسندة إليك من ISHFADI.', assignmentsEmpty:'لا توجد مهام نشطة.',
+          inspectionsTitle:'قائمة التفتيش', inspectionsSub:'زيارات مجدولة مع تسجيل GPS والتقاط الصور.', inspectionsEmpty:'لا توجد عمليات تفتيش مجدولة.',
+          reportsTitle:'تقارير التحقق', reportsSub:'التقارير التي قدّمتها.', reportsEmpty:'لا توجد تقارير.'
+        },
+        profile: { title:'ملفك الشخصي', subtitle:'الحقول أدناه فقط قابلة للتعديل. تواصل مع الدعم لتغيير باقي البيانات.',
+          uploadPhoto:'تحميل صورة جديدة', photoHint:'يُفضّل صورة مربّعة. تُخزَّن على Cloudinary بعد التحميل.',
+          name:'الاسم الكامل', email:'البريد الإلكتروني', phone:'الهاتف', language:'اللغة المفضّلة',
+          country:'الدولة', city:'المدينة', role:'الدور', verification:'التحقق', agentCode:'رمز الوكيل', joined:'انضم في',
+          save:'حفظ التغييرات', saved:'تم تحديث الملف.', saveFail:'تعذّر الحفظ.' },
+        settings: { title:'الإعدادات', subtitle:'تفضيلات خاصة بحسابك.',
+          language:'اللغة', notifications:'الإشعارات', account:'تفضيلات الحساب',
+          notifEmailT:'إشعارات البريد', notifEmailD:'نشاط الإحالات وتغييرات الرتبة والرسائل المهمة.',
+          notifPushT:'إشعارات الدفع', notifPushD:'تحديثات فورية على هذا الجهاز (يتطلب إذنًا).',
+          dirT:'الظهور في دليل الوكلاء', dirD:'السماح للمستخدمين الموثّقين باكتشاف ملفك.',
+          waT:'إظهار واتساب في الملف العام', waD:'تواصل أسرع للعملاء المهتمين.',
+          save:'حفظ التفضيلات', saved:'تم حفظ التفضيلات.' },
+        pending: { badge:'قيد التحقق',
+          title:'نراجع طلبك حالياً',
+          subtitle:'شكراً لتقدّمك لتصبح وكيلاً في ISHFADI. يقوم فريقنا بالتحقق من ملفك ووثائقك. ستصلك رسالة بريد فور اعتماد حسابك.',
+          emailTitle:'إشعار بالبريد', emailDesc:'سنراسلك على بريدك المسجل فور صدور القرار.',
+          etaTitle:'مدة الاعتماد التقديرية', etaDesc:'تُراجَع معظم الطلبات خلال 24 إلى 72 ساعة.',
+          backHome:'العودة للرئيسية',
+          step: {
+            email:'التحقق من البريد الإلكتروني', emailD:'تأكيد بريدك المستخدم عند التسجيل.',
+            phone:'التحقق من الهاتف', phoneD:'تحقّق من رقمك برسالة نصية.',
+            nid:'التحقق من الهوية الوطنية', nidD:'تحقق فريقنا من الهوية الرسمية.',
+            crim:'التحقق من صحيفة الحالة الجنائية', crimD:'تحقّق فريق الامتثال من الخلفية.',
+            admin:'مراجعة المسؤول', adminD:'قرار نهائي من إدارة ISHFADI.'
+          },
+          status: { done:'مُنجز', pending:'بانتظار', active:'قيد التنفيذ' }
+        },
+        footer: { about:'نبني مستقبل السكن العالمي. احجز حسابك اليوم وسجّل الدخول لحظة الإطلاق.',
+          follow:'تابع ISHFADI', quickLinks:'روابط سريعة', contact:'اتصل بنا',
+          privacy:'سياسة الخصوصية', terms:'شروط الخدمة', help:'مركز المساعدة', safety:'نصائح الأمان',
+          tagline:'نبني مستقبل السكن العالمي.' },
+        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.' }
+      }
+    };
+
+    let currentLang = FALLBACK;
+
+    function detectLanguage(){
+      try { const s = localStorage.getItem(STORAGE_KEY); if (s && LANGUAGES[s]) return s; } catch(e){}
+      const nav = (navigator.language || 'en').slice(0,2).toLowerCase();
+      return LANGUAGES[nav] ? nav : FALLBACK;
+    }
+    function t(key, vars){
+      const parts = key.split('.');
+      let node = T[currentLang] || T[FALLBACK];
+      for (const p of parts){ node = node && node[p]; if (node == null) break; }
+      if (node == null){ node = T[FALLBACK]; for (const p of parts){ node = node && node[p]; if (node == null) break; } }
+      let str = (typeof node === 'string') ? node : key;
+      if (vars) Object.keys(vars).forEach(k => str = str.replace(new RegExp('\\{'+k+'\\}','g'), vars[k]));
+      return str;
+    }
+    window.t = t;
+    window.getCurrentLang = () => currentLang;
+
+    function applyDOMTranslations(){
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const attr = el.getAttribute('data-i18n-attr');
+        const val = t(key);
+        if (attr) el.setAttribute(attr, val); else el.textContent = val;
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.getAttribute('data-i18n-html')));
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))));
+      const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', t('meta.description'));
+    }
+    window.applyDOMTranslations = applyDOMTranslations;
+
+    function renderLanguageSwitchers(){
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const menu = sw.querySelector('.lang-menu');
+        const labelEl = sw.querySelector('.lang-current-label');
+        if (labelEl) labelEl.textContent = LANGUAGES[currentLang].native;
+        if (!menu) return;
+        menu.innerHTML = Object.values(LANGUAGES).map(l => `
+          <button type="button" role="option" class="lang-option" data-lang="${l.code}" aria-current="${l.code === currentLang ? 'true' : 'false'}">
+            <span><span class="lang-name">${l.native}</span><span class="lang-sub">${l.code.toUpperCase()}</span></span>
+            <svg class="check w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </button>`).join('');
+        menu.querySelectorAll('.lang-option').forEach(btn => {
+          btn.addEventListener('click', () => { const code = btn.getAttribute('data-lang'); closeAllLangMenus(); setLanguage(code); });
+        });
+      });
+    }
+    function closeAllLangMenus(){ document.querySelectorAll('.lang-switcher.open').forEach(s => { s.classList.remove('open'); const trig=s.querySelector('.lang-trigger'); if (trig) trig.setAttribute('aria-expanded','false'); }); }
+    function wireLangSwitchers(){
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const trigger = sw.querySelector('.lang-trigger'); if (!trigger) return;
+        trigger.addEventListener('click', e => { e.stopPropagation(); const open = sw.classList.contains('open'); closeAllLangMenus(); if (!open){ sw.classList.add('open'); trigger.setAttribute('aria-expanded','true'); } });
+        trigger.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeAllLangMenus(); trigger.focus(); } });
+      });
+      document.addEventListener('click', e => { if (!e.target.closest('.lang-switcher')) closeAllLangMenus(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllLangMenus(); });
+    }
+    function setLanguage(lang){
+      if (!LANGUAGES[lang]) lang = FALLBACK;
+      const html = document.documentElement;
+      document.body.classList.add('lang-switching');
+      const fadeTargets = document.querySelectorAll('nav, section, footer, header, main');
+      fadeTargets.forEach(n => n.classList.add('switch-fade'));
+      setTimeout(() => {
+        currentLang = lang;
+        html.setAttribute('lang', lang);
+        html.setAttribute('dir', LANGUAGES[lang].dir);
+        try { localStorage.setItem(STORAGE_KEY, lang); } catch(e){}
+        document.title = t('meta.title');
+        applyDOMTranslations();
+        renderLanguageSwitchers();
+        if (typeof window.renderReferralQR === 'function') window.renderReferralQR();
+        if (typeof window.renderPendingChecklist === 'function') window.renderPendingChecklist();
+        fadeTargets.forEach(n => n.classList.remove('switch-fade'));
+        document.body.classList.remove('lang-switching');
+      }, 120);
+    }
+    window.setLanguage = setLanguage;
+
+    function showToast(message, type){
+      const c = document.getElementById('toastContainer'); if (!c) return;
+      const el = document.createElement('div');
+      el.className = 'toast fade-in ' + (type || '');
+      el.setAttribute('role','status'); el.style.pointerEvents='auto';
+      el.textContent = message; c.appendChild(el);
+      setTimeout(() => { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),320); }, 3200);
+    }
+    window.showToast = showToast;
+
+    currentLang = detectLanguage();
+    document.documentElement.setAttribute('lang', currentLang);
+    document.documentElement.setAttribute('dir', LANGUAGES[currentLang].dir);
+    document.addEventListener('DOMContentLoaded', () => {
+      document.title = t('meta.title');
+      applyDOMTranslations();
+      wireLangSwitchers();
+      renderLanguageSwitchers();
+    });
+  })();
+  </script>
+
+  <!-- APP -->
+  <script>
+  (function(){
+    'use strict';
+
+    // --- Cached DOM refs (built after DOMContentLoaded) ---
+    const $ = (id) => document.getElementById(id);
+    const els = {};
+    function cacheEls(){
+      [
+        'bootLoader','bootError','bootRetryBtn','pendingPage','pendingChecklist','pendingLogoutBtn',
+        'dashboardWrap','sideDrawer','sideBackdrop','sideToggle','sideClose','sideLogoutBtn',
+        'navName','navAvatar','logoutBtn',
+        'welcomeName','welcomeAvatar','welcomeLocation','welcomeJoined','welcomeResId','welcomeRank',
+        'quickRefLink',
+        'refCode','refLink','copyCodeBtn','shareBtn','dlQrBtn','dlCardBtn','regenQrBtn',
+        'referralCard','cardCode','cardAgent','cardQr','cardLinkText',
+        'refTbody','refEmpty','refSearch','pageInfo','prevPage','nextPage',
+        'rankCurrent','rankEmoji','rankName','rankDescription','rankNext','rankPct','rankBar','rankBarWrap','rankRequirement',
+        'profileForm','profileAvatar','profileSaveBtn','photoInput',
+        'pfName','pfEmail','pfPhone','pfLang','pfCountry','pfCity','pfRole','pfVerification','pfAgentCode','pfJoined',
+        'notifEmail','notifPush','prefDirectory','prefWhatsapp','settingsSaveBtn','settingsSignOutBtn'
+      ].forEach(id => { els[id] = $(id); });
+    }
+
+    // --- Supabase client ---
+    let supabase = null;
+    function initSupabase(){
+      const c = window.ISHFADI_CONFIG;
+      if (!c || !c.SUPABASE_URL || !c.SUPABASE_ANON_KEY || !window.supabase) return null;
+      if (supabase) return supabase;
+      supabase = window.supabase.createClient(c.SUPABASE_URL, c.SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, storageKey: 'ishfadi.auth' }
+      });
+      return supabase;
+    }
+
+    // --- Helpers ---
+    function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function initials(name){
+      if (!name) return 'A';
+      return name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() || '').join('') || 'A';
+    }
+    function fmtDate(iso){
+      if (!iso) return '—';
+      try { return new Date(iso).toLocaleDateString(window.getCurrentLang(), { year:'numeric', month:'short', day:'numeric' }); }
+      catch(e){ return iso; }
+    }
+    function buildReferralLink(code){
+      const base = (window.ISHFADI_CONFIG && window.ISHFADI_CONFIG.SITE_URL) || 'https://www.ishfadi.com';
+      return base.replace(/\/+$/,'') + '/?ref=' + encodeURIComponent(code || '');
+    }
+    function setAvatar(node, url, name){
+      if (!node) return;
+      node.textContent = '';
+      if (url){
+        const img = new Image();
+        img.alt = name || 'Profile photo';
+        img.loading = 'lazy';
+        img.onerror = () => { node.textContent = initials(name); };
+        img.src = url;
+        node.appendChild(img);
+      } else {
+        node.textContent = initials(name);
+      }
+    }
+    function setStats(stats){
+      document.querySelectorAll('[data-stat]').forEach(el => {
+        const key = el.getAttribute('data-stat');
+        const v = stats[key];
+        el.textContent = (v == null ? '—' : String(v));
+      });
+    }
+    function showSkeletonStats(){
+      document.querySelectorAll('[data-stat]').forEach(el => {
+        el.innerHTML = '<span class="skeleton skeleton-num" aria-hidden="true"></span>';
+      });
+    }
+    function showSkeletonTable(){
+      if (!els.refTbody) return;
+      els.refTbody.setAttribute('aria-busy','true');
+      let html = '';
+      for (let i=0; i<5; i++){
+        html += '<tr class="skeleton-row">'
+          + '<td><span class="skeleton" style="width:40px;height:40px;border-radius:9999px"></span></td>'
+          + '<td><span class="skeleton skeleton-line" style="width:60%"></span></td>'
+          + '<td><span class="skeleton skeleton-line" style="width:50%"></span></td>'
+          + '<td><span class="skeleton skeleton-line" style="width:50%"></span></td>'
+          + '<td><span class="skeleton skeleton-line" style="width:70px"></span></td>'
+          + '<td><span class="skeleton skeleton-line" style="width:80px"></span></td>'
+          + '</tr>';
+      }
+      els.refTbody.innerHTML = html;
+    }
+
+    // --- AUTH GATE ---
+    async function requireSession(){
+      const client = initSupabase();
+      if (!client){ window.location.replace('/index.html'); return null; }
+      try {
+        const { data: sess } = await client.auth.getSession();
+        if (!sess || !sess.session){ window.location.replace('/index.html'); return null; }
+        return sess.session;
+      } catch(e){ window.location.replace('/index.html'); return null; }
+    }
+
+    // --- Backend contract ---
+    // Backend RPC: get_agent_dashboard(p_user_id) returns:
+    //   {
+    //     profile, agent_profile,
+    //     verification_status: 'pending'|'verified'|'rejected',
+    //     verification_agent_status: 'none'|'certified',
+    //     verification_steps: { email_verified, phone_verified, national_id_verified,
+    //                           criminal_record_verified, admin_review_status },
+    //     agent_code, rank_name, rank_progress, referral_link, referral_qr,
+    //     total_referrals, verified_referrals, pending_referrals, rejected_referrals,
+    //     referred_users: [{ full_name, country, city, status, registered_at, profile_photo_url }]
+    //   }
+    async function loadAgentDashboard(userId){
+      const client = initSupabase();
+      try {
+        const { data, error } = await client.rpc('get_agent_dashboard', { p_user_id: userId }).single();
+        if (!error && data) return data;
+      } catch(e){}
+      return null;
+    }
+
+    // --- Section routing ---
+    function goToSection(name){
+      document.querySelectorAll('[data-pane]').forEach(p => p.classList.toggle('hidden', p.getAttribute('data-pane') !== name));
+      document.querySelectorAll('[data-section]').forEach(a => a.classList.toggle('active', a.getAttribute('data-section') === name));
+      try { history.replaceState(null,'','#'+name); } catch(e){}
+      if (els.sideDrawer) els.sideDrawer.classList.remove('open');
+      if (els.sideBackdrop) els.sideBackdrop.classList.remove('open');
+      if (els.sideToggle) els.sideToggle.setAttribute('aria-expanded','false');
+      window.scrollTo({ top: 0, behavior:'smooth' });
+    }
+    window.goToSection = goToSection;
+
+    // --- Referral: QR + link + share + downloads ---
+    let currentData = null;
+
+    function renderReferralQR(){
+      if (!currentData || !els.cardQr) return;
+      const link = currentData.referral_link || buildReferralLink(currentData.agent_code);
+      if (window.QRCode){
+        els.cardQr.innerHTML = '';
+        try { new QRCode(els.cardQr, { text: link, width: 260, height: 260, colorDark:'#1e3a5f', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+      }
+    }
+    window.renderReferralQR = renderReferralQR;
+
+    function copyText(text, okKey, failKey){
+      const done = () => window.showToast(window.t(okKey || 'referral.copied'), 'success');
+      const fail = () => window.showToast(window.t(failKey || 'toast.copyFail'), 'error');
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done, fail));
+      } else fallbackCopy(text, done, fail);
+    }
+    function fallbackCopy(text, done, fail){
+      const tmp = document.createElement('input'); tmp.value = text; document.body.appendChild(tmp); tmp.select();
+      try { document.execCommand('copy'); done(); } catch(e){ fail(); } finally { tmp.remove(); }
+    }
+    function copyRefLink(inputId){
+      const input = $(inputId); if (!input || !input.value) return;
+      copyText(input.value, 'referral.copied');
+    }
+    function copyRefCode(){
+      if (!currentData || !currentData.agent_code) return;
+      copyText(currentData.agent_code, 'referral.codeCopied');
+    }
+    async function shareRefLink(){
+      if (!currentData) return;
+      const link = currentData.referral_link || buildReferralLink(currentData.agent_code);
+      const text = window.t('referral.shareText') + ' ' + link;
+      if (navigator.share){
+        try { await navigator.share({ title:'ISHFADI', text, url: link }); return; } catch(e){ /* fall through */ }
+      }
+      copyText(link, 'referral.copied', 'toast.shareFail');
+    }
+    function regenerateQR(){ renderReferralQR(); window.showToast(window.t('referral.regenDone'), 'success'); }
+    function downloadQR(){
+      if (!els.cardQr) return;
+      const canvas = els.cardQr.querySelector('canvas'); const img = els.cardQr.querySelector('img');
+      let dataUrl = canvas ? canvas.toDataURL('image/png') : (img ? img.src : null);
+      if (!dataUrl){ window.showToast(window.t('toast.downloadFail'),'error'); return; }
+      const a = document.createElement('a');
+      a.download = 'ISHFADI-referral-' + ((currentData && currentData.agent_code) || 'agent') + '.png';
+      a.href = dataUrl; document.body.appendChild(a); a.click(); a.remove();
+    }
+    async function downloadRefCard(){
+      if (!els.referralCard || !window.html2canvas){ window.showToast(window.t('toast.downloadFail'),'error'); return; }
+      try {
+        const canvas = await window.html2canvas(els.referralCard, { scale: 2, backgroundColor:'#ffffff', useCORS: true, logging: false });
+        const a = document.createElement('a');
+        a.download = 'ISHFADI-agent-card-' + ((currentData && currentData.agent_code) || 'card') + '.png';
+        a.href = canvas.toDataURL('image/png');
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch(e){ window.showToast(window.t('toast.downloadFail'),'error'); }
+    }
+
+    // --- Referrals table (safe: no innerHTML from data) ---
+    const PAGE_SIZE = 10;
+    let refPage = 1;
+    let refFilter = '';
+
+    function renderRefTable(){
+      if (!els.refTbody) return;
+      const rows = (currentData && Array.isArray(currentData.referred_users)) ? currentData.referred_users : [];
+      const q = refFilter.trim().toLowerCase();
+      const filtered = q ? rows.filter(r =>
+        (r.full_name || '').toLowerCase().includes(q) ||
+        (r.country   || '').toLowerCase().includes(q) ||
+        (r.city      || '').toLowerCase().includes(q) ||
+        (r.status    || '').toLowerCase().includes(q)
+      ) : rows;
+
+      els.refTbody.removeAttribute('aria-busy');
+      els.refTbody.textContent = '';
+
+      if (!filtered.length){
+        els.refEmpty.classList.remove('hidden');
+        els.pageInfo.textContent = '0';
+        els.prevPage.disabled = true; els.nextPage.disabled = true;
+        return;
+      }
+      els.refEmpty.classList.add('hidden');
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      if (refPage > totalPages) refPage = totalPages;
+      const start = (refPage-1)*PAGE_SIZE;
+      const slice = filtered.slice(start, start + PAGE_SIZE);
+
+      const frag = document.createDocumentFragment();
+      slice.forEach(r => {
+        const status = (r.status || 'pending').toLowerCase();
+        const safeStatus = ['verified','pending','rejected'].includes(status) ? status : 'pending';
+        const tr = document.createElement('tr');
+
+        const tdPhoto = document.createElement('td');
+        const avatar = document.createElement('span'); avatar.className = 'avatar-sm';
+        setAvatar(avatar, r.profile_photo_url, r.full_name);
+        tdPhoto.appendChild(avatar);
+
+        const tdName = document.createElement('td'); tdName.className = 'font-semibold text-primary';
+        tdName.textContent = r.full_name || '—';
+
+        const tdCountry = document.createElement('td'); tdCountry.textContent = r.country || '—';
+        const tdCity = document.createElement('td'); tdCity.textContent = r.city || '—';
+
+        const tdStatus = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'ref-status ' + safeStatus;
+        badge.textContent = safeStatus;
+        tdStatus.appendChild(badge);
+
+        const tdDate = document.createElement('td'); tdDate.className = 'text-gray-500';
+        tdDate.textContent = fmtDate(r.registered_at);
+
+        tr.append(tdPhoto, tdName, tdCountry, tdCity, tdStatus, tdDate);
+        frag.appendChild(tr);
+      });
+      els.refTbody.appendChild(frag);
+
+      els.pageInfo.textContent = (start+1) + '–' + Math.min(start+PAGE_SIZE, filtered.length) + ' / ' + filtered.length;
+      els.prevPage.disabled = refPage <= 1;
+      els.nextPage.disabled = refPage >= totalPages;
+    }
+
+    // --- Pending checklist ---
+    function renderPendingChecklist(){
+      if (!els.pendingChecklist) return;
+      const steps = (currentData && currentData.verification_steps) || {};
+      const admin = (steps.admin_review_status || 'pending').toLowerCase();
+      const items = [
+        { key:'email',  done: !!steps.email_verified },
+        { key:'phone',  done: !!steps.phone_verified },
+        { key:'nid',    done: !!steps.national_id_verified },
+        { key:'crim',   done: !!steps.criminal_record_verified },
+        { key:'admin',  done: admin === 'approved' }
+      ];
+      // The first not-done item is 'active'; others below stay 'pending'
+      let activeAssigned = false;
+      const marked = items.map(it => {
+        let state;
+        if (it.done) state = 'done';
+        else if (!activeAssigned) { state = 'active'; activeAssigned = true; }
+        else state = 'pending';
+        return { ...it, state };
+      });
+
+      const frag = document.createDocumentFragment();
+      marked.forEach((it, idx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'verify-check';
+        wrap.setAttribute('data-state', it.state);
+
+        const icon = document.createElement('span');
+        icon.className = 'vc-icon';
+        icon.textContent = it.state === 'done' ? '✓' : String(idx+1);
+        icon.setAttribute('aria-hidden','true');
+
+        const body = document.createElement('div');
+        body.className = 'vc-body';
+        const title = document.createElement('p'); title.className = 'vc-title';
+        title.textContent = window.t('pending.step.' + it.key);
+        const desc = document.createElement('p'); desc.className = 'vc-desc';
+        desc.textContent = window.t('pending.step.' + it.key + 'D');
+        body.append(title, desc);
+
+        const status = document.createElement('span');
+        status.className = 'vc-status';
+        status.textContent = window.t('pending.status.' + it.state);
+
+        wrap.append(icon, body, status);
+        frag.appendChild(wrap);
+      });
+      els.pendingChecklist.textContent = '';
+      els.pendingChecklist.appendChild(frag);
+    }
+    window.renderPendingChecklist = renderPendingChecklist;
+
+    // --- Render: verified dashboard ---
+    function renderDashboard(data){
+      currentData = data;
+      const p = data.profile || {};
+      const a = data.agent_profile || {};
+      const fullName = p.full_name || a.full_name || '—';
+
+      els.navName.textContent = fullName;
+      setAvatar(els.navAvatar, p.profile_photo_url, fullName);
+
+      els.welcomeName.textContent = fullName;
+      setAvatar(els.welcomeAvatar, p.profile_photo_url, fullName);
+      const loc = [p.city, p.country].filter(Boolean).join(', ') || '—';
+      els.welcomeLocation.textContent = loc;
+      els.welcomeJoined.textContent = fmtDate(p.created_at || a.created_at);
+      els.welcomeResId.textContent = p.reservation_id || '—';
+      els.welcomeRank.textContent = data.rank_name || '—';
+
+      // Stats (no fake fallbacks — show '—' when backend omits a field)
+      setStats({
+        total:    data.total_referrals,
+        verified: data.verified_referrals,
+        pending:  data.pending_referrals,
+        rejected: data.rejected_referrals
+      });
+
+      // Referral
+      const link = data.referral_link || buildReferralLink(data.agent_code);
+      els.quickRefLink.value = link;
+      els.refLink.value = link;
+      els.refCode.textContent = data.agent_code || '—';
+      els.cardCode.textContent = data.agent_code || '—';
+      els.cardAgent.textContent = fullName + (p.country ? ' · ' + p.country : '');
+      els.cardLinkText.textContent = link;
+      renderReferralQR();
+
+      // Rank
+      const rp = data.rank_progress || {};
+      els.rankName.textContent = data.rank_name || '—';
+      els.rankCurrent.textContent = data.rank_name || '—';
+      els.rankDescription.textContent = rp.description || '';
+      els.rankNext.textContent = rp.next_rank || '—';
+      const pct = (rp.percent == null) ? null : Math.max(0, Math.min(100, Number(rp.percent)));
+      els.rankPct.textContent = pct == null ? '—' : (pct + '%');
+      els.rankBar.style.width = (pct || 0) + '%';
+      els.rankBarWrap.setAttribute('aria-valuenow', String(pct || 0));
+      if (rp.requirement_text) els.rankRequirement.textContent = rp.requirement_text;
+      const emojiMap = { bronze:'🥉', silver:'🥈', gold:'🥇', platinum:'💎', diamond:'💠' };
+      els.rankEmoji.textContent = emojiMap[(data.rank_name || '').toLowerCase()] || '🏅';
+
+      // Profile
+      els.pfName.value = fullName === '—' ? '' : fullName;
+      els.pfEmail.value = p.email || '';
+      els.pfPhone.value = p.phone || '';
+      els.pfLang.value = (p.preferred_language || window.getCurrentLang() || 'en');
+      els.pfCountry.value = p.country || '';
+      els.pfCity.value = p.city || '';
+      els.pfAgentCode.value = data.agent_code || '';
+      els.pfJoined.value = fmtDate(p.created_at || a.created_at);
+      els.pfVerification.value = window.t('welcome.verified');
+      setAvatar(els.profileAvatar, p.profile_photo_url, fullName);
+
+      // Settings — reflect stored prefs when backend supplies them
+      const prefs = p.preferences || a.preferences || {};
+      if (typeof prefs.notif_email === 'boolean')      els.notifEmail.checked = prefs.notif_email;
+      if (typeof prefs.notif_push === 'boolean')       els.notifPush.checked = prefs.notif_push;
+      if (typeof prefs.show_in_directory === 'boolean') els.prefDirectory.checked = prefs.show_in_directory;
+      if (typeof prefs.show_whatsapp === 'boolean')    els.prefWhatsapp.checked = prefs.show_whatsapp;
+
+      // Master-agent: reveal shells only when backend confirms
+      const isMaster = (data.verification_agent_status || '').toLowerCase() === 'certified';
+      document.querySelectorAll('.master-only').forEach(el => el.classList.toggle('hidden', !isMaster));
+
+      // Render referrals table
+      renderRefTable();
+
+      // Reveal
+      els.dashboardWrap.classList.remove('hidden');
+      els.pendingPage.classList.add('hidden');
+      els.bootLoader.classList.add('hidden');
+      els.bootError.classList.add('hidden');
+
+      // Route from hash
+      const validSections = ['dashboard','referrals','rank','payments','profile','settings'];
+      if (isMaster) validSections.push('assignments','inspections','reports');
+      const hash = (location.hash || '').replace('#','');
+      goToSection(validSections.includes(hash) ? hash : 'dashboard');
+    }
+
+    function renderPending(data){
+      currentData = data;
+      const name = (data && data.profile && data.profile.full_name) || '';
+      if (name) document.title = window.t('meta.title') + ' — ' + name;
+      renderPendingChecklist();
+      els.dashboardWrap.classList.add('hidden');
+      els.pendingPage.classList.remove('hidden');
+      els.bootLoader.classList.add('hidden');
+      els.bootError.classList.add('hidden');
+    }
+
+    function renderError(){
+      els.bootLoader.classList.add('hidden');
+      els.dashboardWrap.classList.add('hidden');
+      els.pendingPage.classList.add('hidden');
+      els.bootError.classList.remove('hidden');
+    }
+
+    // --- Profile save ---
+    async function saveProfile(e){
+      e.preventDefault();
+      const client = initSupabase(); if (!client) return;
+      const btn = els.profileSaveBtn;
+      btn.disabled = true;
+      const patch = {
+        phone: els.pfPhone.value.trim() || null,
+        preferred_language: els.pfLang.value,
+        country: els.pfCountry.value.trim() || null,
+        city:    els.pfCity.value.trim() || null
+      };
+      try {
+        let ok = false;
+        try {
+          const r = await client.rpc('update_agent_profile', { p_patch: patch });
+          ok = !r.error;
+        } catch(e){}
+        if (!ok){
+          const { data: u } = await client.auth.getUser();
+          if (u && u.user){
+            const r = await client.from('profiles').update(patch).eq('id', u.user.id);
+            ok = !r.error;
+          }
+        }
+        if (patch.preferred_language && patch.preferred_language !== window.getCurrentLang()) window.setLanguage(patch.preferred_language);
+        window.showToast(ok ? window.t('profile.saved') : window.t('profile.saveFail'), ok ? 'success' : 'error');
+      } catch(err){
+        window.showToast(window.t('profile.saveFail'), 'error');
+      } finally { btn.disabled = false; }
+    }
+
+    // --- Photo picker (preview only until Cloudinary upload is wired) ---
+    function wirePhotoInput(){
+      if (!els.photoInput) return;
+      els.photoInput.addEventListener('change', () => {
+        const f = els.photoInput.files && els.photoInput.files[0]; if (!f) return;
+        const url = URL.createObjectURL(f);
+        const name = els.pfName.value;
+        setAvatar(els.profileAvatar, url, name);
+        setAvatar(els.welcomeAvatar, url, name);
+        setAvatar(els.navAvatar,     url, name);
+      });
+    }
+
+    // --- Sign out ---
+    async function signOut(){
+      const client = initSupabase();
+      try { if (client) await client.auth.signOut(); } catch(e){}
+      try { localStorage.removeItem('ishfadi.auth'); } catch(e){}
+      window.showToast(window.t('toast.signedOut'), 'success');
+      setTimeout(() => { window.location.replace('/index.html'); }, 400);
+    }
+    window.signOut = signOut;
+
+    // --- Sidebar wiring ---
+    function wireSidebar(){
+      if (els.sideToggle) els.sideToggle.addEventListener('click', () => {
+        els.sideDrawer.classList.add('open'); els.sideBackdrop.classList.add('open');
+        els.sideToggle.setAttribute('aria-expanded','true');
+      });
+      const closeDrawer = () => {
+        els.sideDrawer.classList.remove('open'); els.sideBackdrop.classList.remove('open');
+        if (els.sideToggle) els.sideToggle.setAttribute('aria-expanded','false');
+      };
+      if (els.sideClose)    els.sideClose.addEventListener('click', closeDrawer);
+      if (els.sideBackdrop) els.sideBackdrop.addEventListener('click', closeDrawer);
+
+      document.querySelectorAll('[data-section]').forEach(el => {
+        el.addEventListener('click', (e) => { e.preventDefault(); goToSection(el.getAttribute('data-section')); });
+      });
+      document.querySelectorAll('[data-goto]').forEach(el => {
+        el.addEventListener('click', (e) => { e.preventDefault(); goToSection(el.getAttribute('data-goto')); });
+      });
+      document.querySelectorAll('[data-copy-target]').forEach(el => {
+        el.addEventListener('click', () => copyRefLink(el.getAttribute('data-copy-target')));
+      });
+    }
+
+    function wireTableControls(){
+      if (els.refSearch) els.refSearch.addEventListener('input', () => { refFilter = els.refSearch.value; refPage = 1; renderRefTable(); });
+      if (els.prevPage)  els.prevPage.addEventListener('click', () => { if (refPage > 1){ refPage--; renderRefTable(); } });
+      if (els.nextPage)  els.nextPage.addEventListener('click', () => { refPage++; renderRefTable(); });
+    }
+
+    // --- Boot ---
+    async function boot(){
+      showSkeletonStats();
+      showSkeletonTable();
+      const session = await requireSession();
+      if (!session) return;
+
+      const data = await loadAgentDashboard(session.user.id);
+      if (!data){ renderError(); return; }
+
+      const roles = (data.profile && data.profile.roles) || (data.agent_profile ? ['agent'] : []);
+      if (!Array.isArray(roles) || !roles.includes('agent')){
+        window.showToast(window.t('toast.notAgent'), 'error');
+        setTimeout(() => window.location.replace('/index.html'), 900);
+        return;
+      }
+
+      if ((data.verification_status || '').toLowerCase() === 'verified') renderDashboard(data);
+      else renderPending(data);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      cacheEls();
+      wireSidebar();
+      wireTableControls();
+      wirePhotoInput();
+      if (els.profileForm)       els.profileForm.addEventListener('submit', saveProfile);
+      if (els.logoutBtn)         els.logoutBtn.addEventListener('click', signOut);
+      if (els.sideLogoutBtn)     els.sideLogoutBtn.addEventListener('click', signOut);
+      if (els.pendingLogoutBtn)  els.pendingLogoutBtn.addEventListener('click', signOut);
+      if (els.settingsSignOutBtn)els.settingsSignOutBtn.addEventListener('click', signOut);
+      if (els.settingsSaveBtn)   els.settingsSaveBtn.addEventListener('click', () => window.showToast(window.t('settings.saved'), 'success'));
+      if (els.bootRetryBtn)      els.bootRetryBtn.addEventListener('click', boot);
+      if (els.copyCodeBtn)       els.copyCodeBtn.addEventListener('click', copyRefCode);
+      if (els.shareBtn)          els.shareBtn.addEventListener('click', shareRefLink);
+      if (els.dlQrBtn)           els.dlQrBtn.addEventListener('click', downloadQR);
+      if (els.dlCardBtn)         els.dlCardBtn.addEventListener('click', downloadRefCard);
+      if (els.regenQrBtn)        els.regenQrBtn.addEventListener('click', regenerateQR);
+
+      boot();
+    });
+
+    // --- PWA — register the existing service worker only (skip preview/iframe) ---
+    if ('serviceWorker' in navigator && location.protocol !== 'blob:'){
+      const host = location.hostname || '';
+      const inPreview = host.startsWith('id-preview--') || host.startsWith('preview--') || host.endsWith('.lovableproject.com') || host.endsWith('.lovableproject-dev.com') || host.endsWith('.beta.lovable.dev');
+      const inIframe = window.top !== window.self;
+      if (!inPreview && !inIframe){
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/service-worker.js', { scope:'/' }).catch(()=>{}); });
+      }
+    }
+  })();
+  </script>
+</body>
+</html>

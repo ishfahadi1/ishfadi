@@ -48,59 +48,29 @@ const OFFLINE_URL = "/offline.html";
 
 const APP_SHELL = [
   "/",
-  "/waiting-list.html",
+  "/agent.html",
   "/index.html",
   "/offline.html",
   "/manifest.json",
 
   // Logo
-  "/icons/logo.png",
+ "/icons/logo.png",
 
-  // Standard / Android icons
-  "/icons/icon-16.png",
-  "/icons/icon-20.png",
-  "/icons/icon-24.png",
-  "/icons/icon-29.png",
-  "/icons/icon-32.png",
-  "/icons/icon-36.png",
-  "/icons/icon-40.png",
-  "/icons/icon-48.png",
-  "/icons/icon-57.png",
-  "/icons/icon-58.png",
-  "/icons/icon-60.png",
-  "/icons/icon-64.png",
-  "/icons/icon-72.png",
-  "/icons/icon-76.png",
-  "/icons/icon-80.png",
-  "/icons/icon-87.png",
-  "/icons/icon-96.png",
-  "/icons/icon-114.png",
-  "/icons/icon-120.png",
-  "/icons/icon-128.png",
-  "/icons/icon-144.png",
-  "/icons/icon-152.png",
-  "/icons/icon-167.png",
-  "/icons/icon-180.png",
-  "/icons/icon-192.png",
-  "/icons/icon-256.png",
-  "/icons/icon-384.png",
-  "/icons/icon-512.png",
-  "/icons/icon-1024.png",
+// Standard / Android icons
+"/icons/icon-192.png",
+"/icons/icon-512.png",
+"/icons/icon-1024.png",
 
-  // Maskable icons
-  "/icons/maskable-icon-192.png",
-  "/icons/maskable-icon-512.png",
+// Maskable icons
+"/icons/maskable-icon-192.png",
+"/icons/maskable-icon-512.png",
 
-  // Apple touch icons
-  "/icons/apple-touch-icon.png",
-  "/icons/apple-touch-icon-152.png",
-  "/icons/apple-touch-icon-167.png",
-  "/icons/apple-touch-icon-180.png",
+// Apple
+"/icons/apple-touch-icon.png",
+"/icons/apple-touch-icon-180.png",
 
-  // Favicons
-  "/favicon.ico",
-  "/icons/favicon-16.png",
-  "/icons/favicon-32.png"
+// Favicons
+"/favicon.ico",
 ];
 
 /* ==========================================================================

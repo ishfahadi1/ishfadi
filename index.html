@@ -1626,7 +1626,8 @@
             preferredLanguage: data.preferredLang,
             termsAccepted: data.termsAccepted,
             privacyAccepted: data.termsAccepted,
-            turnstileToken: turnstileToken
+            turnstileToken: turnstileToken,
+            ...(getReferralCode() ? { referredByAgentCode: getReferralCode() } : {})
           })
         });
 
@@ -1930,8 +1931,48 @@
       });
     }
 
+    // ----- Referral capture (Sprint 3: Agent Platform) -----
+    // Session-locked: once a code is captured, it is never overwritten by
+    // a later ?ref= on the same visit, matching the "locked, cannot edit"
+    // requirement. Server-side validation (does this code belong to a
+    // verified agent?) happens in the reserve-account Edge Function /
+    // atomic signup trigger -- this is capture only, not verification.
+    const REF_STORAGE_KEY = 'ishfadi_ref_code';
+
+    function getReferralCode() {
+      try { return sessionStorage.getItem(REF_STORAGE_KEY) || ''; } catch (e) { return ''; }
+    }
+
+    function captureReferralCode() {
+      try {
+        const existing = sessionStorage.getItem(REF_STORAGE_KEY);
+        if (existing) { renderReferralNote(existing); return; }
+        const params = new URLSearchParams(window.location.search);
+        const ref = (params.get('ref') || '').trim().slice(0, 20);
+        if (ref) {
+          sessionStorage.setItem(REF_STORAGE_KEY, ref);
+          renderReferralNote(ref);
+        }
+      } catch (e) {}
+    }
+
+    function renderReferralNote(code) {
+      if (!code || document.getElementById('referralNote')) return;
+      const form = document.getElementById('reservationForm');
+      if (!form) return;
+      const note = document.createElement('div');
+      note.id = 'referralNote';
+      note.setAttribute('role', 'status');
+      note.style.cssText = 'margin-bottom:16px;padding:12px 16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;font-size:.9rem;color:#0c4a6e;display:flex;align-items:center;gap:10px;';
+      note.innerHTML = '<span aria-hidden="true">🤝</span><span>' +
+        (window.t('referral.invitedBy') || 'Invited by an ISHFADI Agent') +
+        ' <strong>' + code.replace(/[<>&"]/g, '') + '</strong> ✓</span>';
+      form.parentNode.insertBefore(note, form);
+    }
+
     // ----- Boot -----
     document.addEventListener('DOMContentLoaded', () => {
+      captureReferralCode();
       renderCountries();
       initCountdown();
       wireRolesUI();
