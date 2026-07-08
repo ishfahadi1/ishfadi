@@ -798,7 +798,13 @@
         lang:{ label:'Language' },
         a11y:{ skip:'Skip to reservation form' },
         nav:{ home:'Home', glimpse:'A Glimpse', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account', signIn:'Sign In' },
-        signIn:{ title:'Sign In', subtitle:'Welcome back. Use the same email and password you reserved with.', emailLabel:'Email', passwordLabel:'Password', submit:'Sign In', cancel:'Cancel', close:'Close' },
+        signIn:{ title:'Sign In', subtitle:'Welcome back. Use the same email and password you reserved with.', emailLabel:'Email', passwordLabel:'Password', submit:'Sign In', cancel:'Cancel', close:'Close',
+          chooseRoleTitle:'Choose a dashboard', chooseRoleSubtitle:'Pick the role you want to continue as.',
+          ready:'Ready', comingSoon:'Coming Soon', openDashboard:'Open dashboard',
+          agentName:'Agent', hostName:'Host', buyerName:'Buyer',
+          hostNote:"Host Dashboard launches in a future update. Note: Host accounts will require a paid subscription once it's live.",
+          buyerNote:'Buyer Dashboard launches in a future update.',
+          done:'Done' },
         hero:{ badge:'Pre-launch · Early Access', title1:'Reserve Your ISHFADI Account', title2:'Today',
           subtitle:'Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.',
           countdownLabel:'Launching in', days:'Days', hours:'Hours', minutes:'Minutes', seconds:'Seconds',
@@ -863,7 +869,13 @@
         lang:{ label:'Langue' },
         a11y:{ skip:'Aller au formulaire de réservation' },
         nav:{ home:'Accueil', glimpse:'Aperçu', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte', signIn:'Se connecter' },
-        signIn:{ title:'Se connecter', subtitle:'Bon retour. Utilisez le même e-mail et mot de passe que lors de votre réservation.', emailLabel:'E-mail', passwordLabel:'Mot de passe', submit:'Se connecter', cancel:'Annuler', close:'Fermer' },
+        signIn:{ title:'Se connecter', subtitle:'Bon retour. Utilisez le même e-mail et mot de passe que lors de votre réservation.', emailLabel:'E-mail', passwordLabel:'Mot de passe', submit:'Se connecter', cancel:'Annuler', close:'Fermer',
+          chooseRoleTitle:'Choisissez un tableau de bord', chooseRoleSubtitle:'Sélectionnez le rôle avec lequel continuer.',
+          ready:'Prêt', comingSoon:'Bientôt disponible', openDashboard:'Ouvrir le tableau de bord',
+          agentName:'Agent', hostName:'Hôte', buyerName:'Acheteur',
+          hostNote:"Le tableau de bord Hôte sera lancé dans une future mise à jour. Remarque : les comptes Hôte nécessiteront un abonnement payant une fois disponibles.",
+          buyerNote:'Le tableau de bord Acheteur sera lancé dans une future mise à jour.',
+          done:'Terminé' },
         hero:{ badge:'Pré-lancement · Accès anticipé', title1:'Réservez votre compte ISHFADI', title2:"aujourd'hui",
           subtitle:"Les personnes qui réservent leur compte aujourd'hui pourront simplement se connecter après le lancement officiel avec le même e-mail et mot de passe — aucune nouvelle inscription requise.",
           countdownLabel:'Lancement dans', days:'Jours', hours:'Heures', minutes:'Minutes', seconds:'Secondes',
@@ -932,7 +944,13 @@
         lang:{ label:'اللغة' },
         a11y:{ skip:'انتقل إلى نموذج الحجز' },
         nav:{ home:'الرئيسية', glimpse:'لمحة', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا', signIn:'تسجيل الدخول' },
-        signIn:{ title:'تسجيل الدخول', subtitle:'مرحباً بعودتك. استخدم نفس البريد وكلمة المرور اللذين حجزت بهما.', emailLabel:'البريد الإلكتروني', passwordLabel:'كلمة المرور', submit:'تسجيل الدخول', cancel:'إلغاء', close:'إغلاق' },
+        signIn:{ title:'تسجيل الدخول', subtitle:'مرحباً بعودتك. استخدم نفس البريد وكلمة المرور اللذين حجزت بهما.', emailLabel:'البريد الإلكتروني', passwordLabel:'كلمة المرور', submit:'تسجيل الدخول', cancel:'إلغاء', close:'إغلاق',
+          chooseRoleTitle:'اختر لوحة التحكم', chooseRoleSubtitle:'اختر الدور الذي تريد المتابعة به.',
+          ready:'جاهز', comingSoon:'قريباً', openDashboard:'فتح لوحة التحكم',
+          agentName:'وكيل', hostName:'مضيف', buyerName:'مشتري',
+          hostNote:'ستُطلق لوحة تحكم المضيف في تحديث قادم. ملاحظة: ستتطلب حسابات المضيف اشتراكاً مدفوعاً عند إتاحتها.',
+          buyerNote:'ستُطلق لوحة تحكم المشتري في تحديث قادم.',
+          done:'تم' },
         hero:{ badge:'قبل الإطلاق · وصول مبكر', title1:'احجز حسابك في إشفادي', title2:'اليوم',
           subtitle:'من يحجز حسابه اليوم يمكنه ببساطة تسجيل الدخول بعد الإطلاق الرسمي بنفس البريد وكلمة المرور — دون الحاجة للتسجيل من جديد.',
           countdownLabel:'يتم الإطلاق خلال', days:'أيام', hours:'ساعات', minutes:'دقائق', seconds:'ثوانٍ',
@@ -1855,7 +1873,58 @@
 
       function setErr(id, msg) { const p = form.querySelector('[data-error-for="' + id + '"]'); if (p) p.textContent = msg || ''; }
       function clearErr(id)    { setErr(id, ''); }
+      function showFormView() {
+        const rv = document.getElementById('signInRoleView');
+        if (rv) rv.classList.add('hidden');
+        form.classList.remove('hidden');
+        const head = document.getElementById('signInHead');
+        if (head) head.classList.remove('hidden');
+      }
+      function showRoleView(roles) {
+        const rv = document.getElementById('signInRoleView');
+        const list = document.getElementById('signInRoleList');
+        const head = document.getElementById('signInHead');
+        if (!rv || !list) return;
+        form.classList.add('hidden');
+        if (head) head.classList.add('hidden');
+        list.innerHTML = '';
+
+        const ICONS = {
+          agent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l2 2 4-4"/></svg>',
+          host:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>',
+          buyer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M6 6L5 3H2"/></svg>'
+        };
+        const ORDER = ['agent','host','buyer'];
+        const owned = ORDER.filter(r => roles.indexOf(r) !== -1);
+        const cols = owned.length >= 2 ? 'sm:grid-cols-' + owned.length : 'sm:grid-cols-1';
+        list.className = 'grid grid-cols-1 ' + cols + ' gap-3';
+
+        owned.forEach(role => {
+          const isAgent = role === 'agent';
+          const nameKey = 'signIn.' + role + 'Name';
+          const statusKey = isAgent ? 'signIn.ready' : 'signIn.comingSoon';
+          const noteKey = role === 'host' ? 'signIn.hostNote' : (role === 'buyer' ? 'signIn.buyerNote' : '');
+          const el = document.createElement(isAgent ? 'a' : 'div');
+          el.className = 'role-card' + (isAgent ? ' selected cursor-pointer' : ' opacity-90 cursor-not-allowed');
+          el.setAttribute('role', isAgent ? 'link' : 'group');
+          if (isAgent) { el.href = '/agent.html'; }
+          el.innerHTML =
+            '<span class="role-icon">' + ICONS[role] + '</span>' +
+            '<div class="flex-1 min-w-0">' +
+              '<div class="font-semibold text-primary" data-i18n="' + nameKey + '">' + role + '</div>' +
+              '<div class="text-xs mt-0.5 ' + (isAgent ? 'text-emerald-600' : 'text-amber-600') + ' font-semibold" data-i18n="' + statusKey + '"></div>' +
+              (noteKey ? '<p class="text-[11px] leading-snug text-slate-500 mt-1.5" data-i18n="' + noteKey + '"></p>' : '') +
+              (isAgent ? '<div class="text-xs text-primary/80 mt-1.5 font-medium" data-i18n="signIn.openDashboard"></div>' : '') +
+            '</div>';
+          list.appendChild(el);
+        });
+
+        rv.classList.remove('hidden');
+        if (typeof applyTranslations === 'function') applyTranslations();
+      }
+
       function open() {
+        showFormView();
         modal.classList.remove('hidden'); modal.classList.add('flex');
         document.body.style.overflow = 'hidden';
         setTimeout(() => emailEl && emailEl.focus(), 30);
@@ -1864,6 +1933,7 @@
         modal.classList.add('hidden'); modal.classList.remove('flex');
         document.body.style.overflow = '';
         form.reset(); clearErr('siEmail'); clearErr('siPassword');
+        showFormView();
       }
 
       openers.forEach(b => b.addEventListener('click', open));
@@ -1899,36 +1969,11 @@
             roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
           } catch (_) { /* RLS or missing row — treat as no roles */ }
 
-          if (roles.indexOf('agent') !== -1) {
-            window.location.href = '/agent.html';
-            return;
-          }
-
-          // No dedicated dashboard exists yet for buyer/host roles -- but
-          // the person should still clearly see WHICH role(s) they
-          // reserved as, rather than a vague "check back later" toast.
-          // Reuse the existing reservation card (same one shown right
-          // after registration) via the same public, scoped RPC.
-          close();
-          try {
-            const { data: card } = await client
-              .rpc('get_reservation_card', { p_user_id: data.user.id })
-              .single();
-            if (card) {
-              showSuccess({
-                reservationId: card.reservation_id,
-                createdAt: card.created_at,
-                fullName: card.full_name,
-                country: card.country_name,
-                roles: card.roles,
-                email: card.email,
-                verified: card.email_verified
-              });
-              window.showToast(window.t('toast.signInNoDashboard'), 'success');
-              return;
-            }
-          } catch (_) { /* fall through to generic toast below */ }
-          window.showToast(window.t('toast.signInNoDashboard'), 'success');
+          // Always show the in-modal role selection screen — even for
+          // agent-only or coming-soon-only accounts. This confirms which
+          // role(s) the person reserved under, and only the Agent card
+          // has a real destination today.
+          showRoleView(roles);
         } catch (err) {
           window.showToast((err && err.message) || window.t('errors.generic'), 'error');
         } finally {
@@ -1938,6 +1983,7 @@
         }
       });
     }
+
 
 
 
@@ -2126,8 +2172,10 @@
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-signin-dismiss></div>
     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-7">
       <button type="button" class="absolute top-3 end-3 w-9 h-9 rounded-full text-slate-500 hover:bg-slate-100" data-signin-dismiss aria-label="Close" data-i18n-attr="aria-label" data-i18n="signIn.close">✕</button>
-      <h3 id="signInTitle" class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.title">Sign In</h3>
-      <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.subtitle">Welcome back. Use the same email and password you reserved with.</p>
+      <div id="signInHead">
+        <h3 id="signInTitle" class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.title">Sign In</h3>
+        <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.subtitle">Welcome back. Use the same email and password you reserved with.</p>
+      </div>
       <form id="signInForm" novalidate class="space-y-4">
         <div>
           <label class="field-label" for="siEmail" data-i18n="signIn.emailLabel">Email</label>
@@ -2150,6 +2198,14 @@
           <button type="submit" id="signInSubmit" class="btn-primary flex-1" data-i18n="signIn.submit">Sign In</button>
         </div>
       </form>
+      <div id="signInRoleView" class="hidden">
+        <h3 class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.chooseRoleTitle">Choose a dashboard</h3>
+        <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.chooseRoleSubtitle">Pick the role you want to continue as.</p>
+        <div id="signInRoleList" class="grid grid-cols-1 gap-3"></div>
+        <div class="pt-4">
+          <button type="button" class="btn-secondary w-full" data-signin-dismiss data-i18n="signIn.done">Done</button>
+        </div>
+      </div>
     </div>
   </div>
 </body>
