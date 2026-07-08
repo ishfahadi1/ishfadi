@@ -18,7 +18,7 @@
    - Push Notifications, Notification Click, Background Sync, Update flow
    ========================================================================== */
 
-const CACHE_VERSION = "v3.0.1";
+const CACHE_VERSION = "v3.0.2";
 
 /* ==========================================================================
    Cache Names — one purpose per cache, never mixed

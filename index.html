@@ -322,6 +322,8 @@
           <span data-i18n="nav.install">Install</span>
         </button>
 
+        <button type="button" id="openSignInBtn" class="hidden md:inline-flex px-3 md:px-4 py-2 border border-primary/30 text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors text-sm md:text-base" data-i18n="nav.signIn">Sign In</button>
+
         <a href="#reserve" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.reserve">Reserve Account</a>
 
         <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
@@ -336,6 +338,7 @@
         <a href="#glimpse" class="block py-2 text-gray-700" data-i18n="nav.glimpse">A Glimpse</a>
         <a href="#faq" class="block py-2 text-gray-700" data-i18n="nav.faq">FAQ</a>
         <a href="#contact" class="block py-2 text-gray-700" data-i18n="nav.contact">Contact</a>
+        <button type="button" id="openSignInBtnMobile" class="block w-full text-left py-2 font-semibold text-primary" data-i18n="nav.signIn">Sign In</button>
         <a href="#reserve" class="block py-2 font-semibold text-primary" data-i18n="nav.reserve">Reserve Account</a>
         <div class="pt-3 border-t">
           <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2" data-i18n="lang.label">Language</p>
@@ -794,7 +797,8 @@
         meta:{ title:'ISHFADI Launch Portal — Reserve Your Account', description:'Reserve your ISHFADI account before launch. Sign in on day one with the same credentials.' },
         lang:{ label:'Language' },
         a11y:{ skip:'Skip to reservation form' },
-        nav:{ home:'Home', glimpse:'A Glimpse', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account' },
+        nav:{ home:'Home', glimpse:'A Glimpse', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account', signIn:'Sign In' },
+        signIn:{ title:'Sign In', subtitle:'Welcome back. Use the same email and password you reserved with.', emailLabel:'Email', passwordLabel:'Password', submit:'Sign In', cancel:'Cancel', close:'Close' },
         hero:{ badge:'Pre-launch · Early Access', title1:'Reserve Your ISHFADI Account', title2:'Today',
           subtitle:'Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.',
           countdownLabel:'Launching in', days:'Days', hours:'Hours', minutes:'Minutes', seconds:'Seconds',
@@ -851,14 +855,15 @@
           follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
           privacy:'Privacy Policy', terms:'Terms of Service',
           tagline:'Building the future of global accommodation.', launching:'Launching Soon.' },
-        toast:{ langSwitched:'Language switched to {lang}' }
+        toast:{ langSwitched:'Language switched to {lang}', signInNoDashboard:"Signed in. Your dashboard isn't ready yet — check back after launch." }
       },
 
       fr: {
         meta:{ title:'Portail de lancement ISHFADI — Réservez votre compte', description:'Réservez votre compte ISHFADI avant le lancement. Connectez-vous dès le premier jour avec les mêmes identifiants.' },
         lang:{ label:'Langue' },
         a11y:{ skip:'Aller au formulaire de réservation' },
-        nav:{ home:'Accueil', glimpse:'Aperçu', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte' },
+        nav:{ home:'Accueil', glimpse:'Aperçu', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte', signIn:'Se connecter' },
+        signIn:{ title:'Se connecter', subtitle:'Bon retour. Utilisez le même e-mail et mot de passe que lors de votre réservation.', emailLabel:'E-mail', passwordLabel:'Mot de passe', submit:'Se connecter', cancel:'Annuler', close:'Fermer' },
         hero:{ badge:'Pré-lancement · Accès anticipé', title1:'Réservez votre compte ISHFADI', title2:"aujourd'hui",
           subtitle:"Les personnes qui réservent leur compte aujourd'hui pourront simplement se connecter après le lancement officiel avec le même e-mail et mot de passe — aucune nouvelle inscription requise.",
           countdownLabel:'Lancement dans', days:'Jours', hours:'Heures', minutes:'Minutes', seconds:'Secondes',
@@ -919,14 +924,15 @@
           follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
           privacy:'Politique de confidentialité', terms:'Conditions d\'utilisation',
           tagline:"Nous construisons l'avenir du logement mondial.", launching:'Bientôt disponible.' },
-        toast:{ langSwitched:'Langue changée en {lang}' }
+        toast:{ langSwitched:'Langue changée en {lang}', signInNoDashboard:"Connecté. Votre tableau de bord n'est pas encore prêt — revenez après le lancement." }
       },
 
       ar: {
         meta:{ title:'بوابة إطلاق إشفادي — احجز حسابك', description:'احجز حسابك في إشفادي قبل الإطلاق. سجّل الدخول في اليوم الأول بنفس بيانات الاعتماد.' },
         lang:{ label:'اللغة' },
         a11y:{ skip:'انتقل إلى نموذج الحجز' },
-        nav:{ home:'الرئيسية', glimpse:'لمحة', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا' },
+        nav:{ home:'الرئيسية', glimpse:'لمحة', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا', signIn:'تسجيل الدخول' },
+        signIn:{ title:'تسجيل الدخول', subtitle:'مرحباً بعودتك. استخدم نفس البريد وكلمة المرور اللذين حجزت بهما.', emailLabel:'البريد الإلكتروني', passwordLabel:'كلمة المرور', submit:'تسجيل الدخول', cancel:'إلغاء', close:'إغلاق' },
         hero:{ badge:'قبل الإطلاق · وصول مبكر', title1:'احجز حسابك في إشفادي', title2:'اليوم',
           subtitle:'من يحجز حسابه اليوم يمكنه ببساطة تسجيل الدخول بعد الإطلاق الرسمي بنفس البريد وكلمة المرور — دون الحاجة للتسجيل من جديد.',
           countdownLabel:'يتم الإطلاق خلال', days:'أيام', hours:'ساعات', minutes:'دقائق', seconds:'ثوانٍ',
@@ -984,7 +990,7 @@
           follow:'تابع إشفادي', quickLinks:'روابط سريعة', contact:'تواصل',
           privacy:'سياسة الخصوصية', terms:'شروط الخدمة',
           tagline:'نبني مستقبل الإقامة العالمية.', launching:'قريبًا.' },
-        toast:{ langSwitched:'تم تغيير اللغة إلى {lang}' }
+        toast:{ langSwitched:'تم تغيير اللغة إلى {lang}', signInNoDashboard:'تم تسجيل الدخول. لوحة التحكم غير جاهزة بعد — تحقق مرة أخرى بعد الإطلاق.' }
       }
     };
 
@@ -1731,6 +1737,25 @@
         em.textContent = verified ? window.t('success.verified') : window.t('success.pending');
         em.className = 'rescard-badge ' + (verified ? 'verified' : 'reserved');
       }
+      // Once verified, there is nothing left to resend -- every link becomes
+      // permanently dead the instant one succeeds. Hiding this prevents the
+      // confusing "resend keeps failing" loop from re-clicking dead links.
+      const resendBtn = document.getElementById('resendBtn');
+      if (resendBtn) {
+        resendBtn.style.display = verified ? 'none' : '';
+      }
+      const alreadyMsg = document.getElementById('alreadyVerifiedMsg');
+      if (verified) {
+        if (!alreadyMsg && resendBtn && resendBtn.parentNode) {
+          const msg = document.createElement('p');
+          msg.id = 'alreadyVerifiedMsg';
+          msg.style.cssText = 'margin-top:8px;font-size:.85rem;color:#059669;font-weight:600;';
+          msg.textContent = '✓ ' + (window.t('success.alreadyVerified') || 'Your email is verified. You\'re all set.');
+          resendBtn.parentNode.insertBefore(msg, resendBtn.nextSibling);
+        }
+      } else if (alreadyMsg) {
+        alreadyMsg.remove();
+      }
       const step2 = document.querySelector('#reservationTimeline .tl-step[data-step="2"]');
       const step3 = document.querySelector('#reservationTimeline .tl-step[data-step="3"]');
       if (step2) {
@@ -1817,6 +1842,104 @@
         });
       });
     }
+
+    // ----- Sign-In (returning users) -----
+    function wireSignIn() {
+      const modal   = document.getElementById('signInModal');
+      const form    = document.getElementById('signInForm');
+      if (!modal || !form) return;
+      const emailEl = document.getElementById('siEmail');
+      const passEl  = document.getElementById('siPassword');
+      const submit  = document.getElementById('signInSubmit');
+      const openers = ['openSignInBtn', 'openSignInBtnMobile'].map(id => document.getElementById(id)).filter(Boolean);
+
+      function setErr(id, msg) { const p = form.querySelector('[data-error-for="' + id + '"]'); if (p) p.textContent = msg || ''; }
+      function clearErr(id)    { setErr(id, ''); }
+      function open() {
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => emailEl && emailEl.focus(), 30);
+      }
+      function close() {
+        modal.classList.add('hidden'); modal.classList.remove('flex');
+        document.body.style.overflow = '';
+        form.reset(); clearErr('siEmail'); clearErr('siPassword');
+      }
+
+      openers.forEach(b => b.addEventListener('click', open));
+      modal.querySelectorAll('[data-signin-dismiss]').forEach(el => el.addEventListener('click', close));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErr('siEmail'); clearErr('siPassword');
+        const email = (emailEl.value || '').trim();
+        const password = passEl.value || '';
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRe.test(email))  { setErr('siEmail', window.t('errors.email')); return; }
+        if (password.length < 8)   { setErr('siPassword', window.t('errors.passwordWeak')); return; }
+        if (!navigator.onLine)     { window.showToast(window.t('errors.offline'), 'error'); return; }
+
+        const client = initSupabase();
+        if (!client) { window.showToast(window.t('errors.configMissing'), 'error'); return; }
+
+        submit.disabled = true;
+        const originalLabel = submit.textContent;
+        submit.textContent = '…';
+        try {
+          const { data, error } = await client.auth.signInWithPassword({ email, password });
+          if (error || !data || !data.user) {
+            window.showToast((error && error.message) || window.t('errors.generic'), 'error');
+            return;
+          }
+          let roles = [];
+          try {
+            const { data: prof } = await client
+              .from('profiles').select('roles').eq('user_id', data.user.id).single();
+            roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
+          } catch (_) { /* RLS or missing row — treat as no roles */ }
+
+          if (roles.indexOf('agent') !== -1) {
+            window.location.href = '/agent.html';
+            return;
+          }
+
+          // No dedicated dashboard exists yet for buyer/host roles -- but
+          // the person should still clearly see WHICH role(s) they
+          // reserved as, rather than a vague "check back later" toast.
+          // Reuse the existing reservation card (same one shown right
+          // after registration) via the same public, scoped RPC.
+          close();
+          try {
+            const { data: card } = await client
+              .rpc('get_reservation_card', { p_user_id: data.user.id })
+              .single();
+            if (card) {
+              showSuccess({
+                reservationId: card.reservation_id,
+                createdAt: card.created_at,
+                fullName: card.full_name,
+                country: card.country_name,
+                roles: card.roles,
+                email: card.email,
+                verified: card.email_verified
+              });
+              window.showToast(window.t('toast.signInNoDashboard'), 'success');
+              return;
+            }
+          } catch (_) { /* fall through to generic toast below */ }
+          window.showToast(window.t('toast.signInNoDashboard'), 'success');
+        } catch (err) {
+          window.showToast((err && err.message) || window.t('errors.generic'), 'error');
+        } finally {
+          submit.disabled = false;
+          submit.textContent = originalLabel;
+          if (typeof applyTranslations === 'function') applyTranslations();
+        }
+      });
+    }
+
+
 
     function wireRolesUI() {
       document.querySelectorAll('[data-role-card]').forEach(card => {
@@ -1977,6 +2100,7 @@
       initCountdown();
       wireRolesUI();
       wirePasswordToggles();
+      wireSignIn();
       document.querySelectorAll('input[name="hostType"]').forEach(r => r.addEventListener('change', toggleCompanyBlock));
       document.getElementById('reservationForm').addEventListener('submit', handleSubmit);
 
@@ -1996,5 +2120,37 @@
     });
   })();
   </script>
+
+  <!-- Sign-In Modal (additive; returning users) -->
+  <div id="signInModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-signin-dismiss></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-7">
+      <button type="button" class="absolute top-3 end-3 w-9 h-9 rounded-full text-slate-500 hover:bg-slate-100" data-signin-dismiss aria-label="Close" data-i18n-attr="aria-label" data-i18n="signIn.close">✕</button>
+      <h3 id="signInTitle" class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.title">Sign In</h3>
+      <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.subtitle">Welcome back. Use the same email and password you reserved with.</p>
+      <form id="signInForm" novalidate class="space-y-4">
+        <div>
+          <label class="field-label" for="siEmail" data-i18n="signIn.emailLabel">Email</label>
+          <input class="input-field" type="email" id="siEmail" name="email" autocomplete="email" required maxlength="120">
+          <p class="field-error" data-error-for="siEmail"></p>
+        </div>
+        <div>
+          <label class="field-label" for="siPassword" data-i18n="signIn.passwordLabel">Password</label>
+          <div class="pw-field-wrap">
+            <input class="input-field" type="password" id="siPassword" name="password" autocomplete="current-password" required minlength="8" maxlength="72">
+            <button type="button" class="pw-toggle-btn" data-pw-toggle-for="siPassword" aria-label="Show password" aria-pressed="false">
+              <svg class="pw-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="pw-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.29 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <p class="field-error" data-error-for="siPassword"></p>
+        </div>
+        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+          <button type="button" class="btn-secondary flex-1" data-signin-dismiss data-i18n="signIn.cancel">Cancel</button>
+          <button type="submit" id="signInSubmit" class="btn-primary flex-1" data-i18n="signIn.submit">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
