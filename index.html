@@ -152,6 +152,11 @@
     .role-card .role-tick { position: absolute; top: .7rem; inset-inline-end: .7rem; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e5e7eb; display:inline-flex; align-items:center; justify-content:center; color:#fff; transition: all .2s ease; }
     .role-card.selected { border-color: #1e3a5f; background: linear-gradient(180deg, #ffffff 0%, rgba(30,58,95,0.03) 100%); }
     .role-card.selected .role-tick { background: #1e3a5f; border-color: #1e3a5f; }
+    .si-role-chip { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:.55rem .25rem; border:1.5px solid #e5e7eb; border-radius:12px; background:#fff; color:#334155; font-size:.72rem; font-weight:600; line-height:1.1; transition:all .15s ease; cursor:pointer; min-height:64px; }
+    .si-role-chip:hover { border-color:#1e3a5f55; background:#f8fafc; }
+    .si-role-chip .si-role-emoji { font-size:1.25rem; line-height:1; }
+    .si-role-chip.selected { border-color:#1e3a5f; background:linear-gradient(180deg,#ffffff 0%, rgba(30,58,95,0.06) 100%); color:#1e3a5f; box-shadow:0 2px 8px rgba(30,58,95,0.08); }
+    .si-role-chip:focus-visible { outline:2px solid #1e3a5f; outline-offset:2px; }
 
     .input-field {
       width: 100%; padding: .75rem 1rem; border: 1px solid #e5e7eb; border-radius: .75rem;
@@ -1876,6 +1881,8 @@
       function showFormView() {
         const rv = document.getElementById('signInRoleView');
         if (rv) rv.classList.add('hidden');
+        const rc = document.getElementById('signInReconfirmView');
+        if (rc) rc.classList.add('hidden');
         form.classList.remove('hidden');
         const head = document.getElementById('signInHead');
         if (head) head.classList.remove('hidden');
@@ -1932,7 +1939,9 @@
       function close() {
         modal.classList.add('hidden'); modal.classList.remove('flex');
         document.body.style.overflow = '';
-        form.reset(); clearErr('siEmail'); clearErr('siPassword');
+        form.reset(); clearErr('siEmail'); clearErr('siPassword'); setErr('siRole','');
+        selectedRole = null;
+        modal.querySelectorAll('[data-si-role]').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
         showFormView();
       }
 
@@ -1940,14 +1949,69 @@
       modal.querySelectorAll('[data-signin-dismiss]').forEach(el => el.addEventListener('click', close));
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
 
+      // ----- Horizontal role selector on the sign-in card -----
+      // Map picked role -> which profile role satisfies it, and destination.
+      // "hoster" here is the ISHFADI "host" (property host).
+      const ROLE_MAP = {
+        agent:  { profileRoles: ['agent'],        dashboard: '/agent.html'  },
+        hoster: { profileRoles: ['hoster','host'], dashboard: '/hoster.html' },
+        seller: { profileRoles: ['seller'],       dashboard: '/seller.html' },
+        buyer:  { profileRoles: ['buyer'],        dashboard: '/buyer.html'  }
+      };
+      let selectedRole = null;
+      const roleChips = modal.querySelectorAll('[data-si-role]');
+      roleChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          selectedRole = chip.getAttribute('data-si-role');
+          roleChips.forEach(c => {
+            const on = c === chip;
+            c.classList.toggle('selected', on);
+            c.setAttribute('aria-checked', on ? 'true' : 'false');
+          });
+          setErr('siRole', '');
+        });
+      });
+
+      function showReconfirm(email, role) {
+        form.classList.add('hidden');
+        const head = document.getElementById('signInHead');
+        if (head) head.classList.add('hidden');
+        const rv = document.getElementById('signInReconfirmView');
+        document.getElementById('siReconfirmEmail').textContent = email;
+        document.getElementById('siReconfirmRole').textContent = role;
+        rv.classList.remove('hidden');
+      }
+      const backBtn = document.getElementById('siReconfirmBack');
+      if (backBtn) backBtn.addEventListener('click', showFormView);
+      const sendBtn = document.getElementById('siReconfirmSend');
+      if (sendBtn) sendBtn.addEventListener('click', async () => {
+        const email = document.getElementById('siReconfirmEmail').textContent;
+        const role  = document.getElementById('siReconfirmRole').textContent;
+        const client = initSupabase();
+        if (!client) { window.showToast(window.t('errors.configMissing'), 'error'); return; }
+        sendBtn.disabled = true;
+        try {
+          // Re-send a confirmation email for this account. The redirect
+          // encodes the role so the landing page can add it after confirm.
+          const redirectTo = window.location.origin + '/?verified=1&role=' + encodeURIComponent(role);
+          await client.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } });
+          window.showToast(window.t('signIn.reconfirmSent') || 'Confirmation email sent. Check your inbox.', 'success');
+        } catch (err) {
+          window.showToast((err && err.message) || window.t('errors.generic'), 'error');
+        } finally {
+          sendBtn.disabled = false;
+        }
+      });
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        clearErr('siEmail'); clearErr('siPassword');
+        clearErr('siEmail'); clearErr('siPassword'); setErr('siRole', '');
         const email = (emailEl.value || '').trim();
         const password = passEl.value || '';
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRe.test(email))  { setErr('siEmail', window.t('errors.email')); return; }
         if (password.length < 8)   { setErr('siPassword', window.t('errors.passwordWeak')); return; }
+        if (!selectedRole)         { setErr('siRole', window.t('signIn.rolePick') || 'Please choose a role to continue.'); return; }
         if (!navigator.onLine)     { window.showToast(window.t('errors.offline'), 'error'); return; }
 
         const client = initSupabase();
@@ -1969,11 +2033,14 @@
             roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
           } catch (_) { /* RLS or missing row — treat as no roles */ }
 
-          // Always show the in-modal role selection screen — even for
-          // agent-only or coming-soon-only accounts. This confirms which
-          // role(s) the person reserved under, and only the Agent card
-          // has a real destination today.
-          showRoleView(roles);
+          const cfg = ROLE_MAP[selectedRole];
+          const hasRole = cfg && cfg.profileRoles.some(r => roles.indexOf(r) !== -1);
+          if (hasRole) {
+            window.location.assign(cfg.dashboard);
+            return;
+          }
+          // Email exists but not for this role → ask to reconfirm on the same card.
+          showReconfirm(email, selectedRole);
         } catch (err) {
           window.showToast((err && err.message) || window.t('errors.generic'), 'error');
         } finally {
@@ -2193,11 +2260,56 @@
           </div>
           <p class="field-error" data-error-for="siPassword"></p>
         </div>
+
+        <!-- Horizontal role selector (on same card, before Sign In) -->
+        <div>
+          <span class="field-label" data-i18n="signIn.continueAs">Continue as</span>
+          <div id="siRoleRow" role="radiogroup" aria-label="Choose role" class="grid grid-cols-4 gap-2 mt-1">
+            <button type="button" data-si-role="agent"  class="si-role-chip" role="radio" aria-checked="false">
+              <span class="si-role-emoji" aria-hidden="true">🤝</span>
+              <span class="si-role-name" data-i18n="signIn.roleAgent">Agent</span>
+            </button>
+            <button type="button" data-si-role="hoster" class="si-role-chip" role="radio" aria-checked="false">
+              <span class="si-role-emoji" aria-hidden="true">🏠</span>
+              <span class="si-role-name" data-i18n="signIn.roleHoster">Hoster</span>
+            </button>
+            <button type="button" data-si-role="seller" class="si-role-chip" role="radio" aria-checked="false">
+              <span class="si-role-emoji" aria-hidden="true">🏷️</span>
+              <span class="si-role-name" data-i18n="signIn.roleSeller">Seller</span>
+            </button>
+            <button type="button" data-si-role="buyer"  class="si-role-chip" role="radio" aria-checked="false">
+              <span class="si-role-emoji" aria-hidden="true">🔍</span>
+              <span class="si-role-name" data-i18n="signIn.roleBuyer">Buyer</span>
+            </button>
+          </div>
+          <p class="field-error" data-error-for="siRole"></p>
+        </div>
+
         <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
           <button type="button" class="btn-secondary flex-1" data-signin-dismiss data-i18n="signIn.cancel">Cancel</button>
           <button type="submit" id="signInSubmit" class="btn-primary flex-1" data-i18n="signIn.submit">Sign In</button>
         </div>
       </form>
+
+      <!-- Reconfirm-for-role panel: shown when the signed-in email isn't
+           registered for the picked role. Stays on the same sign-in card. -->
+      <div id="signInReconfirmView" class="hidden mt-2">
+        <h3 class="text-xl font-bold text-primary mb-1" data-i18n="signIn.reconfirmTitle">Confirm your email for this role</h3>
+        <p class="text-sm text-slate-600 mb-4">
+          <span data-i18n="signIn.reconfirmBody">This email isn't registered for the role you picked. Confirm your email for this dashboard to continue.</span>
+          <span class="block mt-1 text-slate-500">
+            <span data-i18n="signIn.reconfirmEmailLbl">Email:</span>
+            <strong id="siReconfirmEmail" class="text-primary"></strong>
+            &middot;
+            <span data-i18n="signIn.reconfirmRoleLbl">Role:</span>
+            <strong id="siReconfirmRole" class="text-primary capitalize"></strong>
+          </span>
+        </p>
+        <div class="flex flex-col-reverse sm:flex-row gap-3">
+          <button type="button" id="siReconfirmBack" class="btn-secondary flex-1" data-i18n="signIn.reconfirmBack">Back</button>
+          <button type="button" id="siReconfirmSend" class="btn-primary flex-1" data-i18n="signIn.reconfirmSend">Send confirmation email</button>
+        </div>
+      </div>
       <div id="signInRoleView" class="hidden">
         <h3 class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.chooseRoleTitle">Choose a dashboard</h3>
         <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.chooseRoleSubtitle">Pick the role you want to continue as.</p>
