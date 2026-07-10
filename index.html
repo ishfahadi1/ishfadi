@@ -152,11 +152,6 @@
     .role-card .role-tick { position: absolute; top: .7rem; inset-inline-end: .7rem; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e5e7eb; display:inline-flex; align-items:center; justify-content:center; color:#fff; transition: all .2s ease; }
     .role-card.selected { border-color: #1e3a5f; background: linear-gradient(180deg, #ffffff 0%, rgba(30,58,95,0.03) 100%); }
     .role-card.selected .role-tick { background: #1e3a5f; border-color: #1e3a5f; }
-    .si-role-chip { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:.55rem .25rem; border:1.5px solid #e5e7eb; border-radius:12px; background:#fff; color:#334155; font-size:.72rem; font-weight:600; line-height:1.1; transition:all .15s ease; cursor:pointer; min-height:64px; }
-    .si-role-chip:hover { border-color:#1e3a5f55; background:#f8fafc; }
-    .si-role-chip .si-role-emoji { font-size:1.25rem; line-height:1; }
-    .si-role-chip.selected { border-color:#1e3a5f; background:linear-gradient(180deg,#ffffff 0%, rgba(30,58,95,0.06) 100%); color:#1e3a5f; box-shadow:0 2px 8px rgba(30,58,95,0.08); }
-    .si-role-chip:focus-visible { outline:2px solid #1e3a5f; outline-offset:2px; }
 
     .input-field {
       width: 100%; padding: .75rem 1rem; border: 1px solid #e5e7eb; border-radius: .75rem;
@@ -803,13 +798,27 @@
         lang:{ label:'Language' },
         a11y:{ skip:'Skip to reservation form' },
         nav:{ home:'Home', glimpse:'A Glimpse', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account', signIn:'Sign In' },
-        signIn:{ title:'Sign In', subtitle:'Welcome back. Use the same email and password you reserved with.', emailLabel:'Email', passwordLabel:'Password', submit:'Sign In', cancel:'Cancel', close:'Close',
-          chooseRoleTitle:'Choose a dashboard', chooseRoleSubtitle:'Pick the role you want to continue as.',
-          ready:'Ready', comingSoon:'Coming Soon', openDashboard:'Open dashboard',
-          agentName:'Agent', hostName:'Host', buyerName:'Buyer',
-          hostNote:"Host Dashboard launches in a future update. Note: Host accounts will require a paid subscription once it's live.",
-          buyerNote:'Buyer Dashboard launches in a future update.',
-          done:'Done' },
+        signIn:{ title:'Sign In', subtitle:'Welcome back. Use the same email and password you reserved with.', emailLabel:'Email', passwordLabel:'Password', submit:'Sign In', cancel:'Cancel', close:'Close' },
+        roleScreen:{
+          title:'Welcome back',
+          subtitle:'Choose how you want to continue on ISHFADI today.',
+          loading:'Loading your account…',
+          continue:'Continue',
+          apply:'Apply',
+          confirm:'Confirm',
+          comingSoon:'Coming Soon',
+          pendingTitle:'Application Submitted',
+          pendingBody:"We're reviewing your {role} application. You'll be notified once it's approved.",
+          applyConfirm:'Apply to become a {role}?',
+          applySuccess:'Application submitted. We\u2019ll be in touch soon.',
+          agent:{ title:'Agent', tagline:'Represent hosts and clients across borders. Open your Agent Dashboard to manage your profile, referrals and rank.' },
+          host:{ title:'Host', tagline:'List and manage your properties on ISHFADI once Host accounts open worldwide.',
+            soon:'Your Host Dashboard launches when we open Host accounts platform-wide.',
+            feeNote:'Host accounts will include a subscription fee once live — Agent and Buyer stay free.',
+            typeLabel:'Host type', individual:'Individual', company:'Company', companyName:'Company Name' },
+          buyer:{ title:'Buyer', tagline:'Discover verified accommodations and relocation opportunities anywhere in the world.',
+            soon:'Your Buyer Dashboard launches when we open Buyer accounts platform-wide.' }
+        },
         hero:{ badge:'Pre-launch · Early Access', title1:'Reserve Your ISHFADI Account', title2:'Today',
           subtitle:'Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.',
           countdownLabel:'Launching in', days:'Days', hours:'Hours', minutes:'Minutes', seconds:'Seconds',
@@ -874,13 +883,27 @@
         lang:{ label:'Langue' },
         a11y:{ skip:'Aller au formulaire de réservation' },
         nav:{ home:'Accueil', glimpse:'Aperçu', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte', signIn:'Se connecter' },
-        signIn:{ title:'Se connecter', subtitle:'Bon retour. Utilisez le même e-mail et mot de passe que lors de votre réservation.', emailLabel:'E-mail', passwordLabel:'Mot de passe', submit:'Se connecter', cancel:'Annuler', close:'Fermer',
-          chooseRoleTitle:'Choisissez un tableau de bord', chooseRoleSubtitle:'Sélectionnez le rôle avec lequel continuer.',
-          ready:'Prêt', comingSoon:'Bientôt disponible', openDashboard:'Ouvrir le tableau de bord',
-          agentName:'Agent', hostName:'Hôte', buyerName:'Acheteur',
-          hostNote:"Le tableau de bord Hôte sera lancé dans une future mise à jour. Remarque : les comptes Hôte nécessiteront un abonnement payant une fois disponibles.",
-          buyerNote:'Le tableau de bord Acheteur sera lancé dans une future mise à jour.',
-          done:'Terminé' },
+        signIn:{ title:'Se connecter', subtitle:'Bon retour. Utilisez le même e-mail et mot de passe que lors de votre réservation.', emailLabel:'E-mail', passwordLabel:'Mot de passe', submit:'Se connecter', cancel:'Annuler', close:'Fermer' },
+        roleScreen:{
+          title:'Bon retour',
+          subtitle:"Choisissez comment vous souhaitez continuer sur ISHFADI aujourd'hui.",
+          loading:'Chargement de votre compte…',
+          continue:'Continuer',
+          apply:'Postuler',
+          confirm:'Confirmer',
+          comingSoon:'Bientôt disponible',
+          pendingTitle:'Candidature envoyée',
+          pendingBody:'Nous examinons votre candidature {role}. Vous serez notifié dès son approbation.',
+          applyConfirm:'Postuler pour devenir {role} ?',
+          applySuccess:'Candidature envoyée. Nous reviendrons vers vous bientôt.',
+          agent:{ title:'Agent', tagline:"Représentez hôtes et clients à l'international. Ouvrez votre tableau de bord Agent pour gérer votre profil, vos parrainages et votre rang." },
+          host:{ title:'Hôte', tagline:'Publiez et gérez vos biens sur ISHFADI dès que les comptes Hôte ouvriront dans le monde entier.',
+            soon:"Votre tableau de bord Hôte sera lancé à l'ouverture mondiale des comptes Hôte.",
+            feeNote:"Les comptes Hôte incluront un abonnement une fois lancés — Agent et Acheteur restent gratuits.",
+            typeLabel:"Type d'hôte", individual:'Particulier', company:'Entreprise', companyName:"Nom de l'entreprise" },
+          buyer:{ title:'Acheteur', tagline:'Découvrez des logements vérifiés et des opportunités de relocalisation partout dans le monde.',
+            soon:"Votre tableau de bord Acheteur sera lancé à l'ouverture mondiale des comptes Acheteur." }
+        },
         hero:{ badge:'Pré-lancement · Accès anticipé', title1:'Réservez votre compte ISHFADI', title2:"aujourd'hui",
           subtitle:"Les personnes qui réservent leur compte aujourd'hui pourront simplement se connecter après le lancement officiel avec le même e-mail et mot de passe — aucune nouvelle inscription requise.",
           countdownLabel:'Lancement dans', days:'Jours', hours:'Heures', minutes:'Minutes', seconds:'Secondes',
@@ -949,13 +972,27 @@
         lang:{ label:'اللغة' },
         a11y:{ skip:'انتقل إلى نموذج الحجز' },
         nav:{ home:'الرئيسية', glimpse:'لمحة', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا', signIn:'تسجيل الدخول' },
-        signIn:{ title:'تسجيل الدخول', subtitle:'مرحباً بعودتك. استخدم نفس البريد وكلمة المرور اللذين حجزت بهما.', emailLabel:'البريد الإلكتروني', passwordLabel:'كلمة المرور', submit:'تسجيل الدخول', cancel:'إلغاء', close:'إغلاق',
-          chooseRoleTitle:'اختر لوحة التحكم', chooseRoleSubtitle:'اختر الدور الذي تريد المتابعة به.',
-          ready:'جاهز', comingSoon:'قريباً', openDashboard:'فتح لوحة التحكم',
-          agentName:'وكيل', hostName:'مضيف', buyerName:'مشتري',
-          hostNote:'ستُطلق لوحة تحكم المضيف في تحديث قادم. ملاحظة: ستتطلب حسابات المضيف اشتراكاً مدفوعاً عند إتاحتها.',
-          buyerNote:'ستُطلق لوحة تحكم المشتري في تحديث قادم.',
-          done:'تم' },
+        signIn:{ title:'تسجيل الدخول', subtitle:'مرحباً بعودتك. استخدم نفس البريد وكلمة المرور اللذين حجزت بهما.', emailLabel:'البريد الإلكتروني', passwordLabel:'كلمة المرور', submit:'تسجيل الدخول', cancel:'إلغاء', close:'إغلاق' },
+        roleScreen:{
+          title:'مرحباً بعودتك',
+          subtitle:'اختر كيف تريد المتابعة على ISHFADI اليوم.',
+          loading:'جارٍ تحميل حسابك…',
+          continue:'متابعة',
+          apply:'تقديم طلب',
+          confirm:'تأكيد',
+          comingSoon:'قريباً',
+          pendingTitle:'تم إرسال الطلب',
+          pendingBody:'نراجع طلبك لدور {role}. سيتم إعلامك فور الموافقة.',
+          applyConfirm:'التقديم لتصبح {role}؟',
+          applySuccess:'تم إرسال الطلب. سنتواصل معك قريباً.',
+          agent:{ title:'وكيل', tagline:'مثّل المضيفين والعملاء حول العالم. افتح لوحة الوكيل لإدارة ملفك وإحالاتك ورتبتك.' },
+          host:{ title:'مضيف', tagline:'انشر وأدر عقاراتك على ISHFADI فور فتح حسابات المضيفين حول العالم.',
+            soon:'ستُطلق لوحة المضيف عند فتح حسابات المضيفين على المنصة عالمياً.',
+            feeNote:'ستشمل حسابات المضيف اشتراكاً عند الإطلاق — يبقى الوكيل والمشتري مجانيين.',
+            typeLabel:'نوع المضيف', individual:'فرد', company:'شركة', companyName:'اسم الشركة' },
+          buyer:{ title:'مشترٍ', tagline:'اكتشف مساكن موثّقة وفرص انتقال في أي مكان في العالم.',
+            soon:'ستُطلق لوحة المشتري عند فتح حسابات المشترين على المنصة عالمياً.' }
+        },
         hero:{ badge:'قبل الإطلاق · وصول مبكر', title1:'احجز حسابك في إشفادي', title2:'اليوم',
           subtitle:'من يحجز حسابه اليوم يمكنه ببساطة تسجيل الدخول بعد الإطلاق الرسمي بنفس البريد وكلمة المرور — دون الحاجة للتسجيل من جديد.',
           countdownLabel:'يتم الإطلاق خلال', days:'أيام', hours:'ساعات', minutes:'دقائق', seconds:'ثوانٍ',
@@ -1508,7 +1545,7 @@
     function initSupabase() {
       if (!isConfigured() || !window.supabase) return null;
       if (supabase) return supabase;
-      supabase = window.supabase.createClient(window.ISHFADI_CONFIG.SUPABASE_URL, window.ISHFADI_CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+      supabase = window.supabase.createClient(window.ISHFADI_CONFIG.SUPABASE_URL, window.ISHFADI_CONFIG.SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'ishfadi.auth' } });
       return supabase;
     }
 
@@ -1868,68 +1905,32 @@
 
     // ----- Sign-In (returning users) -----
     function wireSignIn() {
-      const modal   = document.getElementById('signInModal');
-      const form    = document.getElementById('signInForm');
+      const modal    = document.getElementById('signInModal');
+      const panel    = document.getElementById('signInPanel');
+      const formView = document.getElementById('signInFormView');
+      const roleView = document.getElementById('signInRoleView');
+      const form     = document.getElementById('signInForm');
       if (!modal || !form) return;
-      const emailEl = document.getElementById('siEmail');
-      const passEl  = document.getElementById('siPassword');
-      const submit  = document.getElementById('signInSubmit');
-      const openers = ['openSignInBtn', 'openSignInBtnMobile'].map(id => document.getElementById(id)).filter(Boolean);
+      const emailEl  = document.getElementById('siEmail');
+      const passEl   = document.getElementById('siPassword');
+      const submit   = document.getElementById('signInSubmit');
+      const openers  = ['openSignInBtn', 'openSignInBtnMobile'].map(id => document.getElementById(id)).filter(Boolean);
 
       function setErr(id, msg) { const p = form.querySelector('[data-error-for="' + id + '"]'); if (p) p.textContent = msg || ''; }
       function clearErr(id)    { setErr(id, ''); }
       function showFormView() {
-        const rv = document.getElementById('signInRoleView');
-        if (rv) rv.classList.add('hidden');
-        const rc = document.getElementById('signInReconfirmView');
-        if (rc) rc.classList.add('hidden');
-        form.classList.remove('hidden');
-        const head = document.getElementById('signInHead');
-        if (head) head.classList.remove('hidden');
+        formView.classList.remove('hidden');
+        roleView.classList.add('hidden');
+        roleView.innerHTML = '';
+        panel.classList.remove('max-w-4xl');
+        panel.classList.add('max-w-md');
       }
-      function showRoleView(roles) {
-        const rv = document.getElementById('signInRoleView');
-        const list = document.getElementById('signInRoleList');
-        const head = document.getElementById('signInHead');
-        if (!rv || !list) return;
-        form.classList.add('hidden');
-        if (head) head.classList.add('hidden');
-        list.innerHTML = '';
-
-        const ICONS = {
-          agent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l2 2 4-4"/></svg>',
-          host:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>',
-          buyer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M6 6L5 3H2"/></svg>'
-        };
-        const ORDER = ['agent','host','buyer'];
-        const owned = ORDER.filter(r => roles.indexOf(r) !== -1);
-        const cols = owned.length >= 2 ? 'sm:grid-cols-' + owned.length : 'sm:grid-cols-1';
-        list.className = 'grid grid-cols-1 ' + cols + ' gap-3';
-
-        owned.forEach(role => {
-          const isAgent = role === 'agent';
-          const nameKey = 'signIn.' + role + 'Name';
-          const statusKey = isAgent ? 'signIn.ready' : 'signIn.comingSoon';
-          const noteKey = role === 'host' ? 'signIn.hostNote' : (role === 'buyer' ? 'signIn.buyerNote' : '');
-          const el = document.createElement(isAgent ? 'a' : 'div');
-          el.className = 'role-card' + (isAgent ? ' selected cursor-pointer' : ' opacity-90 cursor-not-allowed');
-          el.setAttribute('role', isAgent ? 'link' : 'group');
-          if (isAgent) { el.href = '/agent.html'; }
-          el.innerHTML =
-            '<span class="role-icon">' + ICONS[role] + '</span>' +
-            '<div class="flex-1 min-w-0">' +
-              '<div class="font-semibold text-primary" data-i18n="' + nameKey + '">' + role + '</div>' +
-              '<div class="text-xs mt-0.5 ' + (isAgent ? 'text-emerald-600' : 'text-amber-600') + ' font-semibold" data-i18n="' + statusKey + '"></div>' +
-              (noteKey ? '<p class="text-[11px] leading-snug text-slate-500 mt-1.5" data-i18n="' + noteKey + '"></p>' : '') +
-              (isAgent ? '<div class="text-xs text-primary/80 mt-1.5 font-medium" data-i18n="signIn.openDashboard"></div>' : '') +
-            '</div>';
-          list.appendChild(el);
-        });
-
-        rv.classList.remove('hidden');
-        if (typeof applyTranslations === 'function') applyTranslations();
+      function showRoleView() {
+        formView.classList.add('hidden');
+        roleView.classList.remove('hidden');
+        panel.classList.remove('max-w-md');
+        panel.classList.add('max-w-4xl');
       }
-
       function open() {
         showFormView();
         modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -1939,9 +1940,7 @@
       function close() {
         modal.classList.add('hidden'); modal.classList.remove('flex');
         document.body.style.overflow = '';
-        form.reset(); clearErr('siEmail'); clearErr('siPassword'); setErr('siRole','');
-        selectedRole = null;
-        modal.querySelectorAll('[data-si-role]').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
+        form.reset(); clearErr('siEmail'); clearErr('siPassword');
         showFormView();
       }
 
@@ -1949,69 +1948,14 @@
       modal.querySelectorAll('[data-signin-dismiss]').forEach(el => el.addEventListener('click', close));
       document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
 
-      // ----- Horizontal role selector on the sign-in card -----
-      // Map picked role -> which profile role satisfies it, and destination.
-      // "hoster" here is the ISHFADI "host" (property host).
-      const ROLE_MAP = {
-        agent:  { profileRoles: ['agent'],        dashboard: '/agent.html'  },
-        hoster: { profileRoles: ['hoster','host'], dashboard: '/hoster.html' },
-        seller: { profileRoles: ['seller'],       dashboard: '/seller.html' },
-        buyer:  { profileRoles: ['buyer'],        dashboard: '/buyer.html'  }
-      };
-      let selectedRole = null;
-      const roleChips = modal.querySelectorAll('[data-si-role]');
-      roleChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-          selectedRole = chip.getAttribute('data-si-role');
-          roleChips.forEach(c => {
-            const on = c === chip;
-            c.classList.toggle('selected', on);
-            c.setAttribute('aria-checked', on ? 'true' : 'false');
-          });
-          setErr('siRole', '');
-        });
-      });
-
-      function showReconfirm(email, role) {
-        form.classList.add('hidden');
-        const head = document.getElementById('signInHead');
-        if (head) head.classList.add('hidden');
-        const rv = document.getElementById('signInReconfirmView');
-        document.getElementById('siReconfirmEmail').textContent = email;
-        document.getElementById('siReconfirmRole').textContent = role;
-        rv.classList.remove('hidden');
-      }
-      const backBtn = document.getElementById('siReconfirmBack');
-      if (backBtn) backBtn.addEventListener('click', showFormView);
-      const sendBtn = document.getElementById('siReconfirmSend');
-      if (sendBtn) sendBtn.addEventListener('click', async () => {
-        const email = document.getElementById('siReconfirmEmail').textContent;
-        const role  = document.getElementById('siReconfirmRole').textContent;
-        const client = initSupabase();
-        if (!client) { window.showToast(window.t('errors.configMissing'), 'error'); return; }
-        sendBtn.disabled = true;
-        try {
-          // Re-send a confirmation email for this account. The redirect
-          // encodes the role so the landing page can add it after confirm.
-          const redirectTo = window.location.origin + '/?verified=1&role=' + encodeURIComponent(role);
-          await client.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } });
-          window.showToast(window.t('signIn.reconfirmSent') || 'Confirmation email sent. Check your inbox.', 'success');
-        } catch (err) {
-          window.showToast((err && err.message) || window.t('errors.generic'), 'error');
-        } finally {
-          sendBtn.disabled = false;
-        }
-      });
-
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        clearErr('siEmail'); clearErr('siPassword'); setErr('siRole', '');
+        clearErr('siEmail'); clearErr('siPassword');
         const email = (emailEl.value || '').trim();
         const password = passEl.value || '';
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRe.test(email))  { setErr('siEmail', window.t('errors.email')); return; }
         if (password.length < 8)   { setErr('siPassword', window.t('errors.passwordWeak')); return; }
-        if (!selectedRole)         { setErr('siRole', window.t('signIn.rolePick') || 'Please choose a role to continue.'); return; }
         if (!navigator.onLine)     { window.showToast(window.t('errors.offline'), 'error'); return; }
 
         const client = initSupabase();
@@ -2026,21 +1970,7 @@
             window.showToast((error && error.message) || window.t('errors.generic'), 'error');
             return;
           }
-          let roles = [];
-          try {
-            const { data: prof } = await client
-              .from('profiles').select('roles').eq('user_id', data.user.id).single();
-            roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
-          } catch (_) { /* RLS or missing row — treat as no roles */ }
-
-          const cfg = ROLE_MAP[selectedRole];
-          const hasRole = cfg && cfg.profileRoles.some(r => roles.indexOf(r) !== -1);
-          if (hasRole) {
-            window.location.assign(cfg.dashboard);
-            return;
-          }
-          // Email exists but not for this role → ask to reconfirm on the same card.
-          showReconfirm(email, selectedRole);
+          await loadRoleScreen(client, data.user.id);
         } catch (err) {
           window.showToast((err && err.message) || window.t('errors.generic'), 'error');
         } finally {
@@ -2049,6 +1979,212 @@
           if (typeof applyTranslations === 'function') applyTranslations();
         }
       });
+
+      // ---------- Post-auth role screen ----------
+      async function loadRoleScreen(client, userId) {
+        showRoleView();
+        roleView.innerHTML =
+          '<div class="py-14 text-center text-slate-500 text-sm">' +
+          '<div class="inline-block w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-3"></div>' +
+          '<div>' + escapeHtml(window.t('roleScreen.loading')) + '</div></div>';
+
+        let roles = [];
+        let pending = {};
+        try {
+          const [{ data: prof }, { data: reqs }] = await Promise.all([
+            client.from('profiles').select('roles').eq('user_id', userId).single(),
+            client.from('role_requests').select('requested_role, status').eq('user_id', userId).eq('status', 'pending')
+          ]);
+          roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
+          (reqs || []).forEach(r => { if (r && r.requested_role) pending[r.requested_role] = true; });
+        } catch (_) { /* RLS or missing rows — treat as no data */ }
+
+        renderRoleScreen(client, userId, roles, pending);
+      }
+
+      function stateFor(role, roles, pending) {
+        if (roles.indexOf(role) !== -1) return 'have';
+        if (pending[role]) return 'pending';
+        return 'apply';
+      }
+
+      function renderRoleScreen(client, userId, roles, pending) {
+        const cards = ['agent', 'host', 'buyer'].map(role => cardHtml(role, stateFor(role, roles, pending)));
+        roleView.innerHTML =
+          '<div class="mb-5 md:mb-6">' +
+            '<h3 class="text-2xl md:text-3xl font-bold text-primary mb-1">' + escapeHtml(window.t('roleScreen.title')) + '</h3>' +
+            '<p class="text-sm text-slate-600">' + escapeHtml(window.t('roleScreen.subtitle')) + '</p>' +
+          '</div>' +
+          '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + cards.join('') + '</div>';
+        wireCardActions(client, userId, roles, pending);
+      }
+
+      function cardHtml(role, state) {
+        const icon = ROLE_ICONS[role];
+        const title = window.t('roleScreen.' + role + '.title');
+        const tagline = window.t('roleScreen.' + role + '.tagline');
+        let footer = '';
+        if (state === 'have') {
+          if (role === 'agent') {
+            footer =
+              '<button type="button" class="btn-primary w-full mt-4" data-role-continue="agent">' +
+                escapeHtml(window.t('roleScreen.continue')) +
+              '</button>';
+          } else {
+            const soonNote = role === 'host'
+              ? '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.host.feeNote')) + '</p>'
+              : '';
+            footer =
+              '<div class="mt-4 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-center">' +
+                '<span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">' + escapeHtml(window.t('roleScreen.comingSoon')) + '</span>' +
+              '</div>' +
+              '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.' + role + '.soon')) + '</p>' +
+              soonNote;
+          }
+        } else if (state === 'pending') {
+          footer =
+            '<div class="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 flex items-center gap-2">' +
+              '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-600 flex-shrink-0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+              '<span class="text-xs font-semibold text-amber-800">' + escapeHtml(window.t('roleScreen.pendingTitle')) + '</span>' +
+            '</div>' +
+            '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.pendingBody').replace('{role}', window.t('roleScreen.' + role + '.title'))) + '</p>';
+        } else {
+          const feeNote = role === 'host'
+            ? '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.host.feeNote')) + '</p>'
+            : '';
+          footer =
+            '<button type="button" class="btn-secondary w-full mt-4" data-role-apply="' + role + '">' +
+              escapeHtml(window.t('roleScreen.apply')) +
+            '</button>' +
+            feeNote +
+            '<div class="hidden mt-4 pt-4 border-t border-slate-200 space-y-3" data-role-applyform="' + role + '"></div>';
+        }
+
+        return (
+          '<div class="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col" data-role-card-si="' + role + '">' +
+            '<div class="flex items-center gap-3 mb-2">' +
+              '<div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">' + icon + '</div>' +
+              '<h4 class="text-base font-bold text-primary">' + escapeHtml(title) + '</h4>' +
+            '</div>' +
+            '<p class="text-sm text-slate-600 leading-relaxed flex-1">' + escapeHtml(tagline) + '</p>' +
+            footer +
+          '</div>'
+        );
+      }
+
+      function wireCardActions(client, userId, roles, pending) {
+        roleView.querySelectorAll('[data-role-continue="agent"]').forEach(btn => {
+          btn.addEventListener('click', () => { window.location.href = '/agent.html'; });
+        });
+        roleView.querySelectorAll('[data-role-apply]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const role = btn.getAttribute('data-role-apply');
+            const formWrap = roleView.querySelector('[data-role-applyform="' + role + '"]');
+            if (!formWrap) return;
+            btn.classList.add('hidden');
+            formWrap.classList.remove('hidden');
+            formWrap.innerHTML = buildApplyForm(role);
+            wireApplyForm(client, userId, roles, pending, role, formWrap, btn);
+          });
+        });
+      }
+
+      function buildApplyForm(role) {
+        const confirmLabel = window.t('roleScreen.applyConfirm').replace('{role}', window.t('roleScreen.' + role + '.title'));
+        let extra = '';
+        if (role === 'host') {
+          extra =
+            '<div>' +
+              '<label class="field-label">' + escapeHtml(window.t('roleScreen.host.typeLabel')) + '</label>' +
+              '<div class="flex gap-2">' +
+                '<label class="flex-1 border border-slate-200 rounded-lg px-3 py-2 cursor-pointer flex items-center gap-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">' +
+                  '<input type="radio" name="applyHostType" value="individual" checked class="accent-primary">' +
+                  '<span>' + escapeHtml(window.t('roleScreen.host.individual')) + '</span>' +
+                '</label>' +
+                '<label class="flex-1 border border-slate-200 rounded-lg px-3 py-2 cursor-pointer flex items-center gap-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">' +
+                  '<input type="radio" name="applyHostType" value="company" class="accent-primary">' +
+                  '<span>' + escapeHtml(window.t('roleScreen.host.company')) + '</span>' +
+                '</label>' +
+              '</div>' +
+            '</div>' +
+            '<div data-apply-companywrap class="hidden">' +
+              '<label class="field-label" for="applyCompanyName">' + escapeHtml(window.t('roleScreen.host.companyName')) + '</label>' +
+              '<input class="input-field" type="text" id="applyCompanyName" maxlength="120">' +
+              '<p class="field-error" data-apply-companyerr></p>' +
+            '</div>';
+        }
+        return (
+          '<p class="text-sm text-slate-700">' + escapeHtml(confirmLabel) + '</p>' +
+          extra +
+          '<div class="flex gap-2">' +
+            '<button type="button" class="btn-secondary flex-1" data-apply-cancel>' + escapeHtml(window.t('signIn.cancel')) + '</button>' +
+            '<button type="button" class="btn-primary flex-1" data-apply-submit>' + escapeHtml(window.t('roleScreen.confirm')) + '</button>' +
+          '</div>'
+        );
+      }
+
+      function wireApplyForm(client, userId, roles, pending, role, formWrap, applyBtn) {
+        const cancelBtn = formWrap.querySelector('[data-apply-cancel]');
+        const submitBtn = formWrap.querySelector('[data-apply-submit]');
+        const companyWrap = formWrap.querySelector('[data-apply-companywrap]');
+        const companyInput = formWrap.querySelector('#applyCompanyName');
+        const companyErr = formWrap.querySelector('[data-apply-companyerr]');
+
+        if (role === 'host') {
+          formWrap.querySelectorAll('input[name="applyHostType"]').forEach(r => {
+            r.addEventListener('change', () => {
+              const isCompany = formWrap.querySelector('input[name="applyHostType"]:checked').value === 'company';
+              companyWrap.classList.toggle('hidden', !isCompany);
+              if (companyErr) companyErr.textContent = '';
+            });
+          });
+        }
+        cancelBtn.addEventListener('click', () => {
+          formWrap.classList.add('hidden');
+          formWrap.innerHTML = '';
+          applyBtn.classList.remove('hidden');
+        });
+        submitBtn.addEventListener('click', async () => {
+          const payload = { p_role: role };
+          if (role === 'host') {
+            const hostType = formWrap.querySelector('input[name="applyHostType"]:checked').value;
+            payload.p_host_type = hostType;
+            if (hostType === 'company') {
+              const name = (companyInput.value || '').trim();
+              if (!name) { if (companyErr) companyErr.textContent = window.t('errors.required'); return; }
+              payload.p_company_name = name;
+            } else {
+              payload.p_company_name = null;
+            }
+          }
+          submitBtn.disabled = true; cancelBtn.disabled = true;
+          const original = submitBtn.textContent;
+          submitBtn.textContent = '…';
+          try {
+            const { error } = await client.rpc('request_additional_role', payload);
+            if (error) throw error;
+            pending[role] = true;
+            renderRoleScreen(client, userId, roles, pending);
+            window.showToast(window.t('roleScreen.applySuccess'), 'success');
+          } catch (err) {
+            window.showToast((err && err.message) || window.t('errors.generic'), 'error');
+            submitBtn.disabled = false; cancelBtn.disabled = false;
+            submitBtn.textContent = original;
+          }
+        });
+      }
+
+      function escapeHtml(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      const ROLE_ICONS = {
+        agent: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        host:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9v11h14V9"/></svg>',
+        buyer: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'
+      };
     }
 
 
@@ -2235,89 +2371,41 @@
   </script>
 
   <!-- Sign-In Modal (additive; returning users) -->
-  <div id="signInModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
+  <div id="signInModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-signin-dismiss></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-7">
-      <button type="button" class="absolute top-3 end-3 w-9 h-9 rounded-full text-slate-500 hover:bg-slate-100" data-signin-dismiss aria-label="Close" data-i18n-attr="aria-label" data-i18n="signIn.close">✕</button>
-      <div id="signInHead">
+    <div id="signInPanel" class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-7 my-8 transition-all">
+      <button type="button" class="absolute top-3 end-3 w-9 h-9 rounded-full text-slate-500 hover:bg-slate-100 z-10" data-signin-dismiss aria-label="Close" data-i18n-attr="aria-label" data-i18n="signIn.close">✕</button>
+
+      <!-- View 1: email + password -->
+      <div id="signInFormView">
         <h3 id="signInTitle" class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.title">Sign In</h3>
         <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.subtitle">Welcome back. Use the same email and password you reserved with.</p>
-      </div>
-      <form id="signInForm" novalidate class="space-y-4">
-        <div>
-          <label class="field-label" for="siEmail" data-i18n="signIn.emailLabel">Email</label>
-          <input class="input-field" type="email" id="siEmail" name="email" autocomplete="email" required maxlength="120">
-          <p class="field-error" data-error-for="siEmail"></p>
-        </div>
-        <div>
-          <label class="field-label" for="siPassword" data-i18n="signIn.passwordLabel">Password</label>
-          <div class="pw-field-wrap">
-            <input class="input-field" type="password" id="siPassword" name="password" autocomplete="current-password" required minlength="8" maxlength="72">
-            <button type="button" class="pw-toggle-btn" data-pw-toggle-for="siPassword" aria-label="Show password" aria-pressed="false">
-              <svg class="pw-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg class="pw-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.29 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-            </button>
+        <form id="signInForm" novalidate class="space-y-4">
+          <div>
+            <label class="field-label" for="siEmail" data-i18n="signIn.emailLabel">Email</label>
+            <input class="input-field" type="email" id="siEmail" name="email" autocomplete="email" required maxlength="120">
+            <p class="field-error" data-error-for="siEmail"></p>
           </div>
-          <p class="field-error" data-error-for="siPassword"></p>
-        </div>
-
-        <!-- Horizontal role selector (on same card, before Sign In) -->
-        <div>
-          <span class="field-label" data-i18n="signIn.continueAs">Continue as</span>
-          <div id="siRoleRow" role="radiogroup" aria-label="Choose role" class="grid grid-cols-4 gap-2 mt-1">
-            <button type="button" data-si-role="agent"  class="si-role-chip" role="radio" aria-checked="false">
-              <span class="si-role-emoji" aria-hidden="true">🤝</span>
-              <span class="si-role-name" data-i18n="signIn.roleAgent">Agent</span>
-            </button>
-            <button type="button" data-si-role="hoster" class="si-role-chip" role="radio" aria-checked="false">
-              <span class="si-role-emoji" aria-hidden="true">🏠</span>
-              <span class="si-role-name" data-i18n="signIn.roleHoster">Hoster</span>
-            </button>
-            <button type="button" data-si-role="seller" class="si-role-chip" role="radio" aria-checked="false">
-              <span class="si-role-emoji" aria-hidden="true">🏷️</span>
-              <span class="si-role-name" data-i18n="signIn.roleSeller">Seller</span>
-            </button>
-            <button type="button" data-si-role="buyer"  class="si-role-chip" role="radio" aria-checked="false">
-              <span class="si-role-emoji" aria-hidden="true">🔍</span>
-              <span class="si-role-name" data-i18n="signIn.roleBuyer">Buyer</span>
-            </button>
+          <div>
+            <label class="field-label" for="siPassword" data-i18n="signIn.passwordLabel">Password</label>
+            <div class="pw-field-wrap">
+              <input class="input-field" type="password" id="siPassword" name="password" autocomplete="current-password" required minlength="8" maxlength="72">
+              <button type="button" class="pw-toggle-btn" data-pw-toggle-for="siPassword" aria-label="Show password" aria-pressed="false">
+                <svg class="pw-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.29 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <p class="field-error" data-error-for="siPassword"></p>
           </div>
-          <p class="field-error" data-error-for="siRole"></p>
-        </div>
-
-        <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-          <button type="button" class="btn-secondary flex-1" data-signin-dismiss data-i18n="signIn.cancel">Cancel</button>
-          <button type="submit" id="signInSubmit" class="btn-primary flex-1" data-i18n="signIn.submit">Sign In</button>
-        </div>
-      </form>
-
-      <!-- Reconfirm-for-role panel: shown when the signed-in email isn't
-           registered for the picked role. Stays on the same sign-in card. -->
-      <div id="signInReconfirmView" class="hidden mt-2">
-        <h3 class="text-xl font-bold text-primary mb-1" data-i18n="signIn.reconfirmTitle">Confirm your email for this role</h3>
-        <p class="text-sm text-slate-600 mb-4">
-          <span data-i18n="signIn.reconfirmBody">This email isn't registered for the role you picked. Confirm your email for this dashboard to continue.</span>
-          <span class="block mt-1 text-slate-500">
-            <span data-i18n="signIn.reconfirmEmailLbl">Email:</span>
-            <strong id="siReconfirmEmail" class="text-primary"></strong>
-            &middot;
-            <span data-i18n="signIn.reconfirmRoleLbl">Role:</span>
-            <strong id="siReconfirmRole" class="text-primary capitalize"></strong>
-          </span>
-        </p>
-        <div class="flex flex-col-reverse sm:flex-row gap-3">
-          <button type="button" id="siReconfirmBack" class="btn-secondary flex-1" data-i18n="signIn.reconfirmBack">Back</button>
-          <button type="button" id="siReconfirmSend" class="btn-primary flex-1" data-i18n="signIn.reconfirmSend">Send confirmation email</button>
-        </div>
+          <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+            <button type="button" class="btn-secondary flex-1" data-signin-dismiss data-i18n="signIn.cancel">Cancel</button>
+            <button type="submit" id="signInSubmit" class="btn-primary flex-1" data-i18n="signIn.submit">Sign In</button>
+          </div>
+        </form>
       </div>
-      <div id="signInRoleView" class="hidden">
-        <h3 class="text-2xl font-bold text-primary mb-1" data-i18n="signIn.chooseRoleTitle">Choose a dashboard</h3>
-        <p class="text-sm text-slate-600 mb-5" data-i18n="signIn.chooseRoleSubtitle">Pick the role you want to continue as.</p>
-        <div id="signInRoleList" class="grid grid-cols-1 gap-3"></div>
-        <div class="pt-4">
-          <button type="button" class="btn-secondary w-full" data-signin-dismiss data-i18n="signIn.done">Done</button>
-        </div>
-      </div>
+
+      <!-- View 2: post-auth role screen (populated by JS) -->
+      <div id="signInRoleView" class="hidden"></div>
     </div>
   </div>
 </body>
