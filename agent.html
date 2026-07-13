@@ -1839,8 +1839,14 @@
         return;
       }
 
-      if ((data.verification_status || '').toLowerCase() === 'verified') renderDashboard(data);
-      else renderPending(data);
+      // Product decision: agents get full dashboard access as soon as
+      // they have the agent role and their email is verified (agent_code
+      // is now assigned automatically at that point -- see backend).
+      // verification_status no longer blocks the dashboard itself; it
+      // only matters for future high-stakes actions (Withdraw, once
+      // Payments exists). renderDashboard still receives
+      // verification_steps so progress can be surfaced within it.
+      renderDashboard(data);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
