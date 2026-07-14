@@ -247,6 +247,29 @@
     @supports not (min-height: 100dvh) { .min-h-screen-safe { min-height: 100vh; } }
     .sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
+    /* Verification incomplete indicator (nav badge) */
+    .nav-dot { display:none; width:9px; height:9px; border-radius:9999px; background:#ef4444; box-shadow:0 0 0 2px #fff; flex-shrink:0; margin-inline-start:.4rem; }
+    body.verify-incomplete .nav-dot { display:inline-block; animation: pulse 2s infinite; }
+    .avatar-dot-wrap { position:relative; display:inline-flex; }
+    .avatar-dot-wrap .nav-dot { position:absolute; top:-2px; inset-inline-end:-2px; margin:0; }
+
+    /* Dashboard verification checklist (uses same .verify-check styles) */
+    .verify-check.actionable { cursor:pointer; }
+    .verify-check.actionable:hover { border-color: rgba(212,165,116,.6); background: rgba(212,165,116,.06); }
+    .verify-check.actionable:focus-visible { outline: 2px solid #d4a574; outline-offset: 2px; }
+
+    /* Leaderboard */
+    .lb-row { display:grid; grid-template-columns: 44px 1fr auto; align-items:center; gap:.9rem; padding:.75rem .9rem; border-bottom:1px solid #f1f5f9; }
+    .lb-row:last-child { border-bottom:none; }
+    .lb-rank { width:34px; height:34px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; background:#f1f5f9; color:#334155; }
+    .lb-rank.gold   { background: linear-gradient(135deg,#fde68a,#d4a574); color:#7c4a03; }
+    .lb-rank.silver { background: linear-gradient(135deg,#e5e7eb,#cbd5e1); color:#334155; }
+    .lb-rank.bronze { background: linear-gradient(135deg,#fed7aa,#fdba74); color:#7c2d12; }
+    .lb-name { font-weight:600; color:#0f172a; font-size:.95rem; }
+    .lb-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.75rem; color:#64748b; }
+    .lb-count { font-weight:800; color:#1e3a5f; font-size:1rem; }
+    .lb-count small { font-weight:600; color:#64748b; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; margin-inline-start:.25rem; }
+
     /* Mobile sidebar */
     #sideDrawer { transition: transform .28s ease; }
     @media (max-width: 1023px) {
@@ -278,7 +301,7 @@
       </div>
 
       <div class="hidden md:flex items-center gap-6 shrink-0">
-        <a href="#dashboard" data-section="dashboard" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="#dashboard" data-section="dashboard" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap inline-flex items-center" data-i18n="nav.dashboard">Dashboard<span class="nav-dot" aria-hidden="true"></span></a>
         <a href="#referrals" data-section="referrals" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.referrals">Referrals</a>
         <a href="#profile" data-section="profile" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.profile">Profile</a>
         <a href="#settings" data-section="settings" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.settings">Settings</a>
@@ -295,7 +318,7 @@
         </div>
 
         <div class="hidden sm:flex items-center gap-2 pl-2 border-s border-gray-200 ps-3">
-          <span class="avatar-sm" id="navAvatar" aria-hidden="true"></span>
+          <span class="avatar-dot-wrap"><span class="avatar-sm" id="navAvatar" aria-hidden="true"></span><span class="nav-dot" aria-hidden="true"></span></span>
           <div class="hidden md:block leading-tight">
             <p class="text-sm font-semibold text-primary" id="navName">—</p>
             <p class="text-[11px] text-gray-500" data-i18n="nav.roleAgent">Agent</p>
@@ -409,6 +432,7 @@
               <button type="button" class="side-item active" data-section="dashboard">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"/></svg>
                 <span data-i18n="nav.dashboard">Dashboard</span>
+                <span class="nav-dot" aria-label="Verification incomplete" title="Verification incomplete"></span>
               </button>
               <button type="button" class="side-item" data-section="referrals">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
@@ -522,6 +546,32 @@
                 <label for="quickRefLink" class="sr-only" data-i18n="referral.linkLabel">Referral link</label>
                 <input id="quickRefLink" class="input-field" readonly value="">
                 <button type="button" class="btn-primary" data-copy-target="quickRefLink" data-i18n="referral.copy">Copy link</button>
+              </div>
+            </div>
+
+            <!-- Verification checklist (permanent home) -->
+            <div class="feature-card" id="dashboardChecklistCard">
+              <div class="flex flex-wrap items-center gap-3 mb-1">
+                <h2 class="text-xl font-bold text-primary">Verification checklist</h2>
+                <span class="verify-badge pending" id="checklistBadge" role="status">
+                  <span id="checklistBadgeText">In progress</span>
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 mb-4">Finish these steps to unlock withdrawals and higher ranks.</p>
+              <div id="dashboardChecklist" aria-live="polite"></div>
+            </div>
+
+            <!-- Weekly leaderboard -->
+            <div class="feature-card p-0 overflow-hidden">
+              <div class="p-5 border-b flex flex-wrap items-center gap-3">
+                <div class="feature-icon" style="margin-bottom:0" aria-hidden="true">🏆</div>
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-lg font-bold text-primary">Weekly leaderboard</h2>
+                  <p class="text-sm text-gray-500">Top agents this week by verified referrals.</p>
+                </div>
+              </div>
+              <div id="leaderboardBody" aria-live="polite">
+                <div class="p-6 text-center text-sm text-gray-500">Loading…</div>
               </div>
             </div>
           </section>
@@ -681,6 +731,26 @@
 
           <!-- ================= PAYMENTS PANE (future-ready) ================= -->
           <section data-pane="payments" class="fade-in space-y-6 hidden">
+            <!-- Withdraw (gated on verification_status === 'verified') -->
+            <div class="feature-card" id="withdrawCard">
+              <div class="flex flex-wrap items-center gap-3 mb-1">
+                <h2 class="text-xl font-bold text-primary">Withdraw</h2>
+                <span class="verify-badge pending" id="withdrawStatusBadge" role="status">
+                  <span id="withdrawStatusText">Locked</span>
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 mb-4" id="withdrawNote">
+                Complete your verification checklist to unlock withdrawals.
+                <a href="#dashboard" data-section="dashboard" class="text-primary font-semibold underline">Go to checklist</a>.
+              </p>
+              <div>
+                <button type="button" id="withdrawBtn" class="btn-primary" disabled aria-disabled="true">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m0 0l-3-3m3 3l3-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  <span>Withdraw funds</span>
+                </button>
+              </div>
+            </div>
+
             <div class="feature-card">
               <div class="flex flex-wrap items-center gap-3 mb-1">
                 <h2 class="text-xl font-bold text-primary" data-i18n="payments.title">Payments</h2>
@@ -912,59 +982,7 @@
       </div>
     </div>
 
-    <!-- Footer (identical to index.html shell) -->
-    <footer class="footer-launch text-white py-14 mt-10">
-      <div class="container mx-auto px-4">
-        <div class="grid gap-8 md:grid-cols-4 mb-10">
-          <div class="md:col-span-2">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="inline-flex items-center justify-center w-14 h-14 bg-white rounded-xl p-0.5 shrink-0">
-                <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
-              </span>
-              <span class="text-2xl font-bold">ISHFADI</span>
-            </div>
-            <p class="text-white/75 text-sm leading-relaxed max-w-md" data-i18n="footer.about">Building the future of global accommodation. Reserve your account today and sign in the moment we launch.</p>
-            <div class="mt-6">
-              <p class="footer-heading" data-i18n="footer.follow">Follow ISHFADI</p>
-              <div class="social-grid max-w-xs" role="list" aria-label="Follow ISHFADI on social media">
-                <a href="https://facebook.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg></a>
-                <a href="https://instagram.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram" role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></a>
-                <a href="https://linkedin.com/company/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.1c.5-.9 1.8-1.9 3.7-1.9 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4V9z"/></svg></a>
-                <a href="https://chat.whatsapp.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="WhatsApp" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A10.4 10.4 0 0 0 3.4 16.2L2 22l5.9-1.5a10.4 10.4 0 0 0 12.6-17zM12 20.1a8.5 8.5 0 0 1-4.3-1.2l-.3-.2-3.5.9.9-3.4-.2-.3a8.5 8.5 0 1 1 7.4 4.2z"/></svg></a>
-                <a href="https://x.com/ishfadi" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="X (Twitter)" role="listitem"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-              </div>
-            </div>
-          </div>
 
-          <div>
-            <h4 class="footer-heading" data-i18n="footer.quickLinks">Quick Links</h4>
-            <ul class="footer-list">
-              <li><a href="/index.html" data-i18n="nav.home">Home</a></li>
-              <li><a href="/agent.html#dashboard" data-i18n="nav.dashboard">Dashboard</a></li>
-              <li><a href="/agent.html#referrals" data-i18n="nav.referrals">Referrals</a></li>
-              <li><a href="/agent.html#profile" data-i18n="nav.profile">Profile</a></li>
-              <li><a href="/privacy-policy.html" data-i18n="footer.privacy">Privacy Policy</a></li>
-              <li><a href="/terms-of-service.html" data-i18n="footer.terms">Terms of Service</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 class="footer-heading" data-i18n="footer.contact">Contact</h4>
-            <ul class="footer-list">
-              <li><a href="mailto:official@ishfadi.com">official@ishfadi.com</a></li>
-              <li><a href="https://www.ishfadi.com" target="_blank" rel="noopener">www.ishfadi.com</a></li>
-              <li><a href="/help-center.html" data-i18n="footer.help">Help Center</a></li>
-              <li><a href="/safety-tips.html" data-i18n="footer.safety">Safety Tips</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="border-t border-white/15 pt-8 text-center text-white/70 space-y-1">
-          <p>&copy; 2026 ISHFADI</p>
-          <p data-i18n="footer.tagline">Building the future of global accommodation.</p>
-        </div>
-      </div>
-    </footer>
   </div>
 
   <!-- Toast host -->
@@ -1329,7 +1347,8 @@
         'rankCurrent','rankEmoji','rankName','rankDescription','rankNext','rankPct','rankBar','rankBarWrap','rankRequirement',
         'profileForm','profileAvatar','profileSaveBtn','photoInput',
         'pfName','pfEmail','pfPhone','pfLang','pfCountry','pfCity','pfRole','pfVerification','pfAgentCode','pfJoined',
-        'notifEmail','notifPush','prefDirectory','prefWhatsapp','settingsSaveBtn','settingsSignOutBtn'
+        'notifEmail','notifPush','prefDirectory','prefWhatsapp','settingsSaveBtn','settingsSignOutBtn',
+        'dashboardChecklist','dashboardChecklistCard','checklistBadge','checklistBadgeText','leaderboardBody','withdrawBtn','withdrawStatusBadge','withdrawStatusText','withdrawNote'
       ].forEach(id => { els[id] = $(id); });
     }
 
@@ -1577,33 +1596,25 @@
       els.nextPage.disabled = refPage >= totalPages;
     }
 
-    // --- Pending checklist ---
-    function renderPendingChecklist(){
-      if (!els.pendingChecklist) return;
-      const steps = (currentData && currentData.verification_steps) || {};
-      const admin = (steps.admin_review_status || 'pending').toLowerCase();
-      const items = [
-        { key:'email',  done: !!steps.email_verified },
-        { key:'phone',  done: !!steps.phone_verified },
-        { key:'nid',    done: !!steps.national_id_verified },
-        { key:'crim',   done: !!steps.criminal_record_verified },
-        { key:'admin',  done: admin === 'approved' }
-      ];
-      // The first not-done item is 'active'; others below stay 'pending'
-      let activeAssigned = false;
-      const marked = items.map(it => {
-        let state;
-        if (it.done) state = 'done';
-        else if (!activeAssigned) { state = 'active'; activeAssigned = true; }
-        else state = 'pending';
-        return { ...it, state };
-      });
-
+    // --- Verification checklist (used both on pending page and inside the dashboard) ---
+    function buildChecklistFragment(items, interactive){
       const frag = document.createDocumentFragment();
-      marked.forEach((it, idx) => {
+      items.forEach((it, idx) => {
         const wrap = document.createElement('div');
         wrap.className = 'verify-check';
         wrap.setAttribute('data-state', it.state);
+        wrap.setAttribute('data-step', it.key);
+
+        // Clickable for steps whose real flow isn't built yet (everything except email)
+        const isActionable = interactive && it.key !== 'email' && !it.done;
+        if (isActionable){
+          wrap.classList.add('actionable');
+          wrap.setAttribute('role','button');
+          wrap.setAttribute('tabindex','0');
+          const showSoon = () => window.showToast('Coming soon — this step will be available shortly.', '');
+          wrap.addEventListener('click', showSoon);
+          wrap.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showSoon(); } });
+        }
 
         const icon = document.createElement('span');
         icon.className = 'vc-icon';
@@ -1625,10 +1636,120 @@
         wrap.append(icon, body, status);
         frag.appendChild(wrap);
       });
-      els.pendingChecklist.textContent = '';
-      els.pendingChecklist.appendChild(frag);
+      return frag;
+    }
+
+    function renderPendingChecklist(){
+      const steps = (currentData && currentData.verification_steps) || {};
+      const admin = (steps.admin_review_status || 'pending').toLowerCase();
+      const items = [
+        { key:'email',  done: !!steps.email_verified },
+        { key:'phone',  done: !!steps.phone_verified },
+        { key:'nid',    done: !!steps.national_id_verified },
+        { key:'crim',   done: !!steps.criminal_record_verified },
+        { key:'admin',  done: admin === 'approved' }
+      ];
+      let activeAssigned = false;
+      const marked = items.map(it => {
+        let state;
+        if (it.done) state = 'done';
+        else if (!activeAssigned) { state = 'active'; activeAssigned = true; }
+        else state = 'pending';
+        return { ...it, state };
+      });
+
+      if (els.pendingChecklist){
+        els.pendingChecklist.textContent = '';
+        els.pendingChecklist.appendChild(buildChecklistFragment(marked, true));
+      }
+      if (els.dashboardChecklist){
+        els.dashboardChecklist.textContent = '';
+        els.dashboardChecklist.appendChild(buildChecklistFragment(marked, true));
+      }
+
+      const doneCount = marked.filter(m => m.done).length;
+      const total = marked.length;
+      const allDone = doneCount === total;
+
+      // Nav badge / red dot
+      document.body.classList.toggle('verify-incomplete', !allDone);
+
+      // Dashboard checklist badge summary
+      if (els.checklistBadge && els.checklistBadgeText){
+        els.checklistBadgeText.textContent = allDone ? 'Complete' : (doneCount + '/' + total + ' done');
+        els.checklistBadge.classList.toggle('verified', allDone);
+        els.checklistBadge.classList.toggle('pending', !allDone);
+      }
+
+      // Withdraw gating -- reflects verification_status, not just the checklist
+      updateWithdrawGate();
     }
     window.renderPendingChecklist = renderPendingChecklist;
+
+    function updateWithdrawGate(){
+      if (!els.withdrawBtn) return;
+      const verified = currentData && currentData.verification_status === 'verified';
+      els.withdrawBtn.disabled = !verified;
+      els.withdrawBtn.setAttribute('aria-disabled', String(!verified));
+      if (els.withdrawStatusBadge && els.withdrawStatusText){
+        els.withdrawStatusText.textContent = verified ? 'Unlocked' : 'Locked';
+        els.withdrawStatusBadge.classList.toggle('verified', verified);
+        els.withdrawStatusBadge.classList.toggle('pending', !verified);
+      }
+      if (els.withdrawNote){
+        els.withdrawNote.innerHTML = verified
+          ? 'Withdrawals are enabled for your account. Real payout flow is coming soon.'
+          : 'Complete your verification checklist to unlock withdrawals. <a href="#dashboard" data-section="dashboard" class="text-primary font-semibold underline">Go to checklist</a>.';
+        // Re-wire the goto link inside the note
+        const link = els.withdrawNote.querySelector('[data-section]');
+        if (link) link.addEventListener('click', (e) => { e.preventDefault(); goToSection('dashboard'); });
+      }
+    }
+
+    // --- Weekly leaderboard ---
+    async function loadLeaderboard(){
+      if (!els.leaderboardBody) return;
+      const client = initSupabase();
+      if (!client){ els.leaderboardBody.innerHTML = '<div class="p-6 text-center text-sm text-gray-500">Leaderboard unavailable.</div>'; return; }
+      try {
+        const { data, error } = await client.rpc('get_agent_leaderboard', { p_limit: 10 });
+        if (error) throw error;
+        renderLeaderboard(Array.isArray(data) ? data : []);
+      } catch(e){
+        els.leaderboardBody.innerHTML = '<div class="p-6 text-center text-sm text-gray-500">Couldn\'t load the leaderboard right now.</div>';
+      }
+    }
+    function renderLeaderboard(rows){
+      if (!els.leaderboardBody) return;
+      if (!rows.length){
+        els.leaderboardBody.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">No referrals yet this week — be the first!</div>';
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      rows.forEach(r => {
+        const row = document.createElement('div'); row.className = 'lb-row';
+        const rank = document.createElement('span'); rank.className = 'lb-rank';
+        const rk = Number(r.rank) || 0;
+        if (rk === 1) rank.classList.add('gold');
+        else if (rk === 2) rank.classList.add('silver');
+        else if (rk === 3) rank.classList.add('bronze');
+        rank.textContent = '#' + (rk || '—');
+
+        const mid = document.createElement('div');
+        const name = document.createElement('div'); name.className = 'lb-name'; name.textContent = r.full_name || 'Agent';
+        const code = document.createElement('div'); code.className = 'lb-code'; code.textContent = r.agent_code || '';
+        mid.append(name, code);
+
+        const count = document.createElement('span'); count.className = 'lb-count';
+        const n = Number(r.weekly_verified_referrals) || 0;
+        count.innerHTML = n + '<small>verified</small>';
+
+        row.append(rank, mid, count);
+        frag.appendChild(row);
+      });
+      els.leaderboardBody.textContent = '';
+      els.leaderboardBody.appendChild(frag);
+    }
 
     // --- Render: verified dashboard ---
     function renderDashboard(data){
@@ -1724,6 +1845,7 @@
       const name = (data && data.profile && data.profile.full_name) || '';
       if (name) document.title = window.t('meta.title') + ' — ' + name;
       renderPendingChecklist();
+      loadLeaderboard();
       els.dashboardWrap.classList.add('hidden');
       els.pendingPage.classList.remove('hidden');
       els.bootLoader.classList.add('hidden');
@@ -1769,16 +1891,88 @@
       } finally { btn.disabled = false; }
     }
 
-    // --- Photo picker (preview only until Cloudinary upload is wired) ---
+    // --- Profile photo upload (Cloudinary unsigned) ---
+    const CLOUDINARY_CLOUD_NAME = 'u2amysf2';
+    const CLOUDINARY_UPLOAD_PRESET = 'ishfadi';
+    const CLOUDINARY_ENDPOINT = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/image/upload';
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
+    const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+
+    async function uploadProfilePhoto(file){
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      const res = await fetch(CLOUDINARY_ENDPOINT, { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+      const json = await res.json();
+      if (!json || !json.secure_url) throw new Error('Upload response missing secure_url');
+      return json.secure_url;
+    }
+
     function wirePhotoInput(){
       if (!els.photoInput) return;
-      els.photoInput.addEventListener('change', () => {
-        const f = els.photoInput.files && els.photoInput.files[0]; if (!f) return;
-        const url = URL.createObjectURL(f);
+      els.photoInput.addEventListener('change', async () => {
+        const f = els.photoInput.files && els.photoInput.files[0];
+        if (!f) return;
+
+        // Client-side guards
+        if (!ALLOWED_IMAGE_TYPES.includes(f.type)){
+          window.showToast('Please choose a JPG, PNG or WebP image.', 'error');
+          els.photoInput.value = '';
+          return;
+        }
+        if (f.size > MAX_IMAGE_BYTES){
+          window.showToast('Image must be 5 MB or smaller.', 'error');
+          els.photoInput.value = '';
+          return;
+        }
+
+        // Optimistic local preview
+        const localUrl = URL.createObjectURL(f);
         const name = els.pfName.value;
-        setAvatar(els.profileAvatar, url, name);
-        setAvatar(els.welcomeAvatar, url, name);
-        setAvatar(els.navAvatar,     url, name);
+        setAvatar(els.profileAvatar, localUrl, name);
+        setAvatar(els.welcomeAvatar, localUrl, name);
+        setAvatar(els.navAvatar,     localUrl, name);
+
+        try {
+          const secureUrl = await uploadProfilePhoto(f);
+
+          // Persist via RPC
+          const client = initSupabase();
+          let ok = false;
+          if (client){
+            try {
+              const r = await client.rpc('update_agent_profile', { p_patch: { profile_photo_url: secureUrl } });
+              ok = !r.error;
+            } catch(e){}
+            if (!ok){
+              try {
+                const { data: u } = await client.auth.getUser();
+                if (u && u.user){
+                  const r = await client.from('profiles').update({ profile_photo_url: secureUrl }).eq('id', u.user.id);
+                  ok = !r.error;
+                }
+              } catch(e){}
+            }
+          }
+
+          // Swap to permanent CDN URL
+          setAvatar(els.profileAvatar, secureUrl, name);
+          setAvatar(els.welcomeAvatar, secureUrl, name);
+          setAvatar(els.navAvatar,     secureUrl, name);
+          if (currentData && currentData.profile) currentData.profile.profile_photo_url = secureUrl;
+
+          window.showToast(ok ? 'Profile photo updated.' : 'Photo uploaded, but we couldn\'t save it to your profile.', ok ? 'success' : 'error');
+        } catch(err){
+          window.showToast('Could not upload photo. Please try again.', 'error');
+          // Revert to whatever the backend last knew
+          const url = (currentData && currentData.profile && currentData.profile.profile_photo_url) || null;
+          setAvatar(els.profileAvatar, url, name);
+          setAvatar(els.welcomeAvatar, url, name);
+          setAvatar(els.navAvatar,     url, name);
+        } finally {
+          els.photoInput.value = '';
+        }
       });
     }
 
