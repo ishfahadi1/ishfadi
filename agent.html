@@ -89,6 +89,19 @@
     }
     html[dir="ltr"] .lang-menu { right: 0; }
     html[dir="rtl"] .lang-menu { left: 0; }
+    @media (max-width: 640px) {
+      .lang-menu {
+        position: fixed;
+        top: auto;
+        bottom: 1rem;
+        left: 1rem !important;
+        right: 1rem !important;
+        width: calc(100vw - 2rem);
+        min-width: 0;
+        max-width: none;
+        margin: 0 auto;
+      }
+    }
     .lang-switcher.open .lang-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .lang-option {
       display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
@@ -1833,6 +1846,11 @@
 
       // Render referrals table
       renderRefTable();
+
+      // These were only ever wired into the old renderPending() path --
+      // renderDashboard() needs them too, now that it's the only path.
+      renderPendingChecklist();
+      loadLeaderboard();
 
       // Reveal
       els.dashboardWrap.classList.remove('hidden');
