@@ -158,10 +158,10 @@
       box-shadow: 0 24px 60px -20px rgba(30,58,95,.45);
     }
 
-    .avatar { width:96px; height:96px; border-radius:9999px; overflow:hidden; background: linear-gradient(135deg,#d4a574,#b78955); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:2rem; border:3px solid rgba(255,255,255,.35); box-shadow: 0 10px 30px rgba(0,0,0,.2); flex-shrink:0; }
-    .avatar img { width:100%; height:100%; object-fit: cover; display:block; }
-    .avatar-sm { width:40px; height:40px; border-radius:9999px; overflow:hidden; background: linear-gradient(135deg,#d4a574,#b78955); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; flex-shrink:0; }
-    .avatar-sm img { width:100%; height:100%; object-fit:cover; display:block; }
+    .avatar { width:96px !important; height:96px !important; border-radius:9999px; overflow:hidden; background: linear-gradient(135deg,#d4a574,#b78955); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:2rem; border:3px solid rgba(255,255,255,.35); box-shadow: 0 10px 30px rgba(0,0,0,.2); flex-shrink:0; }
+    .avatar img { width:100% !important; height:100% !important; max-width:100%; object-fit: cover !important; object-position:center; display:block; aspect-ratio:1/1; }
+    .avatar-sm { width:40px !important; height:40px !important; border-radius:9999px; overflow:hidden; background: linear-gradient(135deg,#d4a574,#b78955); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; flex-shrink:0; }
+    .avatar-sm img { width:100% !important; height:100% !important; max-width:100%; object-fit:cover !important; object-position:center; display:block; aspect-ratio:1/1; }
 
     /* Referral card (screenshot target) — mirrors index rescard */
     .refcard {
@@ -199,25 +199,32 @@
     .side-item.active { background: rgba(30,58,95,.09); color:#1e3a5f; font-weight:700; }
     .side-item svg { width:20px; height:20px; flex-shrink:0; }
 
-    /* Pending checklist */
-    .verify-check { display:flex; align-items:flex-start; gap:.85rem; padding:1rem; border:1px solid #e5e7eb; border-radius:.9rem; background:#fff; transition: all .2s ease; }
-    .verify-check + .verify-check { margin-top:.6rem; }
+    /* Pending checklist — horizontal button row, wraps on narrow screens */
+    #pendingChecklist, #dashboardChecklist {
+      display: flex; flex-wrap: wrap; gap: .6rem;
+    }
+    .verify-check {
+      display: inline-flex; align-items: center; gap: .55rem;
+      padding: .7rem .9rem; border:2px solid #e5e7eb; border-radius: .8rem;
+      background:#fff; transition: all .2s ease; flex: 1 1 calc(50% - .6rem);
+      min-width: 140px; text-align:start;
+    }
+    @media (min-width: 640px) { .verify-check { flex: 0 1 auto; } }
     .verify-check .vc-icon {
-      width:36px; height:36px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center;
-      font-weight:700; font-size:.9rem; flex-shrink:0;
-      background:#f1f5f9; color:#94a3b8; border:1px solid #e5e7eb;
+      width: 26px; height: 26px; border-radius: 9999px;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size: .8rem; font-weight: 700;
+      background:#fff; color:#94a3b8; border:2px solid #cbd5e1; flex-shrink:0;
     }
     .verify-check .vc-body { flex:1; min-width:0; }
-    .verify-check .vc-title { font-weight:600; color:#0f172a; font-size:.95rem; }
-    .verify-check .vc-desc { font-size:.82rem; color:#64748b; margin-top:.15rem; }
-    .verify-check .vc-status { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; white-space:nowrap; }
-    .verify-check[data-state="done"] { border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.05); }
-    .verify-check[data-state="done"] .vc-icon { background:#22c55e; color:#fff; border-color:#22c55e; }
-    .verify-check[data-state="done"] .vc-status { color:#15803d; }
-    .verify-check[data-state="active"] { border-color: rgba(30,58,95,.45); box-shadow: 0 8px 20px -10px rgba(30,58,95,.35); }
-    .verify-check[data-state="active"] .vc-icon { background:#1e3a5f; color:#fff; border-color:#1e3a5f; animation: pulse 2s infinite; }
-    .verify-check[data-state="active"] .vc-status { color:#1e3a5f; }
-    .verify-check[data-state="pending"] .vc-status { color:#b45309; }
+    .verify-check .vc-title { font-weight:600; color:#0f172a; font-size:.88rem; line-height:1.15; }
+    .verify-check .vc-desc { display:none; }
+    .verify-check .vc-status { display:none; }
+    .verify-check[data-state="done"] { border-color:#1e3a5f; background:#1e3a5f; }
+    .verify-check[data-state="done"] .vc-icon { background:#fff; color:#1e3a5f; border-color:#fff; }
+    .verify-check[data-state="done"] .vc-title { color:#fff; }
+    .verify-check[data-state="active"] { border-color:#d4a574; box-shadow: 0 6px 16px -8px rgba(212,165,116,.55); }
+    .verify-check[data-state="active"] .vc-icon { background:#d4a574; color:#fff; border-color:#d4a574; }
 
     /* Pending page */
     .pending-illu {
@@ -2053,7 +2060,30 @@
       if (els.sideLogoutBtn)     els.sideLogoutBtn.addEventListener('click', signOut);
       if (els.pendingLogoutBtn)  els.pendingLogoutBtn.addEventListener('click', signOut);
       if (els.settingsSignOutBtn)els.settingsSignOutBtn.addEventListener('click', signOut);
-      if (els.settingsSaveBtn)   els.settingsSaveBtn.addEventListener('click', () => window.showToast(window.t('settings.saved'), 'success'));
+      if (els.settingsSaveBtn)   els.settingsSaveBtn.addEventListener('click', async () => {
+        const btn = els.settingsSaveBtn;
+        const prevDisabled = btn.disabled;
+        btn.disabled = true;
+        try {
+          const { error } = await client.rpc('update_agent_profile', {
+            p_patch: {
+              preferences: {
+                notif_email: !!(els.notifEmail && els.notifEmail.checked),
+                notif_push: !!(els.notifPush && els.notifPush.checked),
+                show_in_directory: !!(els.prefDirectory && els.prefDirectory.checked),
+                show_whatsapp: !!(els.prefWhatsapp && els.prefWhatsapp.checked)
+              }
+            }
+          });
+          if (error) throw error;
+          window.showToast(window.t('settings.saved'), 'success');
+        } catch (e) {
+          console.error('save preferences failed', e);
+          window.showToast((e && e.message) || 'Could not save preferences.', 'error');
+        } finally {
+          btn.disabled = prevDisabled;
+        }
+      });
       if (els.bootRetryBtn)      els.bootRetryBtn.addEventListener('click', boot);
       if (els.copyCodeBtn)       els.copyCodeBtn.addEventListener('click', copyRefCode);
       if (els.shareBtn)          els.shareBtn.addEventListener('click', shareRefLink);
