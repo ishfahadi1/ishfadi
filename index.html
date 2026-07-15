@@ -113,7 +113,7 @@
     html[dir="ltr"] .lang-menu { right: 0; }
     html[dir="rtl"] .lang-menu { left: 0; }
     @media (max-width: 640px) {
-      .lang-menu {
+      #langSwitcherDesktop .lang-menu {
         position: fixed;
         top: auto;
         bottom: 1rem;
@@ -124,6 +124,19 @@
         max-width: none;
         margin: 0 auto;
       }
+    }
+    /* Mobile menu language dropdown: anchored beneath trigger, hidden until open */
+    #langSwitcherMobile { position: relative; }
+    #langSwitcherMobile .lang-menu {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      left: 0 !important;
+      right: 0 !important;
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+      margin: 0;
+      z-index: 70;
     }
     #signInPanel { max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     .lang-switcher.open .lang-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
@@ -364,7 +377,7 @@
               </span>
               <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
-            <div class="lang-menu" role="listbox" aria-label="Languages" style="position:static;width:100%;margin-top:.5rem"></div>
+            <div class="lang-menu" role="listbox" aria-label="Languages"></div>
           </div>
         </div>
       </div>
