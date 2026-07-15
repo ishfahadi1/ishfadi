@@ -86,9 +86,19 @@
       box-shadow: 0 20px 40px rgba(15,23,42,0.12); padding: 0.4rem;
       opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
       transition: opacity 0.18s ease, transform 0.18s ease; z-index: 60;
+      max-height: calc(100vh - 7rem); overflow-y: auto;
     }
     html[dir="ltr"] .lang-menu { right: 0; }
     html[dir="rtl"] .lang-menu { left: 0; }
+    /* Mobile: keep the menu directly beneath the trigger, just guard against overflow */
+    @media (max-width: 640px) {
+      .lang-menu {
+        min-width: 180px;
+        max-width: calc(100vw - 1.5rem);
+        max-height: calc(100vh - 8rem);
+      }
+    }
+
     .lang-switcher.open .lang-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .lang-option {
       display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
@@ -280,41 +290,46 @@
     /* Mobile sidebar */
     #sideDrawer { transition: transform .28s ease; }
     @media (max-width: 1023px) {
-      #sideDrawer { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); overflow-y: auto; }
+      #sideDrawer { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); }
       html[dir="rtl"] #sideDrawer { inset: 0 0 0 auto; transform: translateX(100%); }
       #sideDrawer.open { transform: translateX(0); }
       #sideBackdrop { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 65; display:none; }
       #sideBackdrop.open { display:block; }
     }
 
-    /* Desktop: pin sidebar so only main content scrolls (Stripe/Notion-style shell) */
+    /* Mobile header spacing — keep the language selector fully visible */
+    @media (max-width: 640px) {
+      nav[aria-label="Primary"] > .container { padding-left: .75rem; padding-right: .75rem; gap: .4rem; }
+      nav[aria-label="Primary"] .lang-trigger {
+        padding: .45rem .6rem; font-size: .8rem; gap: .35rem;
+        white-space: nowrap; flex-shrink: 0;
+      }
+      nav[aria-label="Primary"] .lang-trigger .lang-current-label { max-width: none; }
+      #langSwitcherDesktop { flex-shrink: 0; }
+    }
+    @media (max-width: 420px) {
+      nav[aria-label="Primary"] a[aria-label="ISHFADI home"] span.text-xl { font-size: 1.05rem; }
+      nav[aria-label="Primary"] a[aria-label="ISHFADI home"] span.inline-flex { width: 2.5rem; height: 2.5rem; }
+    }
+
+    /* Desktop sidebar — perfectly fixed while content scrolls */
     @media (min-width: 1024px) {
       #sideDrawer {
-        position: sticky;
-        top: 6rem;
-        align-self: start;
-        max-height: calc(100dvh - 7rem);
+        position: sticky !important;
+        top: 6rem !important;
+        height: calc(100vh - 7rem) !important;
+        max-height: calc(100vh - 7rem);
         overflow-y: auto;
-        overflow-x: hidden;
-        will-change: transform;
+        align-self: start;
         transform: translateZ(0);
-        backface-visibility: hidden;
-        contain: layout paint;
+        will-change: transform;
+        contain: layout style;
       }
     }
 
-    /* Mobile-only tweaks for header language selector (no desktop change) */
-    @media (max-width: 640px) {
-      .lang-trigger { padding: 0.45rem 0.6rem; font-size: 0.8rem; gap: 0.35rem; }
-      #langSwitcherDesktop .lang-trigger .lang-current-label {
-        max-width: 5.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      }
-      .lang-menu { min-width: 180px; max-width: calc(100vw - 1rem); }
-    }
-    /* When JS positions the menu with fixed coords, don't let LTR/RTL rules fight it */
-    .lang-menu.lang-menu--positioned { right: auto !important; left: auto; }
   </style>
 </head>
+
 <body class="bg-gray-50 text-slate-800 min-h-screen-safe">
 
   <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:bg-white focus:text-primary focus:px-3 focus:py-2 focus:rounded-lg focus:shadow" data-i18n="a11y.skip">Skip to content</a>
@@ -454,7 +469,7 @@
     <div class="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
       <div class="lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
         <!-- Sidebar -->
-        <aside id="sideDrawer" class="bg-white lg:bg-transparent lg:border-0 border-e w-72 lg:w-auto self-start" aria-label="Dashboard navigation">
+        <aside id="sideDrawer" class="bg-white lg:bg-transparent lg:border-0 border-e w-72 lg:w-auto lg:sticky lg:top-24 self-start lg:h-[calc(100dvh-7rem)] overflow-y-auto" aria-label="Dashboard navigation">
           <div class="p-4 lg:p-0">
             <div class="lg:hidden flex items-center justify-between mb-4">
               <span class="text-lg font-bold text-primary" data-i18n="nav.dashboard">Dashboard</span>
@@ -776,6 +791,7 @@
               <p class="text-sm text-gray-500 mb-4" id="withdrawNote">
                 Complete your verification checklist to unlock withdrawals.
                 <a href="#dashboardChecklistCard" data-goto-checklist class="text-primary font-semibold underline">Go to checklist</a>.
+
               </p>
               <div>
                 <button type="button" id="withdrawBtn" class="btn-primary" disabled aria-disabled="true">
@@ -1306,66 +1322,15 @@
         });
       });
     }
-    function closeAllLangMenus(){
-      document.querySelectorAll('.lang-switcher.open').forEach(s => {
-        s.classList.remove('open');
-        const trig = s.querySelector('.lang-trigger'); if (trig) trig.setAttribute('aria-expanded','false');
-        const menu = s.querySelector('.lang-menu');
-        if (menu){ menu.classList.remove('lang-menu--positioned'); menu.style.top=''; menu.style.left=''; menu.style.right=''; menu.style.position=''; menu.style.maxHeight=''; }
-      });
-    }
-    function positionLangMenu(sw){
-      const menu = sw.querySelector('.lang-menu');
-      const trig = sw.querySelector('.lang-trigger');
-      if (!menu || !trig) return;
-      // Reset so measurements are accurate
-      menu.classList.add('lang-menu--positioned');
-      menu.style.position = 'fixed';
-      menu.style.top = '-9999px'; menu.style.left = '0px'; menu.style.maxHeight = '';
-      const rect = trig.getBoundingClientRect();
-      const vh = window.innerHeight, vw = window.innerWidth;
-      const menuW = Math.min(Math.max(menu.offsetWidth, 200), vw - 16);
-      const menuH = Math.min(menu.offsetHeight, vh - 24);
-      const gap = 8;
-      const spaceBelow = vh - rect.bottom;
-      const spaceAbove = rect.top;
-      const openUp = spaceBelow < menuH + gap && spaceAbove > spaceBelow;
-      const top = openUp
-        ? Math.max(8, rect.top - menuH - gap)
-        : Math.min(vh - menuH - 8, rect.bottom + gap);
-      const dir = document.documentElement.getAttribute('dir') || 'ltr';
-      let left;
-      if (dir === 'rtl') {
-        left = Math.max(8, Math.min(vw - menuW - 8, rect.left));
-      } else {
-        left = Math.max(8, Math.min(vw - menuW - 8, rect.right - menuW));
-      }
-      menu.style.top = top + 'px';
-      menu.style.left = left + 'px';
-      menu.style.right = 'auto';
-      menu.style.maxHeight = (vh - 24) + 'px';
-      menu.style.overflowY = 'auto';
-    }
+    function closeAllLangMenus(){ document.querySelectorAll('.lang-switcher.open').forEach(s => { s.classList.remove('open'); const trig=s.querySelector('.lang-trigger'); if (trig) trig.setAttribute('aria-expanded','false'); }); }
     function wireLangSwitchers(){
       document.querySelectorAll('.lang-switcher').forEach(sw => {
         const trigger = sw.querySelector('.lang-trigger'); if (!trigger) return;
-        trigger.addEventListener('click', e => {
-          e.stopPropagation();
-          const open = sw.classList.contains('open');
-          closeAllLangMenus();
-          if (!open){
-            sw.classList.add('open');
-            trigger.setAttribute('aria-expanded','true');
-            // Position after class change so menu is measurable
-            requestAnimationFrame(() => positionLangMenu(sw));
-          }
-        });
+        trigger.addEventListener('click', e => { e.stopPropagation(); const open = sw.classList.contains('open'); closeAllLangMenus(); if (!open){ sw.classList.add('open'); trigger.setAttribute('aria-expanded','true'); } });
         trigger.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeAllLangMenus(); trigger.focus(); } });
       });
       document.addEventListener('click', e => { if (!e.target.closest('.lang-switcher')) closeAllLangMenus(); });
       document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllLangMenus(); });
-      window.addEventListener('resize', closeAllLangMenus);
-      window.addEventListener('scroll', () => { if (document.querySelector('.lang-switcher.open')) closeAllLangMenus(); }, true);
     }
     function setLanguage(lang){
       if (!LANGUAGES[lang]) lang = FALLBACK;
@@ -1551,29 +1516,31 @@
     }
     window.goToSection = goToSection;
 
+    // Scroll to the verification checklist card (from the Withdraw note, etc.)
     function goToChecklist(){
-      goToSection('dashboard');
-      // Wait for pane to become visible before scrolling
-      const scroll = () => {
+      // Switch to the dashboard pane without stealing focus to the top
+      document.querySelectorAll('[data-pane]').forEach(p => p.classList.toggle('hidden', p.getAttribute('data-pane') !== 'dashboard'));
+      document.querySelectorAll('[data-section]').forEach(a => a.classList.toggle('active', a.getAttribute('data-section') === 'dashboard'));
+      try { history.replaceState(null,'','#dashboardChecklistCard'); } catch(e){}
+      if (els.sideDrawer) els.sideDrawer.classList.remove('open');
+      if (els.sideBackdrop) els.sideBackdrop.classList.remove('open');
+      if (els.sideToggle) els.sideToggle.setAttribute('aria-expanded','false');
+      // Wait for pane visibility to apply, then smooth-scroll the checklist into view
+      requestAnimationFrame(() => {
         const target = document.getElementById('dashboardChecklistCard');
-        if (!target) return;
-        const navH = 80; // top nav height
-        const y = target.getBoundingClientRect().top + window.pageYOffset - navH - 12;
-        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-        try { target.setAttribute('tabindex','-1'); target.focus({ preventScroll: true }); } catch(e){}
-      };
-      // goToSection scrolls to top; run after that settles
-      setTimeout(scroll, 80);
+        if (!target) { window.scrollTo({ top: 0, behavior:'smooth' }); return; }
+        const navH = document.querySelector('nav[aria-label="Primary"]')?.offsetHeight || 80;
+        const y = target.getBoundingClientRect().top + window.pageYOffset - navH - 16;
+        window.scrollTo({ top: Math.max(y, 0), behavior:'smooth' });
+        // Focus for keyboard users
+        const focusable = target.querySelector('h1,h2,button,a,[tabindex]');
+        if (focusable && typeof focusable.focus === 'function') {
+          try { focusable.focus({ preventScroll: true }); } catch(e){}
+        }
+      });
     }
     window.goToChecklist = goToChecklist;
 
-    // Delegated click for any current or future Go-to-checklist link
-    document.addEventListener('click', (e) => {
-      const a = e.target.closest('[data-goto-checklist]');
-      if (!a) return;
-      e.preventDefault();
-      goToChecklist();
-    });
 
     // --- Referral: QR + link + share + downloads ---
     let currentData = null;
@@ -1809,9 +1776,10 @@
         els.withdrawNote.innerHTML = verified
           ? 'Withdrawals are enabled for your account. Real payout flow is coming soon.'
           : 'Complete your verification checklist to unlock withdrawals. <a href="#dashboardChecklistCard" data-goto-checklist class="text-primary font-semibold underline">Go to checklist</a>.';
-        // Re-wire the goto link inside the note
+        // Re-wire the goto-checklist link inside the note
         const link = els.withdrawNote.querySelector('[data-goto-checklist]');
         if (link) link.addEventListener('click', (e) => { e.preventDefault(); goToChecklist(); });
+
       }
     }
 
@@ -1935,6 +1903,11 @@
 
       // Render referrals table
       renderRefTable();
+
+      // These were only ever wired into the old renderPending() path --
+      // renderDashboard() needs them too, now that it's the only path.
+      renderPendingChecklist();
+      loadLeaderboard();
 
       // Reveal
       els.dashboardWrap.classList.remove('hidden');
@@ -2114,6 +2087,10 @@
       document.querySelectorAll('[data-goto]').forEach(el => {
         el.addEventListener('click', (e) => { e.preventDefault(); goToSection(el.getAttribute('data-goto')); });
       });
+      document.querySelectorAll('[data-goto-checklist]').forEach(el => {
+        el.addEventListener('click', (e) => { e.preventDefault(); goToChecklist(); });
+      });
+
       document.querySelectorAll('[data-copy-target]').forEach(el => {
         el.addEventListener('click', () => copyRefLink(el.getAttribute('data-copy-target')));
       });
