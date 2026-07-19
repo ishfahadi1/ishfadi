@@ -780,7 +780,9 @@ async function handleMfaState(client) {
     });
     if (enrollErr) { authGateShowError(enrollErr.message); return; }
     authGateEls.subtitle.textContent = 'Set up two-factor authentication.';
-    authGateEls.mfaQr.innerHTML = '<img src="' + enrollData.totp.qr_code + '" alt="Scan with your authenticator app" style="width:180px;height:180px;" />';
+    authGateEls.mfaQr.innerHTML = enrollData.totp.qr_code;
+    const qrSvg = authGateEls.mfaQr.querySelector('svg');
+    if (qrSvg) { qrSvg.style.width = '180px'; qrSvg.style.height = '180px'; }
     authGateEls.mfaSecret.textContent = enrollData.totp.secret;
     authGateEls.stepMfaEnroll.dataset.factorId = enrollData.id;
     authGateShowStep('enroll');
