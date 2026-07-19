@@ -149,7 +149,9 @@
 <div id="authGate" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="background:linear-gradient(135deg,#1e3a5f,#0f1f36);">
   <div id="authGatePanel" class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-7">
     <div class="text-center mb-6">
-      <div class="w-12 h-12 mx-auto rounded-xl flex items-center justify-center text-white font-bold text-lg" style="background:#1e3a5f;">IF</div>
+      <div class="w-14 h-14 mx-auto rounded-xl flex items-center justify-center overflow-hidden bg-white border" style="border-color:#e5e7eb;">
+        <img src="/icons/logo.png" alt="ISHFADI" class="w-full h-full object-contain p-1.5">
+      </div>
       <h1 class="text-xl font-bold mt-3" style="color:#1e3a5f;">ISHFADI Admin</h1>
       <p class="text-sm text-gray-500 mt-1" id="authGateSubtitle">Sign in with your administrator credentials.</p>
     </div>
@@ -163,7 +165,13 @@
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-600">Password</label>
-        <input id="authPassword" type="password" required autocomplete="current-password" class="w-full mt-1 px-3 py-2.5 border rounded-xl text-sm" />
+        <div class="relative mt-1">
+          <input id="authPassword" type="password" required autocomplete="current-password" class="w-full px-3 py-2.5 pe-11 border rounded-xl text-sm" />
+          <button type="button" id="authPwToggle" class="absolute inset-y-0 end-0 w-10 flex items-center justify-center text-gray-400 hover:text-gray-700" aria-label="Show password" aria-pressed="false">
+            <svg class="pw-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="pw-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.29 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
       </div>
       <button type="submit" id="authSubmitBtn" class="w-full py-2.5 rounded-xl font-semibold text-white" style="background:#1e3a5f;">Continue</button>
     </form>
@@ -752,8 +760,21 @@ async function handleMfaState(client) {
     authGateShowStep('challenge');
     authGateEls.stepMfaChallenge.dataset.factorId = verifiedTotp.id;
   } else {
-    // No factor enrolled yet -- first-time admin setup.
-    const { data: enrollData, error: enrollErr } = await client.auth.mfa.enroll({ factorType: 'totp' });
+    // Clean up any half-finished enrollment from an earlier interrupted
+    // attempt (page reload mid-setup, etc) -- leaving these around is
+    // exactly what causes "factor with this name already exists" on
+    // the next enroll attempt.
+    const staleFactors = (factorsData?.totp || []).filter(f => f.status !== 'verified');
+    for (const stale of staleFactors) {
+      await client.auth.mfa.unenroll({ factorId: stale.id }).catch(() => {});
+    }
+
+    // No factor enrolled yet -- first-time admin setup. A unique
+    // friendly name guarantees this can never collide again.
+    const { data: enrollData, error: enrollErr } = await client.auth.mfa.enroll({
+      factorType: 'totp',
+      friendlyName: 'ISHFADI Admin ' + Date.now()
+    });
     if (enrollErr) { authGateShowError(enrollErr.message); return; }
     authGateEls.subtitle.textContent = 'Set up two-factor authentication.';
     authGateEls.mfaQr.innerHTML = '<img src="' + enrollData.totp.qr_code + '" alt="Scan with your authenticator app" style="width:180px;height:180px;" />';
@@ -762,6 +783,16 @@ async function handleMfaState(client) {
     authGateShowStep('enroll');
   }
 }
+
+const authPwToggleBtn = document.getElementById('authPwToggle');
+authPwToggleBtn.addEventListener('click', () => {
+  const input = authGateEls.password;
+  const nowVisible = input.type === 'password';
+  input.type = nowVisible ? 'text' : 'password';
+  authPwToggleBtn.setAttribute('aria-pressed', nowVisible ? 'true' : 'false');
+  authPwToggleBtn.querySelector('.pw-icon-show').style.display = nowVisible ? 'none' : '';
+  authPwToggleBtn.querySelector('.pw-icon-hide').style.display = nowVisible ? '' : 'none';
+});
 
 authGateEls.stepPassword.addEventListener('submit', async (e) => {
   e.preventDefault();
