@@ -2052,21 +2052,17 @@
         const tagline = window.t('roleScreen.' + role + '.tagline');
         let footer = '';
         if (state === 'have') {
-          if (role === 'agent') {
+          if (role === 'agent' || role === 'host') {
             footer =
-              '<button type="button" class="btn-primary w-full mt-4" data-role-continue="agent">' +
+              '<button type="button" class="btn-primary w-full mt-4" data-role-continue="' + role + '">' +
                 escapeHtml(window.t('roleScreen.continue')) +
               '</button>';
           } else {
-            const soonNote = role === 'host'
-              ? '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.host.feeNote')) + '</p>'
-              : '';
             footer =
               '<div class="mt-4 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-center">' +
                 '<span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">' + escapeHtml(window.t('roleScreen.comingSoon')) + '</span>' +
               '</div>' +
-              '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.' + role + '.soon')) + '</p>' +
-              soonNote;
+              '<p class="text-xs text-slate-500 mt-2">' + escapeHtml(window.t('roleScreen.' + role + '.soon')) + '</p>';
           }
         } else if (state === 'pending') {
           footer =
@@ -2102,6 +2098,9 @@
       function wireCardActions(client, userId, roles, pending) {
         roleView.querySelectorAll('[data-role-continue="agent"]').forEach(btn => {
           btn.addEventListener('click', () => { window.location.href = '/agent.html'; });
+        });
+        roleView.querySelectorAll('[data-role-continue="host"]').forEach(btn => {
+          btn.addEventListener('click', () => { window.location.href = '/seller.html'; });
         });
         roleView.querySelectorAll('[data-role-apply]').forEach(btn => {
           btn.addEventListener('click', () => {
