@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title data-i18n="meta.title">ISHFADI Host Dashboard</title>
+  <meta name="description" data-i18n-attr="content" data-i18n="meta.description" content="Manage your ISHFADI listings, verification and bookings.">
+  <link rel="canonical" href="/seller.html">
+  <meta name="robots" content="noindex,nofollow">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ISHFADI Host Dashboard">
+  <meta property="og:description" content="Manage your ISHFADI listings, verification and bookings.">
+  <meta property="og:image" content="/icons/icon-512.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ISHFADI">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  <!-- Same vendor libs as index.html / agent.html -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet for the single-marker location picker (lightweight, not smart-map.js) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a5f',
+            'primary-2': '#254772',
+            secondary: '#d4a574',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            muted: '#64748b'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Mirrors index.html / agent.html so this feels native */
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    html[lang="ar"] body { font-family: 'Cairo', system-ui, -apple-system, sans-serif; }
+    html[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+    .card-hover { transition: all 0.3s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; border-radius: 20px; max-width: 720px; width: 100%; max-height: 92vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+    .modal-content.wide { max-width: 960px; }
+
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .sidebar { transition: transform 0.3s ease; }
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; }
+      .sidebar.open { transform: translateX(0); }
+    }
+    html[dir="rtl"] .sidebar { left: auto; right: 0; }
+    html[dir="rtl"] main { margin-left: 0 !important; }
+    @media (min-width: 1024px) { html[dir="rtl"] main { margin-right: 16rem; } }
+
+    .sidebar-bg {
+      background:
+        linear-gradient(180deg, rgba(30,58,95,1) 0%, rgba(25,48,78,1) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .welcome-bg {
+      background: linear-gradient(135deg, rgba(30,58,95,0.95) 0%, rgba(45,74,111,0.9) 50%, rgba(212,165,116,0.3) 100%);
+    }
+    .stat-primary   { background: linear-gradient(135deg, rgba(30,58,95,0.10) 0%, rgba(30,58,95,0.05) 100%); }
+    .stat-success   { background: linear-gradient(135deg, rgba(34,197,94,0.10) 0%, rgba(34,197,94,0.05) 100%); }
+    .stat-secondary { background: linear-gradient(135deg, rgba(212,165,116,0.10) 0%, rgba(212,165,116,0.05) 100%); }
+    .stat-warning   { background: linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(245,158,11,0.05) 100%); }
+
+    .page-bg {
+      background:
+        linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z' fill='%231e3a5f' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    /* Language switcher (same shape as agent.html) */
+    .lang-switcher { position: relative; }
+    .lang-trigger { display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .7rem; border:1px solid rgba(255,255,255,.2); border-radius:.6rem; color: rgba(255,255,255,.9); font-size:.85rem; background: rgba(255,255,255,.05); }
+    .lang-menu { display:none; position:absolute; right:0; top:calc(100% + 6px); background:white; color:#0f172a; border-radius:.75rem; box-shadow: 0 20px 40px rgba(0,0,0,.15); min-width: 180px; padding:.35rem; z-index: 60; }
+    .lang-switcher.open .lang-menu { display:block; }
+    .lang-option { display:flex; align-items:center; justify-content:space-between; padding:.55rem .7rem; border-radius:.5rem; width:100%; text-align:left; cursor:pointer; }
+    .lang-option:hover { background: #f1f5f9; }
+    .lang-option .check { opacity: 0; color: #22c55e; }
+    .lang-option[aria-current="true"] .check { opacity: 1; }
+    .lang-name { font-weight: 600; margin-right:.5rem; }
+    .lang-sub { color:#94a3b8; font-size:.7rem; margin-left:.25rem; }
+    .switch-fade { opacity: .35; transition: opacity .12s ease; }
+
+    /* Status badges */
+    .badge { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius: 9999px; font-size:.72rem; font-weight:600; }
+    .b-draft   { background: #f1f5f9; color: #475569; }
+    .b-pending { background: #fef3c7; color: #92400e; }
+    .b-verified{ background: #dcfce7; color: #166534; }
+    .b-rejected{ background: #fee2e2; color: #991b1b; }
+    .b-paused  { background: #e0e7ff; color: #3730a3; }
+    .b-archived{ background: #e2e8f0; color: #334155; }
+
+    /* Toasts */
+    #toastContainer { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 200; display:flex; flex-direction:column; gap:.5rem; pointer-events:none; }
+    .toast { background: #0f172a; color:#fff; padding:.75rem 1rem; border-radius:.75rem; font-size:.85rem; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: 90vw; }
+    .toast.success { background: #16a34a; }
+    .toast.error   { background: #dc2626; }
+    .toast.info    { background: #1e3a5f; }
+
+    /* Photo grid (drag-to-reorder) */
+    .photo-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:.5rem; }
+    .photo-tile { position: relative; aspect-ratio: 1/1; border-radius:.75rem; overflow:hidden; background:#f1f5f9; cursor:grab; border:2px solid transparent; }
+    .photo-tile.cover { border-color: #d4a574; }
+    .photo-tile img { width:100%; height:100%; object-fit:cover; }
+    .photo-tile .actions { position:absolute; inset:auto 0 0 0; display:flex; justify-content:space-between; gap:.25rem; padding:.25rem; background: linear-gradient(180deg, transparent, rgba(0,0,0,.55)); }
+    .photo-tile .actions button { background: rgba(255,255,255,.9); color:#0f172a; border-radius:.4rem; font-size:.65rem; padding:.15rem .4rem; }
+    .photo-tile.dragging { opacity: .4; }
+    .photo-tile .cover-tag { position:absolute; top:.3rem; left:.3rem; background:#d4a574; color:white; font-size:.6rem; font-weight:700; padding:.1rem .35rem; border-radius:.35rem; }
+
+    /* Leaflet map container */
+    #locPickerMap { height: 260px; border-radius: .75rem; overflow: hidden; }
+
+    /* Nav dot badge */
+    .nav-dot { display:inline-block; width:.5rem; height:.5rem; border-radius:9999px; background:#ef4444; margin-inline-start:.35rem; }
+
+    /* Skeleton */
+    .skeleton { display:inline-block; background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: skel 1.2s infinite; border-radius:.35rem; }
+    @keyframes skel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skeleton-line { height:.9rem; width: 100%; }
+
+    /* Conversation list */
+    .conv-item { display:flex; gap:.75rem; padding:.75rem; border-radius:.75rem; cursor:pointer; }
+    .conv-item:hover, .conv-item.active { background: #f1f5f9; }
+    .conv-avatar { width:2.5rem; height:2.5rem; border-radius:9999px; background:#1e3a5f; color:white; display:flex; align-items:center; justify-content:center; font-weight:600; flex-shrink:0; }
+    .msg-bubble { max-width: 75%; padding:.6rem .8rem; border-radius: 1rem; font-size:.9rem; line-height:1.35; }
+    .msg-mine   { background:#1e3a5f; color:white; align-self:flex-end; border-bottom-right-radius:.3rem; }
+    .msg-theirs { background:#f1f5f9; color:#0f172a; align-self:flex-start; border-bottom-left-radius:.3rem; }
+
+    /* Calendar */
+    .cal-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:.25rem; }
+    .cal-cell { aspect-ratio: 1/1; border-radius:.4rem; background:#f8fafc; display:flex; align-items:center; justify-content:center; font-size:.8rem; border: 1px solid #e2e8f0; cursor:pointer; user-select:none; }
+    .cal-cell.other { color:#cbd5e1; background:#fff; }
+    .cal-cell.blocked { background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+    .cal-cell.selecting { background:#dbeafe; border-color:#93c5fd; }
+    .cal-head { font-size:.7rem; text-align:center; color:#64748b; font-weight:600; padding:.25rem 0; }
+  </style>
+</head>
+<body class="page-bg">
+
+  <!-- APP CONFIG (mirror of index.html / agent.html — rotate together) -->
+  <script>
+    window.ISHFADI_CONFIG = window.ISHFADI_CONFIG || {
+      SUPABASE_URL:      'https://kialcvnywshkklzsecok.supabase.co',
+      SUPABASE_ANON_KEY: 'sb_publishable_u2hfeDzlslgK5ZJq-zHYRQ_G1nuhl_9',
+      SITE_URL:          'https://www.ishfadi.com'
+    };
+  </script>
+
+  <!-- Boot loader / error -->
+  <div id="bootLoader" class="fixed inset-0 z-[300] flex items-center justify-center bg-white">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-sm text-gray-600" data-i18n="boot.loading">Loading your dashboard…</p>
+    </div>
+  </div>
+  <div id="bootError" class="fixed inset-0 z-[300] hidden items-center justify-center bg-white p-6">
+    <div class="max-w-md text-center">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M4.93 4.93l14.14 14.14M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg>
+      </div>
+      <h2 class="text-lg font-semibold text-gray-800 mb-1" data-i18n="boot.errorTitle">We couldn't load your dashboard</h2>
+      <p class="text-sm text-gray-600 mb-4" data-i18n="boot.error">Please check your connection and try again.</p>
+      <button id="bootRetryBtn" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium" data-i18n="boot.retry">Retry</button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar sidebar-bg fixed left-0 top-0 h-full w-64 text-white p-6 flex flex-col">
+    <div class="flex items-center justify-between mb-8">
+      <a href="/index.html" class="text-2xl font-bold">ISHFADI</a>
+      <button onclick="toggleSidebar()" class="lg:hidden text-white/70 hover:text-white" aria-label="Close menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 space-y-2" id="mainNav">
+      <a href="#dashboard"    data-section="dashboard"    class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span data-i18n="nav.dashboard">Dashboard</span>
+      </a>
+      <a href="#listings"     data-section="listings"     class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <span data-i18n="nav.listings">My Listings</span>
+      </a>
+      <a href="#verification" data-section="verification" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <span data-i18n="nav.verification">Verification</span>
+        <span id="verificationBadge" class="nav-dot hidden" aria-label="Missing documents"></span>
+      </a>
+      <a href="#messages"     data-section="messages"     class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span data-i18n="nav.messages">Messages</span>
+        <span id="msgBadge" class="ml-auto px-2 py-0.5 bg-secondary rounded-full text-xs hidden">0</span>
+      </a>
+      <a href="#availability" data-section="availability" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span data-i18n="nav.availability">Availability</span>
+      </a>
+      <a href="#earnings"     data-section="earnings"     class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span data-i18n="nav.earnings">Earnings</span>
+      </a>
+      <a href="#reviews"      data-section="reviews"      class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        <span data-i18n="nav.reviews">Reviews</span>
+      </a>
+    </nav>
+
+    <div class="pt-4 border-t border-white/20 space-y-2">
+      <a href="#settings" data-section="settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span data-i18n="nav.settings">Settings</span>
+      </a>
+      <button id="sideLogoutBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <span data-i18n="nav.logout">Sign out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="lg:ml-64 min-h-screen">
+    <!-- Top Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-30">
+      <div class="flex items-center justify-between px-4 md:px-6 h-16">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-gray-100" aria-label="Open menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <h1 id="pageTitle" class="text-lg md:text-xl font-semibold text-gray-800" data-i18n="nav.dashboard">Dashboard</h1>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-4">
+          <!-- Language switcher (same shape as agent.html) -->
+          <div class="lang-switcher hidden md:block">
+            <button type="button" class="lang-trigger !text-primary !border-primary/20 !bg-primary/5" aria-haspopup="listbox" aria-expanded="false">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+              <span class="lang-current-label">English</span>
+            </button>
+            <div class="lang-menu" role="listbox"></div>
+          </div>
+
+          <!-- Notifications -->
+          <button id="notifBtn" class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Notifications">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span id="notifDot" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+          </button>
+
+          <div class="flex items-center gap-3">
+            <div id="navAvatar" class="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center font-semibold text-white shadow-lg shadow-primary/25 overflow-hidden">?</div>
+            <div class="hidden sm:block">
+              <p id="navName" class="font-medium text-gray-800 text-sm">—</p>
+              <p id="navRole" class="text-xs text-gray-500" data-i18n="nav.roleHost">Host</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section data-pane="dashboard" class="p-4 md:p-6 space-y-6">
+      <!-- Welcome -->
+      <div class="welcome-bg rounded-2xl p-6 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold mb-2"><span data-i18n="welcome.hello">Welcome back,</span> <span id="welcomeName">—</span></h2>
+            <p id="welcomeSub" class="text-white/80" data-i18n="welcome.sub">Manage your listings, verification and messages in one place.</p>
+          </div>
+          <button data-open-add-listing class="px-6 py-3 bg-white text-primary rounded-xl font-semibold hover:bg-white/90 transition-all flex items-center gap-2 shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span data-i18n="listings.addNew">Add New Listing</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Verification banner (hidden if fully verified) -->
+      <div id="verifBanner" class="hidden rounded-xl border border-warning/30 bg-warning/5 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-lg bg-warning/15 text-warning flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M4.93 4.93l14.14 14.14M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-800" data-i18n="verif.bannerTitle">Complete your host verification</p>
+            <p id="verifBannerSub" class="text-sm text-gray-600" data-i18n="verif.bannerSub">You need to submit the required documents before your listings can go live.</p>
+          </div>
+        </div>
+        <button data-goto="verification" class="px-4 py-2 bg-warning text-white text-sm font-semibold rounded-lg hover:bg-warning/90" data-i18n="verif.bannerCta">Complete verification</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-5 border card-hover stat-primary">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-800" data-stat="total"><span class="skeleton skeleton-line" style="width:2rem"></span></p>
+          <p class="text-sm text-gray-500" data-i18n="stats.total">Total listings</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 border card-hover stat-success">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-success to-success/70 rounded-xl flex items-center justify-center shadow-lg shadow-success/25">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-800" data-stat="verified"><span class="skeleton skeleton-line" style="width:2rem"></span></p>
+          <p class="text-sm text-gray-500" data-i18n="stats.verified">Verified & live</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 border card-hover stat-warning">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-warning to-warning/70 rounded-xl flex items-center justify-center shadow-lg shadow-warning/25">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-800" data-stat="pending"><span class="skeleton skeleton-line" style="width:2rem"></span></p>
+          <p class="text-sm text-gray-500" data-i18n="stats.pending">Pending review</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 border card-hover stat-secondary">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-secondary to-secondary/70 rounded-xl flex items-center justify-center shadow-lg shadow-secondary/25">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-800" data-stat="drafts"><span class="skeleton skeleton-line" style="width:2rem"></span></p>
+          <p class="text-sm text-gray-500" data-i18n="stats.drafts">Drafts</p>
+        </div>
+      </div>
+
+      <!-- Recent listings -->
+      <div class="bg-white rounded-xl border shadow-sm">
+        <div class="p-4 border-b flex items-center justify-between">
+          <h3 class="font-semibold text-gray-800" data-i18n="dash.recentListings">Recent listings</h3>
+          <button data-goto="listings" class="text-sm text-primary hover:underline" data-i18n="dash.viewAll">View all</button>
+        </div>
+        <div id="dashRecentListings" class="p-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+    <!-- ==================== LISTINGS ==================== -->
+    <section data-pane="listings" class="hidden p-4 md:p-6 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800" data-i18n="listings.title">My listings</h2>
+          <p class="text-sm text-gray-500" data-i18n="listings.subtitle">Manage all the properties you have created.</p>
+        </div>
+        <div class="flex gap-2">
+          <select id="listingsFilter" class="px-3 py-2 rounded-lg border text-sm">
+            <option value="all" data-i18n="listings.filterAll">All statuses</option>
+            <option value="draft">Draft</option>
+            <option value="pending_review">Pending Review</option>
+            <option value="verified">Verified</option>
+            <option value="rejected">Rejected</option>
+            <option value="paused">Paused</option>
+            <option value="archived">Archived</option>
+          </select>
+          <button data-open-add-listing class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span data-i18n="listings.addNew">Add New Listing</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="listingsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      <div id="listingsEmpty" class="hidden text-center py-16 bg-white border rounded-xl">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"/></svg>
+        </div>
+        <p class="text-gray-800 font-semibold mb-1" data-i18n="listings.emptyTitle">No listings yet</p>
+        <p class="text-gray-500 text-sm mb-4" data-i18n="listings.emptySub">Create your first listing to start hosting on ISHFADI.</p>
+        <button data-open-add-listing class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" data-i18n="listings.addNew">Add New Listing</button>
+      </div>
+    </section>
+
+    <!-- ==================== VERIFICATION ==================== -->
+    <section data-pane="verification" class="hidden p-4 md:p-6 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="verif.title">Host verification</h2>
+        <p class="text-sm text-gray-500" data-i18n="verif.subtitle">These documents are stored securely and are only visible to the ISHFADI verification team.</p>
+      </div>
+
+      <div class="bg-white rounded-xl border p-4 flex items-center gap-4">
+        <div id="verifStatusIcon" class="w-12 h-12 rounded-xl bg-warning/15 text-warning flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="flex-1">
+          <p id="verifStatusLabel" class="font-semibold text-gray-800">—</p>
+          <p id="verifStatusSub" class="text-sm text-gray-500" data-i18n="verif.statusSub">Your account verification status.</p>
+        </div>
+      </div>
+
+      <div id="verificationChecklist" class="space-y-3"></div>
+    </section>
+
+    <!-- ==================== MESSAGES ==================== -->
+    <section data-pane="messages" class="hidden p-0">
+      <div class="grid md:grid-cols-[320px_1fr] h-[calc(100vh-4rem)] bg-white">
+        <aside id="convList" class="border-r overflow-y-auto p-3 space-y-1">
+          <div class="p-3">
+            <h2 class="text-lg font-bold text-gray-800" data-i18n="msg.title">Messages</h2>
+            <p class="text-xs text-gray-500" data-i18n="msg.subtitle">Your inquiries and conversations.</p>
+          </div>
+          <div id="convItems" class="space-y-1"></div>
+          <div id="convEmpty" class="hidden text-center py-10 text-sm text-gray-500" data-i18n="msg.empty">No conversations yet.</div>
+        </aside>
+        <section id="convThread" class="flex flex-col hidden md:flex">
+          <div id="convHeader" class="border-b p-4 flex items-center gap-3">
+            <button id="convBackBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100" aria-label="Back">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div id="convOtherAvatar" class="conv-avatar">?</div>
+            <div class="flex-1 min-w-0">
+              <p id="convOtherName" class="font-semibold text-gray-800 truncate">—</p>
+              <p id="convProperty" class="text-xs text-gray-500 truncate"></p>
+            </div>
+          </div>
+          <div id="msgList" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2"></div>
+          <form id="msgForm" class="border-t p-3 flex items-center gap-2">
+            <label class="p-2 rounded-lg hover:bg-gray-100 cursor-pointer" aria-label="Attach">
+              <input type="file" id="msgAttach" class="hidden" accept="image/*,audio/*,application/pdf">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+            </label>
+            <input id="msgInput" type="text" class="flex-1 px-3 py-2 rounded-lg bg-gray-100 focus:bg-white focus:ring-2 focus:ring-primary/30 outline-none text-sm" data-i18n-placeholder="msg.placeholder" placeholder="Type a message…">
+            <button type="submit" class="p-2 rounded-lg bg-primary text-white" aria-label="Send">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            </button>
+          </form>
+        </section>
+        <div id="convPlaceholder" class="hidden md:flex items-center justify-center text-sm text-gray-500 p-8" data-i18n="msg.selectPrompt">Select a conversation to view messages.</div>
+      </div>
+    </section>
+
+    <!-- ==================== AVAILABILITY ==================== -->
+    <section data-pane="availability" class="hidden p-4 md:p-6 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="avail.title">Availability calendar</h2>
+        <p class="text-sm text-gray-500" data-i18n="avail.subtitle">Block dates when your property is unavailable — for personal use, maintenance, or already-booked elsewhere.</p>
+      </div>
+
+      <div class="bg-white border rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3">
+        <label class="text-sm font-medium text-gray-700" data-i18n="avail.pickProperty">Property:</label>
+        <select id="availPropSel" class="flex-1 px-3 py-2 rounded-lg border text-sm"></select>
+      </div>
+
+      <div class="bg-white border rounded-xl p-4">
+        <div class="flex items-center justify-between mb-4">
+          <button id="calPrev" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Previous month">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <h3 id="calLabel" class="font-semibold text-gray-800">—</h3>
+          <button id="calNext" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Next month">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div id="calGrid" class="cal-grid"></div>
+        <p class="text-xs text-gray-500 mt-3" data-i18n="avail.hint">Click a start date, then an end date to block that range.</p>
+      </div>
+
+      <div class="bg-white border rounded-xl">
+        <div class="p-4 border-b">
+          <h3 class="font-semibold text-gray-800" data-i18n="avail.existing">Existing blocks</h3>
+        </div>
+        <div id="availBlocks" class="divide-y"></div>
+      </div>
+    </section>
+
+    <!-- ==================== EARNINGS (placeholder) ==================== -->
+    <section data-pane="earnings" class="hidden p-4 md:p-6 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="earn.title">Earnings</h2>
+        <p class="text-sm text-gray-500" data-i18n="earn.subtitle">Payouts and payment history will appear here once payments are enabled for your account.</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl p-5 border stat-primary">
+          <p class="text-sm text-gray-500 mb-1" data-i18n="earn.available">Available balance</p>
+          <p class="text-2xl font-bold text-gray-400">— <span class="text-xs align-middle bg-warning/15 text-warning px-2 py-0.5 rounded-full font-semibold" data-i18n="earn.pending">Awaiting backend</span></p>
+        </div>
+        <div class="bg-white rounded-xl p-5 border stat-secondary">
+          <p class="text-sm text-gray-500 mb-1" data-i18n="earn.month">This month</p>
+          <p class="text-2xl font-bold text-gray-400">—</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 border stat-success">
+          <p class="text-sm text-gray-500 mb-1" data-i18n="earn.lifetime">Lifetime earnings</p>
+          <p class="text-2xl font-bold text-gray-400">—</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border p-6 text-center text-sm text-gray-500" data-i18n="earn.emptyLong">
+        Payments are the final phase of the ISHFADI rollout. Once launched, your payouts, invoices and preferred payout method will live in this section.
+      </div>
+    </section>
+
+    <!-- ==================== REVIEWS (Coming soon) ==================== -->
+    <section data-pane="reviews" class="hidden p-4 md:p-6 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="rev.title">Reviews</h2>
+        <p class="text-sm text-gray-500" data-i18n="rev.subtitle">Reviews will appear here after guests complete a booking.</p>
+      </div>
+      <div class="bg-white rounded-xl border p-10 text-center">
+        <div class="w-14 h-14 mx-auto rounded-full bg-secondary/15 text-secondary flex items-center justify-center mb-3">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        </div>
+        <p class="font-semibold text-gray-800 mb-1" data-i18n="rev.soonTitle">Coming soon</p>
+        <p class="text-sm text-gray-500 max-w-md mx-auto" data-i18n="rev.soonSub">Guest reviews unlock after ISHFADI's booking system goes live. We'll never generate fake reviews — this section stays empty until a real guest can leave one.</p>
+      </div>
+    </section>
+
+    <!-- ==================== SETTINGS ==================== -->
+    <section data-pane="settings" class="hidden p-4 md:p-6 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800" data-i18n="set.title">Settings</h2>
+        <p class="text-sm text-gray-500" data-i18n="set.subtitle">Update your profile and communication preferences.</p>
+      </div>
+
+      <form id="settingsForm" class="bg-white rounded-xl border p-6 space-y-5">
+        <div class="flex items-center gap-4">
+          <div id="settingsAvatar" class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/70 text-white font-semibold flex items-center justify-center text-xl overflow-hidden">?</div>
+          <div>
+            <label class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm cursor-pointer inline-block">
+              <input type="file" id="settingsPhotoInput" accept="image/jpeg,image/png,image/webp" class="hidden">
+              <span data-i18n="set.uploadPhoto">Upload new photo</span>
+            </label>
+            <p class="text-xs text-gray-500 mt-1" data-i18n="set.photoHint">Square photo recommended. Stored on Cloudinary.</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="set.fullName">Full name</span>
+            <input id="setName" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="set.email">Email</span>
+            <input id="setEmail" type="email" disabled class="mt-1 w-full px-3 py-2 rounded-lg border bg-gray-50">
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="set.phone">Phone</span>
+            <input id="setPhone" type="tel" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="set.country">Country</span>
+            <input id="setCountry" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="set.city">City</span>
+            <input id="setCity" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="set.hostType">Host type</span>
+            <input id="setHostType" disabled class="mt-1 w-full px-3 py-2 rounded-lg border bg-gray-50 capitalize">
+          </label>
+        </div>
+
+        <div class="border-t pt-4">
+          <p class="text-sm font-semibold text-gray-800 mb-3" data-i18n="set.notif">Notifications</p>
+          <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="setNotifEmail"> <span class="text-sm text-gray-700" data-i18n="set.emailNotif">Email notifications</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="setNotifPush"> <span class="text-sm text-gray-700" data-i18n="set.pushNotif">Push notifications</span></label>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" id="settingsSaveBtn" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-semibold" data-i18n="set.save">Save preferences</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- ==================== ADD / EDIT LISTING MODAL ==================== -->
+  <div id="listingModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="listingModalTitle">
+    <div class="modal-content wide fade-in">
+      <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+        <h3 id="listingModalTitle" class="text-lg font-bold text-gray-800" data-i18n="lmod.addTitle">Add new listing</h3>
+        <button type="button" class="p-2 rounded-lg hover:bg-gray-100" data-close-modal aria-label="Close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="listingForm" class="p-6 space-y-5">
+        <input type="hidden" id="lm_id">
+
+        <div id="lm_lockedNotice" class="hidden rounded-lg bg-warning/10 text-warning text-sm p-3">
+          <span data-i18n="lmod.lockedNotice">This listing is live or under review. You can only edit listings that are drafts or rejected.</span>
+        </div>
+
+        <label class="block">
+          <span class="text-sm font-medium text-gray-700" data-i18n="lmod.title">Title</span>
+          <input id="lm_title" required type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+        </label>
+
+        <label class="block">
+          <span class="text-sm font-medium text-gray-700" data-i18n="lmod.desc">Description</span>
+          <textarea id="lm_description" rows="3" class="mt-1 w-full px-3 py-2 rounded-lg border"></textarea>
+        </label>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="lmod.type">Property type</span>
+            <select id="lm_property_type" required class="mt-1 w-full px-3 py-2 rounded-lg border">
+              <option value="apartment">Apartment</option>
+              <option value="room">Room</option>
+              <option value="house">House</option>
+              <option value="villa">Villa</option>
+              <option value="office">Office</option>
+              <option value="land">Land</option>
+              <option value="garage">Garage</option>
+              <option value="warehouse">Warehouse</option>
+              <option value="farm">Farm</option>
+              <option value="student_housing">Student Housing</option>
+              <option value="hotel">Hotel</option>
+              <option value="resort">Resort</option>
+              <option value="commercial_building">Commercial Building</option>
+              <option value="vacation_rental">Vacation Rental</option>
+              <option value="business_space">Business Space</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label class="block" id="lm_customTypeWrap" style="display:none">
+            <span class="text-sm font-medium text-gray-700" data-i18n="lmod.customType">Custom property type</span>
+            <input id="lm_custom_property_type" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="lmod.pricingType">Pricing type</span>
+            <select id="lm_pricing_type" class="mt-1 w-full px-3 py-2 rounded-lg border">
+              <option value="day">Per day</option>
+              <option value="week">Per week</option>
+              <option value="month">Per month</option>
+              <option value="year">Per year</option>
+              <option value="sale">For sale</option>
+              <option value="negotiable">Negotiable</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label class="block" id="lm_amountWrap">
+            <span class="text-sm font-medium text-gray-700" data-i18n="lmod.amount">Amount</span>
+            <input id="lm_price_amount" type="number" step="0.01" min="0" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="lmod.currency">Currency</span>
+            <input id="lm_currency" type="text" value="USD" maxlength="3" class="mt-1 w-full px-3 py-2 rounded-lg border uppercase">
+          </label>
+        </div>
+        <label class="block" id="lm_customLabelWrap" style="display:none">
+          <span class="text-sm font-medium text-gray-700" data-i18n="lmod.customLabel">Custom pricing label</span>
+          <input id="lm_pricing_custom_label" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+        </label>
+
+        <!-- Location -->
+        <div class="border-t pt-4 space-y-3">
+          <p class="text-sm font-semibold text-gray-800" data-i18n="lmod.location">Location</p>
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="text-sm font-medium text-gray-700" data-i18n="lmod.city">City</span>
+              <input id="lm_city" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium text-gray-700" data-i18n="lmod.country">Country</span>
+              <input id="lm_country" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+            </label>
+          </div>
+          <label class="block">
+            <span class="text-sm font-medium text-gray-700" data-i18n="lmod.address">Address (optional)</span>
+            <input id="lm_address" type="text" class="mt-1 w-full px-3 py-2 rounded-lg border">
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="lm_pinToggle">
+            <span class="text-sm text-gray-700" data-i18n="lmod.pinOnMap">Pin on map</span>
+          </label>
+          <div id="lm_mapWrap" class="hidden space-y-2">
+            <div id="locPickerMap"></div>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block">
+                <span class="text-xs text-gray-600">Latitude</span>
+                <input id="lm_latitude" type="number" step="any" class="mt-0.5 w-full px-2 py-1.5 rounded-lg border text-sm">
+              </label>
+              <label class="block">
+                <span class="text-xs text-gray-600">Longitude</span>
+                <input id="lm_longitude" type="number" step="any" class="mt-0.5 w-full px-2 py-1.5 rounded-lg border text-sm">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amenities -->
+        <div class="border-t pt-4">
+          <p class="text-sm font-semibold text-gray-800 mb-2" data-i18n="lmod.amenities">Amenities</p>
+          <div id="lm_amenitiesGrid" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+          <div class="flex gap-2 mt-3">
+            <input id="lm_customAmenityInput" type="text" placeholder="+ Add custom amenity" class="flex-1 px-3 py-2 rounded-lg border text-sm">
+            <button type="button" id="lm_addCustomAmenity" class="px-3 py-2 rounded-lg bg-primary text-white text-sm" data-i18n="common.add">Add</button>
+          </div>
+          <div id="lm_customAmenitiesList" class="flex flex-wrap gap-2 mt-3"></div>
+        </div>
+
+        <!-- Photos -->
+        <div class="border-t pt-4">
+          <p class="text-sm font-semibold text-gray-800 mb-2" data-i18n="lmod.photos">Photos</p>
+          <p class="text-xs text-gray-500 mb-3" data-i18n="lmod.photosHint">Drag to reorder. Click any tile to set it as the cover.</p>
+          <div id="lm_photoGrid" class="photo-grid mb-3"></div>
+          <label class="inline-block px-4 py-2 rounded-lg border-2 border-dashed border-primary/30 text-primary text-sm cursor-pointer hover:bg-primary/5">
+            <input type="file" id="lm_photoInput" accept="image/jpeg,image/png,image/webp" multiple class="hidden">
+            <span data-i18n="lmod.uploadPhotos">Upload photos</span>
+          </label>
+          <span id="lm_uploadStatus" class="ml-3 text-xs text-gray-500"></span>
+          <p id="lm_photoNotice" class="text-xs text-warning mt-2 hidden" data-i18n="lmod.saveFirst">Save the listing as a draft first, then you can upload photos.</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t">
+          <button type="button" id="lm_submitReview" class="px-4 py-2 rounded-lg bg-success text-white text-sm font-semibold hidden" data-i18n="lmod.submitReview">Submit for review</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" data-close-modal class="px-4 py-2 rounded-lg border text-sm" data-i18n="common.cancel">Cancel</button>
+            <button type="submit" id="lm_saveBtn" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold" data-i18n="lmod.saveDraft">Save draft</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== NOTIFICATIONS PANEL ==================== -->
+  <div id="notifPanel" class="hidden fixed top-16 right-4 md:right-6 z-40 w-80 max-w-[92vw] bg-white rounded-xl border shadow-2xl overflow-hidden">
+    <div class="p-3 border-b flex items-center justify-between">
+      <p class="font-semibold text-gray-800" data-i18n="notif.title">Notifications</p>
+      <button id="notifMarkAll" class="text-xs text-primary hover:underline" data-i18n="notif.markAll">Mark all read</button>
+    </div>
+    <div id="notifList" class="max-h-96 overflow-y-auto"></div>
+    <div id="notifEmpty" class="hidden p-6 text-center text-sm text-gray-500" data-i18n="notif.empty">No notifications yet.</div>
+  </div>
+
+  <!-- ==================== CONFIRM MODAL ==================== -->
+  <div id="confirmModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content fade-in" style="max-width: 400px;">
+      <div class="p-6">
+        <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-2">Are you sure?</h3>
+        <p id="confirmMessage" class="text-sm text-gray-600 mb-5">This action cannot be undone.</p>
+        <div class="flex justify-end gap-2">
+          <button data-close-modal class="px-4 py-2 rounded-lg border text-sm" data-i18n="common.cancel">Cancel</button>
+          <button id="confirmOk" class="px-4 py-2 rounded-lg bg-danger text-white text-sm font-semibold" data-i18n="common.confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ==================== I18N ENGINE (same shape/storage key as index.html + agent.html) ==================== -->
+  <script>
+  (function(){
+    'use strict';
+    const LANGUAGES = {
+      en: { code:'en', name:'English',  native:'English',  dir:'ltr' },
+      fr: { code:'fr', name:'French',   native:'Français', dir:'ltr' },
+      ar: { code:'ar', name:'Arabic',   native:'العربية',   dir:'rtl' }
+    };
+    const FALLBACK = 'en';
+    const STORAGE_KEY = 'ishfadi.lang'; // SAME key as index.html/agent.html
+
+    // English is authoritative. FR / AR fall back to EN — extend keys per platform release,
+    // same as the pattern already used across index.html/agent.html.
+    const T = {
+      en: {
+        meta:{ title:'ISHFADI Host Dashboard', description:'Manage your ISHFADI listings, verification and bookings.' },
+        boot:{ loading:'Loading your dashboard…', errorTitle:"We couldn't load your dashboard", error:'Please check your connection and try again.', retry:'Retry' },
+        nav:{ dashboard:'Dashboard', listings:'My Listings', verification:'Verification', messages:'Messages', availability:'Availability', earnings:'Earnings', reviews:'Reviews', settings:'Settings', logout:'Sign out', roleHost:'Host' },
+        welcome:{ hello:'Welcome back,', sub:'Manage your listings, verification and messages in one place.' },
+        stats:{ total:'Total listings', verified:'Verified & live', pending:'Pending review', drafts:'Drafts' },
+        dash:{ recentListings:'Recent listings', viewAll:'View all' },
+        verif:{ bannerTitle:'Complete your host verification', bannerSub:'You need to submit the required documents before your listings can go live.', bannerCta:'Complete verification', title:'Host verification', subtitle:'These documents are stored securely and only visible to the ISHFADI verification team.', statusSub:'Your account verification status.', statusPending:'Pending', statusVerified:'Verified', statusRejected:'Rejected', statusUnsubmitted:'Not submitted', submitted:'Submitted', approved:'Approved', view:'View', upload:'Upload', reupload:'Re-upload' },
+        listings:{ title:'My listings', subtitle:'Manage all the properties you have created.', addNew:'Add New Listing', filterAll:'All statuses', emptyTitle:'No listings yet', emptySub:'Create your first listing to start hosting on ISHFADI.' },
+        listingActions:{ edit:'Edit', delete:'Delete', submit:'Submit for review', pause:'Pause', resume:'Resume', archive:'Archive', restore:'Restore to draft', duplicate:'Duplicate' },
+        lmod:{ addTitle:'Add new listing', editTitle:'Edit listing', lockedNotice:'This listing is live or under review. You can only edit listings that are drafts or rejected.', title:'Title', desc:'Description', type:'Property type', customType:'Custom property type', pricingType:'Pricing type', amount:'Amount', currency:'Currency', customLabel:'Custom pricing label', location:'Location', city:'City', country:'Country', address:'Address (optional)', pinOnMap:'Pin on map', amenities:'Amenities', photos:'Photos', photosHint:'Drag to reorder. Click any tile to set it as the cover.', uploadPhotos:'Upload photos', saveFirst:'Save the listing as a draft first, then you can upload photos.', saveDraft:'Save draft', submitReview:'Submit for review' },
+        msg:{ title:'Messages', subtitle:'Your inquiries and conversations.', empty:'No conversations yet.', selectPrompt:'Select a conversation to view messages.', placeholder:'Type a message…' },
+        avail:{ title:'Availability calendar', subtitle:'Block dates when your property is unavailable — for personal use, maintenance, or already-booked elsewhere.', pickProperty:'Property:', hint:'Click a start date, then an end date to block that range.', existing:'Existing blocks' },
+        earn:{ title:'Earnings', subtitle:'Payouts and payment history will appear here once payments are enabled for your account.', available:'Available balance', pending:'Awaiting backend', month:'This month', lifetime:'Lifetime earnings', emptyLong:"Payments are the final phase of the ISHFADI rollout. Once launched, your payouts, invoices and preferred payout method will live in this section." },
+        rev:{ title:'Reviews', subtitle:'Reviews will appear here after guests complete a booking.', soonTitle:'Coming soon', soonSub:"Guest reviews unlock after ISHFADI's booking system goes live. We'll never generate fake reviews — this section stays empty until a real guest can leave one." },
+        set:{ title:'Settings', subtitle:'Update your profile and communication preferences.', uploadPhoto:'Upload new photo', photoHint:'Square photo recommended. Stored on Cloudinary.', fullName:'Full name', email:'Email', phone:'Phone', country:'Country', city:'City', hostType:'Host type', notif:'Notifications', emailNotif:'Email notifications', pushNotif:'Push notifications', save:'Save preferences', saved:'Preferences saved.' },
+        notif:{ title:'Notifications', markAll:'Mark all read', empty:'No notifications yet.', comingSoon:'Notification feed coming soon.' },
+        common:{ cancel:'Cancel', confirm:'Confirm', add:'Add', save:'Save', close:'Close', loading:'Loading…', deleteConfirm:'Delete this listing? This cannot be undone.', pauseConfirm:'Pause this listing? It will be hidden from guests until you resume it.', archiveConfirm:'Archive this listing?', removeBlockConfirm:'Remove this availability block?' },
+        toast:{ saved:'Saved.', deleted:'Deleted.', submitted:'Submitted for review.', paused:'Listing paused.', resumed:'Listing resumed.', archived:'Listing archived.', restored:'Restored to draft.', duplicated:'Duplicate created.', copyFail:'Copy failed.', uploadFail:'Upload failed.', docSubmitted:'Document submitted.', blockAdded:'Availability block added.', blockRemoved:'Block removed.', notAllowed:"You can't edit a listing while it's live or under review.", signedOut:'Signed out.' }
+      },
+      fr: { meta:{ title:"Tableau de bord hôte ISHFADI" } },
+      ar: { meta:{ title:"لوحة تحكم المضيف ISHFADI" } }
+    };
+
+    let currentLang = FALLBACK;
+    function detectLanguage(){
+      try { const s = localStorage.getItem(STORAGE_KEY); if (s && LANGUAGES[s]) return s; } catch(e){}
+      const nav = (navigator.language || 'en').slice(0,2).toLowerCase();
+      return LANGUAGES[nav] ? nav : FALLBACK;
+    }
+    function t(key, vars){
+      const parts = key.split('.');
+      let node = T[currentLang] || T[FALLBACK];
+      for (const p of parts){ node = node && node[p]; if (node == null) break; }
+      if (node == null){ node = T[FALLBACK]; for (const p of parts){ node = node && node[p]; if (node == null) break; } }
+      let str = (typeof node === 'string') ? node : key;
+      if (vars) Object.keys(vars).forEach(k => str = str.replace(new RegExp('\\{'+k+'\\}','g'), vars[k]));
+      return str;
+    }
+    window.t = t;
+    window.getCurrentLang = () => currentLang;
+
+    function applyDOMTranslations(){
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const attr = el.getAttribute('data-i18n-attr');
+        const val = t(key);
+        if (attr) el.setAttribute(attr, val); else el.textContent = val;
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))));
+      const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', t('meta.description'));
+    }
+    window.applyDOMTranslations = applyDOMTranslations;
+
+    function renderLanguageSwitchers(){
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const menu = sw.querySelector('.lang-menu');
+        const labelEl = sw.querySelector('.lang-current-label');
+        if (labelEl) labelEl.textContent = LANGUAGES[currentLang].native;
+        if (!menu) return;
+        menu.innerHTML = Object.values(LANGUAGES).map(l => `
+          <button type="button" role="option" class="lang-option" data-lang="${l.code}" aria-current="${l.code === currentLang ? 'true' : 'false'}">
+            <span><span class="lang-name">${l.native}</span><span class="lang-sub">${l.code.toUpperCase()}</span></span>
+            <svg class="check w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </button>`).join('');
+        menu.querySelectorAll('.lang-option').forEach(btn => {
+          btn.addEventListener('click', () => { const code = btn.getAttribute('data-lang'); closeAllLangMenus(); setLanguage(code); });
+        });
+      });
+    }
+    function closeAllLangMenus(){ document.querySelectorAll('.lang-switcher.open').forEach(s => { s.classList.remove('open'); const trig=s.querySelector('.lang-trigger'); if (trig) trig.setAttribute('aria-expanded','false'); }); }
+    function wireLangSwitchers(){
+      document.querySelectorAll('.lang-switcher').forEach(sw => {
+        const trigger = sw.querySelector('.lang-trigger'); if (!trigger) return;
+        trigger.addEventListener('click', e => { e.stopPropagation(); const open = sw.classList.contains('open'); closeAllLangMenus(); if (!open){ sw.classList.add('open'); trigger.setAttribute('aria-expanded','true'); } });
+      });
+      document.addEventListener('click', e => { if (!e.target.closest('.lang-switcher')) closeAllLangMenus(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllLangMenus(); });
+    }
+    function setLanguage(lang){
+      if (!LANGUAGES[lang]) lang = FALLBACK;
+      currentLang = lang;
+      document.documentElement.setAttribute('lang', lang);
+      document.documentElement.setAttribute('dir', LANGUAGES[lang].dir);
+      try { localStorage.setItem(STORAGE_KEY, lang); } catch(e){}
+      document.title = t('meta.title');
+      applyDOMTranslations();
+      renderLanguageSwitchers();
+    }
+    window.setLanguage = setLanguage;
+
+    function showToast(message, type){
+      const c = document.getElementById('toastContainer'); if (!c) return;
+      const el = document.createElement('div');
+      el.className = 'toast fade-in ' + (type || 'info');
+      el.setAttribute('role','status');
+      el.textContent = message; c.appendChild(el);
+      setTimeout(() => { el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),320); }, 3200);
+    }
+    window.showToast = showToast;
+
+    currentLang = detectLanguage();
+    document.documentElement.setAttribute('lang', currentLang);
+    document.documentElement.setAttribute('dir', LANGUAGES[currentLang].dir);
+    document.addEventListener('DOMContentLoaded', () => {
+      document.title = t('meta.title');
+      applyDOMTranslations();
+      wireLangSwitchers();
+      renderLanguageSwitchers();
+    });
+  })();
+  </script>
+
+  <!-- ==================== APP ==================== -->
+  <script>
+  (function(){
+    'use strict';
+
+    // ---------- Cloudinary (same account as agent.html) ----------
+    const CLOUDINARY_CLOUD_NAME = 'u2amysf2';
+    const CLOUDINARY_UPLOAD_PRESET = 'ishfadi';
+    const CLOUDINARY_IMG_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/image/upload';
+    const CLOUDINARY_RAW_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/auto/upload';
+    const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+    const MAX_DOC_BYTES = 15 * 1024 * 1024;
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
+    const ALLOWED_DOC_TYPES = ['image/jpeg','image/jpg','image/png','image/webp','application/pdf'];
+
+    async function cloudUpload(file, folder){
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      if (folder) fd.append('folder', folder);
+      const isImg = file.type.startsWith('image/');
+      const res = await fetch(isImg ? CLOUDINARY_IMG_URL : CLOUDINARY_RAW_URL, { method:'POST', body: fd });
+      if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+      const json = await res.json();
+      if (!json || !json.secure_url) throw new Error('Upload response missing secure_url');
+      return json.secure_url;
+    }
+
+    // ---------- Supabase ----------
+    let supabase = null;
+    function initSupabase(){
+      const c = window.ISHFADI_CONFIG;
+      if (!c || !c.SUPABASE_URL || !c.SUPABASE_ANON_KEY || !window.supabase) return null;
+      if (supabase) return supabase;
+      supabase = window.supabase.createClient(c.SUPABASE_URL, c.SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, storageKey: 'ishfadi.auth' }
+      });
+      return supabase;
+    }
+
+    async function requireSession(){
+      const client = initSupabase();
+      if (!client){ window.location.replace('/index.html'); return null; }
+      try {
+        const { data: sess } = await client.auth.getSession();
+        if (!sess || !sess.session){ window.location.replace('/index.html'); return null; }
+        return sess.session;
+      } catch(e){ window.location.replace('/index.html'); return null; }
+    }
+
+    async function rpc(name, args){
+      const client = initSupabase(); if (!client) throw new Error('No supabase client');
+      const { data, error } = await client.rpc(name, args || {});
+      if (error) throw error;
+      return data;
+    }
+
+    // ---------- Helpers ----------
+    const $ = id => document.getElementById(id);
+    function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function initials(name){ if (!name) return '?'; return name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() || '').join('') || '?'; }
+    function fmtDate(iso){ if (!iso) return '—'; try { return new Date(iso).toLocaleDateString(window.getCurrentLang(), { year:'numeric', month:'short', day:'numeric' }); } catch(e){ return iso; } }
+    function fmtMoney(amount, currency){ if (amount == null) return '—'; try { return new Intl.NumberFormat(window.getCurrentLang(), { style:'currency', currency: currency || 'USD' }).format(amount); } catch(e){ return (currency||'') + ' ' + amount; } }
+    function setAvatar(node, url, name){
+      if (!node) return;
+      node.textContent = '';
+      if (url){ const img = new Image(); img.alt = name || ''; img.className='w-full h-full object-cover'; img.onerror = () => { node.textContent = initials(name); }; img.src = url; node.appendChild(img); }
+      else { node.textContent = initials(name); }
+    }
+
+    // ---------- State ----------
+    const state = {
+      session: null,
+      userId: null,
+      profile: null,        // { id, full_name, email, host_type, phone, country, city, profile_photo_url, notif_email, notif_push, ... }
+      verificationStatus: 'pending',
+      verificationDocs: [], // [{ id, document_type, storage_path, status, submitted_at }]
+      listingCounts: {},
+      listings: [],
+      conversations: [],
+      activeConversationId: null,
+      messages: [],
+      availability: { propertyId: null, blocks: [], selectStart: null, viewYear: 0, viewMonth: 0 },
+      customAmenities: [],
+      photoDraft: [],       // { id?, url, is_cover }
+      currentEditing: null, // full property being edited
+      notifications: [],
+      unreadNotif: 0
+    };
+
+    // ---------- Amenities catalog ----------
+    const AMENITIES = ['wifi','parking','pool','air_conditioning','heating','kitchen','security','furnished','balcony','gym','laundry','cctv','solar','generator','water_tank','garden','fence','elevator','restaurant','conference_room','reception','pet_friendly','smoking_area','wheelchair_access','breakfast_included','workspace','storage','child_friendly'];
+
+    // ---------- Verification checklist by host_type ----------
+    const CHECKLIST = {
+      individual: [
+        { key:'national_id',        label:'National ID' },
+        { key:'passport',           label:'Passport' },
+        { key:'drivers_license',    label:"Driver's License" },
+        { key:'selfie',             label:'Selfie' },
+        { key:'proof_of_address',   label:'Proof of Address' }
+      ],
+      company: [
+        { key:'company_registration',  label:'Company Registration' },
+        { key:'tin',                   label:'TIN' },
+        { key:'business_license',      label:'Business License' },
+        { key:'representative_id',     label:'Representative ID' },
+        { key:'representative_selfie', label:'Representative Selfie' },
+        { key:'office_address_proof',  label:'Office Address Proof' },
+        { key:'company_logo',          label:'Company Logo' }
+      ]
+    };
+
+    // ---------- Sidebar / routing ----------
+    window.toggleSidebar = function(){ const s = $('sidebar'); if (s) s.classList.toggle('open'); };
+    function goToSection(name){
+      document.querySelectorAll('[data-pane]').forEach(p => p.classList.toggle('hidden', p.getAttribute('data-pane') !== name));
+      document.querySelectorAll('[data-section]').forEach(a => {
+        const on = a.getAttribute('data-section') === name;
+        a.classList.toggle('bg-white/10', on);
+        a.classList.toggle('text-white', on);
+        a.classList.toggle('text-white/70', !on);
+      });
+      const titleEl = $('pageTitle'); if (titleEl) titleEl.textContent = window.t('nav.'+name) || name;
+      try { history.replaceState(null,'','#'+name); } catch(e){}
+      const s = $('sidebar'); if (s) s.classList.remove('open');
+      window.scrollTo({ top:0, behavior:'smooth' });
+      // Lazy loads
+      if (name === 'messages') loadConversations();
+      if (name === 'availability') initAvailabilityPane();
+    }
+    window.goToSection = goToSection;
+
+    // ---------- Modal helpers ----------
+    function openModal(id){ const m = $(id); if (m) m.classList.add('active'); }
+    function closeModal(id){ const m = $(id); if (m) m.classList.remove('active'); }
+    window.openModal = openModal; window.closeModal = closeModal;
+
+    document.addEventListener('click', e => {
+      const c = e.target.closest('[data-close-modal]');
+      if (c){ const m = c.closest('.modal'); if (m) m.classList.remove('active'); }
+      const n = e.target.closest('[data-section]');
+      if (n){ e.preventDefault(); goToSection(n.getAttribute('data-section')); }
+      const g = e.target.closest('[data-goto]');
+      if (g){ e.preventDefault(); goToSection(g.getAttribute('data-goto')); }
+      const a = e.target.closest('[data-open-add-listing]');
+      if (a){ e.preventDefault(); openListingModal(null); }
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active')); });
+
+    // Confirm modal
+    function confirmDialog(title, message, okLabel){
+      return new Promise(res => {
+        $('confirmTitle').textContent = title;
+        $('confirmMessage').textContent = message;
+        $('confirmOk').textContent = okLabel || window.t('common.confirm');
+        openModal('confirmModal');
+        const okBtn = $('confirmOk');
+        const handler = () => { closeModal('confirmModal'); okBtn.removeEventListener('click', handler); res(true); };
+        okBtn.addEventListener('click', handler);
+        $('confirmModal').addEventListener('click', function bg(e){ if (e.target === $('confirmModal')){ $('confirmModal').removeEventListener('click', bg); res(false); }});
+      });
+    }
+
+    // ---------- Boot ----------
+    async function boot(){
+      $('bootLoader').style.display = 'flex';
+      $('bootError').style.display = 'none';
+      try {
+        const session = await requireSession(); if (!session) return;
+        state.session = session; state.userId = session.user.id;
+
+        const data = await rpc('get_seller_dashboard', { p_user_id: state.userId });
+        if (!data) throw new Error('No dashboard data');
+
+        state.profile = data.profile || {};
+        state.verificationStatus = data.verification_status || 'pending';
+        state.verificationDocs = data.verification_documents || [];
+        state.listingCounts = data.listing_counts || {};
+        state.listings = data.listings || [];
+
+        renderProfile();
+        renderStats();
+        renderDashboardListings();
+        renderListingsGrid();
+        renderVerificationChecklist();
+        renderVerifBanner();
+        renderSettings();
+        populateAvailabilityPropertySelect();
+
+        // Initial hash routing
+        const hash = (location.hash || '').replace('#','');
+        goToSection(hash && document.querySelector('[data-pane="'+hash+'"]') ? hash : 'dashboard');
+
+        $('bootLoader').style.display = 'none';
+      } catch (e) {
+        console.error('boot failed', e);
+        $('bootLoader').style.display = 'none';
+        $('bootError').style.display = 'flex';
+      }
+    }
+
+    function renderProfile(){
+      const p = state.profile || {};
+      $('welcomeName').textContent = p.full_name || '—';
+      $('navName').textContent = p.full_name || '—';
+      setAvatar($('navAvatar'), p.profile_photo_url, p.full_name);
+      setAvatar($('settingsAvatar'), p.profile_photo_url, p.full_name);
+    }
+
+    function renderStats(){
+      const c = state.listingCounts || {};
+      const total = c.total ?? state.listings.length;
+      const verified = c.verified ?? state.listings.filter(l => l.status === 'verified').length;
+      const pending = c.pending_review ?? state.listings.filter(l => l.status === 'pending_review').length;
+      const drafts = c.draft ?? state.listings.filter(l => l.status === 'draft').length;
+      document.querySelectorAll('[data-stat="total"]').forEach(e => e.textContent = total);
+      document.querySelectorAll('[data-stat="verified"]').forEach(e => e.textContent = verified);
+      document.querySelectorAll('[data-stat="pending"]').forEach(e => e.textContent = pending);
+      document.querySelectorAll('[data-stat="drafts"]').forEach(e => e.textContent = drafts);
+    }
+
+    // ---------- Listing cards ----------
+    function statusBadge(status){
+      const map = { draft:'b-draft', pending_review:'b-pending', verified:'b-verified', rejected:'b-rejected', paused:'b-paused', archived:'b-archived' };
+      const label = { draft:'Draft', pending_review:'Pending Review', verified:'Verified', rejected:'Rejected', paused:'Paused', archived:'Archived' };
+      return '<span class="badge ' + (map[status] || 'b-draft') + '">' + (label[status] || status) + '</span>';
+    }
+    function coverUrl(l){
+      if (Array.isArray(l.images) && l.images.length){
+        const cov = l.images.find(i => i.is_cover) || l.images[0];
+        return cov && (cov.url || cov.secure_url);
+      }
+      return l.cover_image_url || null;
+    }
+    function priceLabel(l){
+      if (l.pricing_type === 'negotiable') return 'Negotiable';
+      if (l.pricing_type === 'custom') return l.pricing_custom_label || 'Custom';
+      const suffix = { day:'/day', week:'/week', month:'/month', year:'/year', sale:'' }[l.pricing_type] || '';
+      return fmtMoney(l.price_amount, l.currency || 'USD') + suffix;
+    }
+
+    function listingCardHTML(l){
+      const cover = coverUrl(l);
+      return `
+        <div class="bg-white rounded-xl border overflow-hidden card-hover">
+          <div class="aspect-[16/10] bg-gray-100 relative">
+            ${cover ? `<img src="${escapeHtml(cover)}" alt="" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-gray-300"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>`}
+            <div class="absolute top-2 left-2">${statusBadge(l.status)}</div>
+          </div>
+          <div class="p-4">
+            <p class="font-semibold text-gray-800 truncate">${escapeHtml(l.title || 'Untitled')}</p>
+            <p class="text-xs text-gray-500 mb-2 truncate">${escapeHtml([l.city, l.country].filter(Boolean).join(', ') || '—')}</p>
+            <p class="text-sm font-semibold text-primary mb-3">${escapeHtml(priceLabel(l))}</p>
+            <div class="flex flex-wrap gap-2">
+              ${listingActionsHTML(l)}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function listingActionsHTML(l){
+      const btn = (act, label, cls) => `<button data-listing-action="${act}" data-id="${l.id}" class="text-xs px-2.5 py-1 rounded-lg ${cls}">${label}</button>`;
+      const editable = l.status === 'draft' || l.status === 'rejected';
+      const parts = [];
+      if (editable){
+        parts.push(btn('edit', window.t('listingActions.edit'), 'bg-primary/10 text-primary hover:bg-primary/20'));
+        parts.push(btn('submit', window.t('listingActions.submit'), 'bg-success/10 text-success hover:bg-success/20'));
+        if (l.status === 'draft') parts.push(btn('delete', window.t('listingActions.delete'), 'bg-danger/10 text-danger hover:bg-danger/20'));
+      }
+      if (l.status === 'verified'){
+        parts.push(btn('pause', window.t('listingActions.pause'), 'bg-warning/10 text-warning hover:bg-warning/20'));
+        parts.push(btn('archive', window.t('listingActions.archive'), 'bg-gray-100 text-gray-700 hover:bg-gray-200'));
+      }
+      if (l.status === 'paused'){
+        parts.push(btn('resume', window.t('listingActions.resume'), 'bg-success/10 text-success hover:bg-success/20'));
+        parts.push(btn('archive', window.t('listingActions.archive'), 'bg-gray-100 text-gray-700 hover:bg-gray-200'));
+      }
+      if (l.status === 'archived'){
+        parts.push(btn('restore', window.t('listingActions.restore'), 'bg-primary/10 text-primary hover:bg-primary/20'));
+      }
+      parts.push(btn('duplicate', window.t('listingActions.duplicate'), 'bg-gray-100 text-gray-700 hover:bg-gray-200'));
+      return parts.join('');
+    }
+
+    function renderDashboardListings(){
+      const el = $('dashRecentListings'); if (!el) return;
+      const recent = state.listings.slice(0, 3);
+      if (!recent.length){ el.innerHTML = '<p class="col-span-full text-center text-sm text-gray-500 py-8">'+escapeHtml(window.t('listings.emptyTitle'))+'</p>'; return; }
+      el.innerHTML = recent.map(listingCardHTML).join('');
+    }
+    function renderListingsGrid(){
+      const el = $('listingsGrid'); if (!el) return;
+      const filter = $('listingsFilter').value;
+      const filtered = filter === 'all' ? state.listings : state.listings.filter(l => l.status === filter);
+      if (!filtered.length){
+        el.innerHTML = ''; $('listingsEmpty').classList.remove('hidden'); return;
+      }
+      $('listingsEmpty').classList.add('hidden');
+      el.innerHTML = filtered.map(listingCardHTML).join('');
+    }
+    document.addEventListener('change', e => {
+      if (e.target && e.target.id === 'listingsFilter') renderListingsGrid();
+    });
+
+    // Listing action delegation
+    document.addEventListener('click', async e => {
+      const btn = e.target.closest('[data-listing-action]'); if (!btn) return;
+      const action = btn.getAttribute('data-listing-action');
+      const id = btn.getAttribute('data-id');
+      const listing = state.listings.find(l => l.id === id);
+      if (!listing) return;
+      try {
+        if (action === 'edit'){
+          if (listing.status !== 'draft' && listing.status !== 'rejected'){
+            window.showToast(window.t('toast.notAllowed'), 'error'); return;
+          }
+          openListingModal(listing);
+        } else if (action === 'delete'){
+          if (!(await confirmDialog(window.t('listingActions.delete'), window.t('common.deleteConfirm'), window.t('listingActions.delete')))) return;
+          await rpc('delete_property', { p_property_id: id });
+          window.showToast(window.t('toast.deleted'), 'success');
+          await reloadDashboard();
+        } else if (action === 'submit'){
+          await rpc('set_property_status', { p_property_id: id, p_action: 'submit_for_review' });
+          window.showToast(window.t('toast.submitted'), 'success');
+          await reloadDashboard();
+        } else if (action === 'pause'){
+          if (!(await confirmDialog(window.t('listingActions.pause'), window.t('common.pauseConfirm'), window.t('listingActions.pause')))) return;
+          await rpc('set_property_status', { p_property_id: id, p_action: 'pause' });
+          window.showToast(window.t('toast.paused'), 'success');
+          await reloadDashboard();
+        } else if (action === 'resume'){
+          await rpc('set_property_status', { p_property_id: id, p_action: 'resume' });
+          window.showToast(window.t('toast.resumed'), 'success');
+          await reloadDashboard();
+        } else if (action === 'archive'){
+          if (!(await confirmDialog(window.t('listingActions.archive'), window.t('common.archiveConfirm'), window.t('listingActions.archive')))) return;
+          await rpc('set_property_status', { p_property_id: id, p_action: 'archive' });
+          window.showToast(window.t('toast.archived'), 'success');
+          await reloadDashboard();
+        } else if (action === 'restore'){
+          await rpc('set_property_status', { p_property_id: id, p_action: 'restore_to_draft' });
+          window.showToast(window.t('toast.restored'), 'success');
+          await reloadDashboard();
+        } else if (action === 'duplicate'){
+          await rpc('duplicate_property', { p_property_id: id });
+          window.showToast(window.t('toast.duplicated'), 'success');
+          await reloadDashboard();
+        }
+      } catch (err){
+        console.error(action, err);
+        window.showToast((err && err.message) || 'Action failed.', 'error');
+      }
+    });
+
+    async function reloadDashboard(){
+      try {
+        const data = await rpc('get_seller_dashboard', { p_user_id: state.userId });
+        state.profile = data.profile || state.profile;
+        state.verificationStatus = data.verification_status || state.verificationStatus;
+        state.verificationDocs = data.verification_documents || [];
+        state.listingCounts = data.listing_counts || {};
+        state.listings = data.listings || [];
+        renderStats();
+        renderDashboardListings();
+        renderListingsGrid();
+        renderVerificationChecklist();
+        renderVerifBanner();
+        populateAvailabilityPropertySelect();
+      } catch (e){ console.error('reload failed', e); }
+    }
+
+    // ---------- Listing modal ----------
+    let mapPicker = null, mapMarker = null;
+
+    function buildAmenitiesGrid(){
+      const g = $('lm_amenitiesGrid'); if (!g) return;
+      g.innerHTML = AMENITIES.map(k => `
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" value="${k}" class="lm-amenity"> ${k.replace(/_/g,' ')}
+        </label>`).join('');
+    }
+
+    function renderCustomAmenities(){
+      const el = $('lm_customAmenitiesList');
+      el.innerHTML = state.customAmenities.map((a, i) => `
+        <span class="inline-flex items-center gap-1 px-2 py-1 bg-secondary/15 text-secondary text-xs rounded-full">
+          ${escapeHtml(a)}
+          <button type="button" data-remove-custom-amenity="${i}" aria-label="Remove">&times;</button>
+        </span>`).join('');
+    }
+    document.addEventListener('click', e => {
+      const r = e.target.closest('[data-remove-custom-amenity]');
+      if (r){ state.customAmenities.splice(+r.getAttribute('data-remove-custom-amenity'), 1); renderCustomAmenities(); }
+    });
+
+    function renderPhotoGrid(){
+      const g = $('lm_photoGrid'); if (!g) return;
+      g.innerHTML = state.photoDraft.map((p, i) => `
+        <div class="photo-tile ${p.is_cover ? 'cover' : ''}" draggable="true" data-idx="${i}">
+          ${p.is_cover ? `<span class="cover-tag">COVER</span>` : ''}
+          <img src="${escapeHtml(p.url)}" alt="">
+          <div class="actions">
+            <button type="button" data-photo-cover="${i}">Cover</button>
+            <button type="button" data-photo-remove="${i}">Remove</button>
+          </div>
+        </div>`).join('');
+      wirePhotoDrag();
+    }
+    function wirePhotoDrag(){
+      const grid = $('lm_photoGrid'); if (!grid) return;
+      let dragIdx = null;
+      grid.querySelectorAll('.photo-tile').forEach(tile => {
+        tile.addEventListener('dragstart', () => { dragIdx = +tile.dataset.idx; tile.classList.add('dragging'); });
+        tile.addEventListener('dragend', () => { tile.classList.remove('dragging'); });
+        tile.addEventListener('dragover', e => e.preventDefault());
+        tile.addEventListener('drop', async e => {
+          e.preventDefault();
+          const dropIdx = +tile.dataset.idx;
+          if (dragIdx == null || dragIdx === dropIdx) return;
+          const [item] = state.photoDraft.splice(dragIdx, 1);
+          state.photoDraft.splice(dropIdx, 0, item);
+          renderPhotoGrid();
+          if (state.currentEditing && state.currentEditing.id){
+            try {
+              const ids = state.photoDraft.filter(p => p.id).map(p => p.id);
+              await rpc('set_property_image_order', { p_property_id: state.currentEditing.id, p_ordered_image_ids: ids });
+            } catch(err){ console.error(err); window.showToast('Reorder failed', 'error'); }
+          }
+        });
+      });
+    }
+    document.addEventListener('click', async e => {
+      const cov = e.target.closest('[data-photo-cover]');
+      if (cov){
+        const i = +cov.getAttribute('data-photo-cover');
+        state.photoDraft.forEach((p, j) => p.is_cover = (j === i));
+        renderPhotoGrid();
+        const photo = state.photoDraft[i];
+        if (state.currentEditing && state.currentEditing.id && photo.id){
+          try { await rpc('set_property_cover_image', { p_property_id: state.currentEditing.id, p_image_id: photo.id }); } catch(err){ window.showToast('Set cover failed', 'error'); }
+        }
+      }
+      const rem = e.target.closest('[data-photo-remove]');
+      if (rem){
+        const i = +rem.getAttribute('data-photo-remove');
+        const photo = state.photoDraft[i];
+        if (photo.id){ try { await rpc('remove_property_image', { p_image_id: photo.id }); } catch(err){ window.showToast('Remove failed', 'error'); return; } }
+        state.photoDraft.splice(i,1);
+        renderPhotoGrid();
+      }
+    });
+
+    function openListingModal(listing){
+      state.currentEditing = listing;
+      state.customAmenities = [];
+      state.photoDraft = [];
+      const isNew = !listing;
+      $('listingModalTitle').textContent = isNew ? window.t('lmod.addTitle') : window.t('lmod.editTitle');
+      $('lm_id').value = listing ? listing.id : '';
+      $('lm_title').value = listing?.title || '';
+      $('lm_description').value = listing?.description || '';
+      $('lm_property_type').value = listing?.property_type || 'apartment';
+      $('lm_custom_property_type').value = listing?.custom_property_type || '';
+      $('lm_customTypeWrap').style.display = ($('lm_property_type').value === 'other') ? 'block' : 'none';
+      $('lm_pricing_type').value = listing?.pricing_type || 'day';
+      $('lm_price_amount').value = listing?.price_amount ?? '';
+      $('lm_currency').value = listing?.currency || 'USD';
+      $('lm_pricing_custom_label').value = listing?.pricing_custom_label || '';
+      $('lm_city').value = listing?.city || '';
+      $('lm_country').value = listing?.country || '';
+      $('lm_address').value = listing?.address || '';
+      $('lm_latitude').value = listing?.latitude ?? '';
+      $('lm_longitude').value = listing?.longitude ?? '';
+      $('lm_pinToggle').checked = !!(listing?.latitude && listing?.longitude);
+      $('lm_mapWrap').classList.toggle('hidden', !$('lm_pinToggle').checked);
+
+      // Pricing type visibility rules
+      updatePricingVisibility();
+
+      // Amenities
+      buildAmenitiesGrid();
+      const setAmenities = Array.isArray(listing?.amenities) ? listing.amenities : [];
+      $('lm_amenitiesGrid').querySelectorAll('.lm-amenity').forEach(cb => { cb.checked = setAmenities.includes(cb.value); });
+      state.customAmenities = setAmenities.filter(a => !AMENITIES.includes(a));
+      renderCustomAmenities();
+
+      // Photos
+      if (Array.isArray(listing?.images)){
+        state.photoDraft = listing.images.map(im => ({ id: im.id, url: im.url || im.secure_url, is_cover: !!im.is_cover }));
+      }
+      renderPhotoGrid();
+
+      // Editable lock
+      const editable = isNew || listing.status === 'draft' || listing.status === 'rejected';
+      $('lm_lockedNotice').classList.toggle('hidden', editable);
+      $('lm_saveBtn').disabled = !editable;
+      $('lm_submitReview').classList.toggle('hidden', isNew || listing.status !== 'draft');
+      $('lm_photoNotice').classList.toggle('hidden', !isNew);
+
+      openModal('listingModal');
+      setTimeout(() => { if ($('lm_pinToggle').checked) ensureMap(); }, 100);
+    }
+
+    function updatePricingVisibility(){
+      const pt = $('lm_pricing_type').value;
+      $('lm_amountWrap').style.display = (pt === 'negotiable') ? 'none' : 'block';
+      $('lm_customLabelWrap').style.display = (pt === 'custom') ? 'block' : 'none';
+    }
+    document.addEventListener('change', e => {
+      if (e.target.id === 'lm_pricing_type') updatePricingVisibility();
+      if (e.target.id === 'lm_property_type') $('lm_customTypeWrap').style.display = (e.target.value === 'other') ? 'block' : 'none';
+      if (e.target.id === 'lm_pinToggle'){ $('lm_mapWrap').classList.toggle('hidden', !e.target.checked); if (e.target.checked) ensureMap(); }
+    });
+
+    function ensureMap(){
+      if (!window.L) return;
+      const el = $('locPickerMap'); if (!el) return;
+      if (mapPicker){ setTimeout(() => mapPicker.invalidateSize(), 50); return; }
+      const lat = parseFloat($('lm_latitude').value) || 0;
+      const lng = parseFloat($('lm_longitude').value) || 0;
+      const start = (lat && lng) ? [lat, lng] : [20, 0];
+      const zoom = (lat && lng) ? 13 : 2;
+      mapPicker = L.map('locPickerMap').setView(start, zoom);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'© OpenStreetMap' }).addTo(mapPicker);
+      if (lat && lng){ mapMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPicker); wireMarker(); }
+      mapPicker.on('click', ev => {
+        const { lat, lng } = ev.latlng;
+        if (mapMarker){ mapMarker.setLatLng([lat, lng]); }
+        else { mapMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPicker); wireMarker(); }
+        $('lm_latitude').value = lat.toFixed(6);
+        $('lm_longitude').value = lng.toFixed(6);
+      });
+      setTimeout(() => mapPicker.invalidateSize(), 100);
+    }
+    function wireMarker(){
+      if (!mapMarker) return;
+      mapMarker.on('dragend', () => {
+        const p = mapMarker.getLatLng();
+        $('lm_latitude').value = p.lat.toFixed(6);
+        $('lm_longitude').value = p.lng.toFixed(6);
+      });
+    }
+
+    // Add custom amenity
+    document.addEventListener('click', e => {
+      if (e.target.id === 'lm_addCustomAmenity'){
+        const inp = $('lm_customAmenityInput');
+        const v = inp.value.trim();
+        if (v){ state.customAmenities.push(v); inp.value = ''; renderCustomAmenities(); }
+      }
+    });
+
+    function collectListingPatch(){
+      const pt = $('lm_pricing_type').value;
+      const base = Array.from($('lm_amenitiesGrid').querySelectorAll('.lm-amenity:checked')).map(cb => cb.value);
+      const amenities = base.concat(state.customAmenities);
+      const patch = {
+        title: $('lm_title').value.trim(),
+        description: $('lm_description').value.trim(),
+        property_type: $('lm_property_type').value,
+        custom_property_type: $('lm_property_type').value === 'other' ? $('lm_custom_property_type').value.trim() : null,
+        pricing_type: pt,
+        price_amount: (pt === 'negotiable') ? null : (parseFloat($('lm_price_amount').value) || null),
+        currency: ($('lm_currency').value || 'USD').toUpperCase(),
+        pricing_custom_label: (pt === 'custom') ? $('lm_pricing_custom_label').value.trim() : null,
+        city: $('lm_city').value.trim() || null,
+        country: $('lm_country').value.trim() || null,
+        address: $('lm_address').value.trim() || null,
+        latitude: $('lm_pinToggle').checked ? (parseFloat($('lm_latitude').value) || null) : null,
+        longitude: $('lm_pinToggle').checked ? (parseFloat($('lm_longitude').value) || null) : null,
+        amenities: amenities
+      };
+      return patch;
+    }
+
+    // Save listing
+    $('listingForm')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = $('lm_saveBtn'); btn.disabled = true;
+      try {
+        const patch = collectListingPatch();
+        const id = $('lm_id').value;
+        if (id){
+          await rpc('update_property', { p_property_id: id, p_patch: patch });
+        } else {
+          const created = await rpc('create_property', { p_patch: patch });
+          const newId = (created && (created.id || created.property_id)) || (Array.isArray(created) && created[0] && created[0].id);
+          if (newId){ $('lm_id').value = newId; state.currentEditing = { id: newId, status:'draft' }; $('lm_photoNotice').classList.add('hidden'); $('lm_submitReview').classList.remove('hidden'); }
+        }
+        window.showToast(window.t('toast.saved'), 'success');
+        await reloadDashboard();
+      } catch (err){
+        console.error('save listing', err);
+        window.showToast((err && err.message) || 'Save failed', 'error');
+      } finally { btn.disabled = false; }
+    });
+
+    // Submit for review from modal
+    $('lm_submitReview')?.addEventListener('click', async () => {
+      const id = $('lm_id').value; if (!id) return;
+      try {
+        await rpc('set_property_status', { p_property_id: id, p_action: 'submit_for_review' });
+        window.showToast(window.t('toast.submitted'), 'success');
+        closeModal('listingModal');
+        await reloadDashboard();
+      } catch (err){ window.showToast((err && err.message) || 'Submit failed', 'error'); }
+    });
+
+    // Photo upload
+    $('lm_photoInput')?.addEventListener('change', async e => {
+      const propId = $('lm_id').value;
+      if (!propId){ window.showToast('Save the listing as a draft first', 'error'); return; }
+      const files = Array.from(e.target.files || []);
+      const status = $('lm_uploadStatus');
+      let done = 0;
+      for (const f of files){
+        if (!ALLOWED_IMAGE_TYPES.includes(f.type)){ window.showToast('Skipped non-image file', 'error'); continue; }
+        if (f.size > MAX_IMAGE_BYTES){ window.showToast('Image over 8MB skipped', 'error'); continue; }
+        status.textContent = `Uploading ${++done}/${files.length}…`;
+        try {
+          const url = await cloudUpload(f, 'ishfadi/properties');
+          const result = await rpc('add_property_image', { p_property_id: propId, p_url: url });
+          const imageId = (result && (result.id || result.image_id)) || (Array.isArray(result) && result[0] && result[0].id);
+          state.photoDraft.push({ id: imageId, url: url, is_cover: state.photoDraft.length === 0 });
+          renderPhotoGrid();
+        } catch(err){ console.error(err); window.showToast('Upload failed for '+f.name, 'error'); }
+      }
+      status.textContent = '';
+      e.target.value = '';
+    });
+
+    // ---------- Verification ----------
+    function renderVerifBanner(){
+      const items = CHECKLIST[state.profile?.host_type] || CHECKLIST.individual;
+      const missing = items.filter(it => !state.verificationDocs.find(d => d.document_type === it.key));
+      const needsAction = missing.length > 0 || state.verificationStatus === 'rejected';
+      $('verifBanner').classList.toggle('hidden', !needsAction);
+      $('verificationBadge').classList.toggle('hidden', missing.length === 0);
+      const sub = state.verificationStatus === 'rejected'
+        ? 'Your verification was rejected. Please review your documents and re-submit.'
+        : missing.length + ' document(s) still required.';
+      $('verifBannerSub').textContent = sub;
+    }
+
+    function renderVerificationChecklist(){
+      const wrap = $('verificationChecklist'); if (!wrap) return;
+      const items = CHECKLIST[state.profile?.host_type] || CHECKLIST.individual;
+      // Status card
+      const statusMap = { pending:['warning','Pending'], verified:['success','Verified'], rejected:['danger','Rejected'] };
+      const [sc, sl] = statusMap[state.verificationStatus] || statusMap.pending;
+      $('verifStatusIcon').className = 'w-12 h-12 rounded-xl bg-'+sc+'/15 text-'+sc+' flex items-center justify-center flex-shrink-0';
+      $('verifStatusLabel').textContent = sl;
+
+      wrap.innerHTML = items.map(it => {
+        const doc = state.verificationDocs.find(d => d.document_type === it.key);
+        const submitted = !!doc;
+        const status = doc?.status || (submitted ? 'submitted' : 'unsubmitted');
+        const badge = status === 'approved' ? 'b-verified' : status === 'rejected' ? 'b-rejected' : submitted ? 'b-pending' : 'b-draft';
+        return `
+          <div class="bg-white border rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3">
+            <div class="flex-1">
+              <p class="font-semibold text-gray-800">${escapeHtml(it.label)}</p>
+              <p class="text-xs text-gray-500 mt-0.5">${submitted ? (doc.submitted_at ? 'Submitted '+fmtDate(doc.submitted_at) : 'Submitted') : 'Not submitted'}</p>
+            </div>
+            <span class="badge ${badge}">${status.replace('_',' ')}</span>
+            <div class="flex gap-2">
+              ${doc ? `<button data-verif-view="${doc.id}" class="text-xs px-3 py-1.5 rounded-lg bg-primary/10 text-primary">${window.t('verif.view')}</button>` : ''}
+              <label class="text-xs px-3 py-1.5 rounded-lg bg-primary text-white cursor-pointer">
+                <input type="file" class="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" data-verif-upload="${it.key}">
+                ${submitted ? window.t('verif.reupload') : window.t('verif.upload')}
+              </label>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    document.addEventListener('change', async e => {
+      const inp = e.target.closest('[data-verif-upload]'); if (!inp) return;
+      const docType = inp.getAttribute('data-verif-upload');
+      const f = inp.files && inp.files[0]; if (!f) return;
+      if (!ALLOWED_DOC_TYPES.includes(f.type)){ window.showToast('Please upload an image or PDF.', 'error'); inp.value=''; return; }
+      if (f.size > MAX_DOC_BYTES){ window.showToast('File over 15MB.', 'error'); inp.value=''; return; }
+
+      try {
+        const client = initSupabase();
+        const ext = (f.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
+        const path = `${state.userId}/${docType}-${Date.now()}.${ext}`;
+        const { error: upErr } = await client.storage.from('verification-documents').upload(path, f, { upsert: false, contentType: f.type });
+        if (upErr) throw upErr;
+        await rpc('submit_host_verification_document', { p_document_type: docType, p_storage_path: path });
+        window.showToast(window.t('toast.docSubmitted'), 'success');
+        await reloadDashboard();
+      } catch(err){
+        console.error(err);
+        window.showToast((err && err.message) || 'Upload failed', 'error');
+      } finally { inp.value = ''; }
+    });
+
+    document.addEventListener('click', async e => {
+      const v = e.target.closest('[data-verif-view]'); if (!v) return;
+      try {
+        const url = await rpc('get_verification_document_url', { p_document_id: v.getAttribute('data-verif-view') });
+        const href = (typeof url === 'string') ? url : (url && (url.url || url.signed_url));
+        if (href) window.open(href, '_blank', 'noopener');
+        else window.showToast('No URL returned', 'error');
+      } catch(err){ window.showToast((err && err.message) || 'Failed to load document', 'error'); }
+    });
+
+    // ---------- Messages ----------
+    async function loadConversations(){
+      try {
+        const rows = await rpc('get_conversations', {});
+        state.conversations = Array.isArray(rows) ? rows : [];
+        renderConversationList();
+      } catch(err){ console.error('conversations', err); state.conversations = []; renderConversationList(); }
+    }
+    function renderConversationList(){
+      const el = $('convItems');
+      const empty = $('convEmpty');
+      const totalUnread = state.conversations.reduce((s,c) => s + (c.unread_count || 0), 0);
+      const badge = $('msgBadge');
+      badge.textContent = totalUnread;
+      badge.classList.toggle('hidden', totalUnread === 0);
+      if (!state.conversations.length){ el.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      el.innerHTML = state.conversations.map(c => {
+        const name = c.other_participant_name || c.other_name || 'Guest';
+        const preview = c.last_message_preview || c.last_message || '';
+        const unread = c.unread_count || 0;
+        const active = c.id === state.activeConversationId;
+        return `
+          <div class="conv-item ${active ? 'active' : ''}" data-conv-id="${c.id}">
+            <div class="conv-avatar">${escapeHtml(initials(name))}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <p class="font-semibold text-gray-800 text-sm truncate">${escapeHtml(name)}</p>
+                ${unread ? `<span class="text-[10px] font-bold bg-danger text-white rounded-full px-1.5">${unread}</span>` : ''}
+              </div>
+              <p class="text-xs text-gray-500 truncate">${escapeHtml(c.property_title || '')}</p>
+              <p class="text-xs text-gray-500 truncate">${escapeHtml(preview)}</p>
+            </div>
+          </div>`;
+      }).join('');
+    }
+    document.addEventListener('click', async e => {
+      const c = e.target.closest('[data-conv-id]'); if (!c) return;
+      openConversation(c.getAttribute('data-conv-id'));
+    });
+    async function openConversation(id){
+      state.activeConversationId = id;
+      renderConversationList();
+      $('convThread').classList.remove('hidden');
+      $('convThread').classList.add('flex');
+      const conv = state.conversations.find(x => x.id === id);
+      $('convOtherName').textContent = conv?.other_participant_name || conv?.other_name || 'Guest';
+      $('convProperty').textContent = conv?.property_title || '';
+      setAvatar($('convOtherAvatar'), null, $('convOtherName').textContent);
+      try {
+        const msgs = await rpc('get_messages', { p_conversation_id: id });
+        state.messages = Array.isArray(msgs) ? msgs : [];
+        renderMessages();
+        try { await rpc('mark_conversation_read', { p_conversation_id: id }); await loadConversations(); } catch(e){}
+      } catch(err){ console.error(err); state.messages = []; renderMessages(); }
+    }
+    function renderMessages(){
+      const el = $('msgList');
+      el.innerHTML = state.messages.map(m => {
+        const mine = m.sender_id === state.userId;
+        let att = '';
+        if (m.attachment_url){
+          if (m.attachment_type === 'image') att = `<a href="${escapeHtml(m.attachment_url)}" target="_blank" rel="noopener"><img src="${escapeHtml(m.attachment_url)}" class="mt-1 rounded-lg max-w-full max-h-60"></a>`;
+          else if (m.attachment_type === 'audio') att = `<audio controls src="${escapeHtml(m.attachment_url)}" class="mt-1 w-full"></audio>`;
+          else att = `<a href="${escapeHtml(m.attachment_url)}" target="_blank" rel="noopener" class="mt-1 inline-block underline">Open attachment</a>`;
+        }
+        return `<div class="msg-bubble ${mine ? 'msg-mine' : 'msg-theirs'}">${escapeHtml(m.body || '')}${att}<div class="text-[10px] opacity-70 mt-1">${escapeHtml(fmtDate(m.created_at))}</div></div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+    $('convBackBtn')?.addEventListener('click', () => { state.activeConversationId = null; $('convThread').classList.add('hidden'); $('convThread').classList.remove('flex'); renderConversationList(); });
+
+    $('msgForm')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!state.activeConversationId) return;
+      const inp = $('msgInput');
+      const body = inp.value.trim();
+      if (!body) return;
+      try {
+        await rpc('send_message', { p_conversation_id: state.activeConversationId, p_body: body, p_attachment_url: null, p_attachment_type: null });
+        inp.value = '';
+        await openConversation(state.activeConversationId);
+      } catch(err){ window.showToast((err && err.message) || 'Send failed', 'error'); }
+    });
+
+    $('msgAttach')?.addEventListener('change', async e => {
+      const f = e.target.files && e.target.files[0]; if (!f || !state.activeConversationId) return;
+      try {
+        const url = await cloudUpload(f, 'ishfadi/messages');
+        const type = f.type.startsWith('image/') ? 'image' : f.type.startsWith('audio/') ? 'audio' : 'file';
+        await rpc('send_message', { p_conversation_id: state.activeConversationId, p_body: $('msgInput').value.trim() || null, p_attachment_url: url, p_attachment_type: type });
+        $('msgInput').value = '';
+        await openConversation(state.activeConversationId);
+      } catch(err){ window.showToast((err && err.message) || 'Attach failed', 'error'); }
+      finally { e.target.value = ''; }
+    });
+
+    // ---------- Availability ----------
+    function populateAvailabilityPropertySelect(){
+      const sel = $('availPropSel'); if (!sel) return;
+      const props = state.listings.filter(l => l.status !== 'archived');
+      sel.innerHTML = props.length
+        ? props.map(l => `<option value="${l.id}">${escapeHtml(l.title || 'Untitled')} · ${escapeHtml(l.status)}</option>`).join('')
+        : `<option value="">— No properties yet —</option>`;
+      if (props.length && !state.availability.propertyId){
+        state.availability.propertyId = props[0].id;
+        sel.value = props[0].id;
+      }
+    }
+    async function initAvailabilityPane(){
+      populateAvailabilityPropertySelect();
+      const now = new Date();
+      state.availability.viewYear = now.getFullYear();
+      state.availability.viewMonth = now.getMonth();
+      state.availability.selectStart = null;
+      await loadAvailability();
+    }
+    $('availPropSel')?.addEventListener('change', async e => { state.availability.propertyId = e.target.value; state.availability.selectStart = null; await loadAvailability(); });
+    $('calPrev')?.addEventListener('click', () => { const a = state.availability; a.viewMonth--; if (a.viewMonth < 0){ a.viewMonth = 11; a.viewYear--; } renderCalendar(); });
+    $('calNext')?.addEventListener('click', () => { const a = state.availability; a.viewMonth++; if (a.viewMonth > 11){ a.viewMonth = 0; a.viewYear++; } renderCalendar(); });
+
+    async function loadAvailability(){
+      if (!state.availability.propertyId){ state.availability.blocks = []; renderCalendar(); renderBlockList(); return; }
+      try {
+        const rows = await rpc('get_property_availability', { p_property_id: state.availability.propertyId });
+        state.availability.blocks = Array.isArray(rows) ? rows : [];
+      } catch(err){ console.error(err); state.availability.blocks = []; }
+      renderCalendar(); renderBlockList();
+    }
+    function isBlocked(iso){
+      return state.availability.blocks.some(b => iso >= b.start_date && iso <= b.end_date);
+    }
+    function renderCalendar(){
+      const a = state.availability;
+      const first = new Date(a.viewYear, a.viewMonth, 1);
+      const monthLabel = first.toLocaleDateString(window.getCurrentLang(), { month:'long', year:'numeric' });
+      $('calLabel').textContent = monthLabel;
+      const startDay = first.getDay();
+      const daysInMonth = new Date(a.viewYear, a.viewMonth+1, 0).getDate();
+      const heads = ['S','M','T','W','T','F','S'].map(d => `<div class="cal-head">${d}</div>`).join('');
+      let cells = '';
+      for (let i = 0; i < startDay; i++){ cells += `<div class="cal-cell other"></div>`; }
+      for (let d = 1; d <= daysInMonth; d++){
+        const iso = `${a.viewYear}-${String(a.viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const blocked = isBlocked(iso);
+        const selecting = a.selectStart && iso === a.selectStart;
+        cells += `<div class="cal-cell ${blocked ? 'blocked' : ''} ${selecting ? 'selecting' : ''}" data-cal-date="${iso}">${d}</div>`;
+      }
+      $('calGrid').innerHTML = heads + cells;
+    }
+    document.addEventListener('click', async e => {
+      const c = e.target.closest('[data-cal-date]'); if (!c) return;
+      const iso = c.getAttribute('data-cal-date');
+      if (isBlocked(iso)) return;
+      const a = state.availability;
+      if (!a.selectStart){ a.selectStart = iso; renderCalendar(); return; }
+      const start = a.selectStart < iso ? a.selectStart : iso;
+      const end = a.selectStart < iso ? iso : a.selectStart;
+      a.selectStart = null;
+      const reason = prompt('Reason? blocked | maintenance | booked', 'blocked') || 'blocked';
+      try {
+        await rpc('add_availability_block', { p_property_id: a.propertyId, p_start_date: start, p_end_date: end, p_reason: reason, p_note: null });
+        window.showToast(window.t('toast.blockAdded'), 'success');
+        await loadAvailability();
+      } catch(err){ console.error(err); window.showToast((err && err.message) || 'Add block failed', 'error'); renderCalendar(); }
+    });
+    function renderBlockList(){
+      const el = $('availBlocks');
+      if (!state.availability.blocks.length){ el.innerHTML = '<p class="p-4 text-sm text-gray-500 text-center">No blocks yet.</p>'; return; }
+      el.innerHTML = state.availability.blocks.map(b => `
+        <div class="p-4 flex items-center justify-between gap-3">
+          <div>
+            <p class="font-medium text-gray-800 text-sm">${escapeHtml(fmtDate(b.start_date))} → ${escapeHtml(fmtDate(b.end_date))}</p>
+            <p class="text-xs text-gray-500">${escapeHtml(b.reason || '')} ${b.note ? '· ' + escapeHtml(b.note) : ''}</p>
+          </div>
+          <button data-remove-block="${b.id}" class="text-xs px-3 py-1.5 rounded-lg bg-danger/10 text-danger">Remove</button>
+        </div>`).join('');
+    }
+    document.addEventListener('click', async e => {
+      const r = e.target.closest('[data-remove-block]'); if (!r) return;
+      if (!(await confirmDialog('Remove block', window.t('common.removeBlockConfirm'), 'Remove'))) return;
+      try { await rpc('remove_availability_block', { p_block_id: r.getAttribute('data-remove-block') }); window.showToast(window.t('toast.blockRemoved'), 'success'); await loadAvailability(); }
+      catch(err){ window.showToast((err && err.message) || 'Remove failed', 'error'); }
+    });
+
+    // ---------- Settings ----------
+    function renderSettings(){
+      const p = state.profile || {};
+      $('setName').value = p.full_name || '';
+      $('setEmail').value = p.email || state.session?.user?.email || '';
+      $('setPhone').value = p.phone || '';
+      $('setCountry').value = p.country || '';
+      $('setCity').value = p.city || '';
+      $('setHostType').value = p.host_type || '—';
+      $('setNotifEmail').checked = p.notif_email !== false;
+      $('setNotifPush').checked = !!p.notif_push;
+      setAvatar($('settingsAvatar'), p.profile_photo_url, p.full_name);
+    }
+    $('settingsForm')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = $('settingsSaveBtn'); btn.disabled = true;
+      try {
+        // Same pattern as agent.html — update_agent_profile is the generic profile writer (see backend note).
+        await rpc('update_agent_profile', { p_patch: {
+          full_name: $('setName').value.trim(),
+          phone: $('setPhone').value.trim(),
+          country: $('setCountry').value.trim(),
+          city: $('setCity').value.trim(),
+          preferences: { notif_email: $('setNotifEmail').checked, notif_push: $('setNotifPush').checked }
+        }});
+        window.showToast(window.t('set.saved'), 'success');
+        await reloadDashboard();
+      } catch(err){ window.showToast((err && err.message) || 'Save failed', 'error'); }
+      finally { btn.disabled = false; }
+    });
+
+    $('settingsPhotoInput')?.addEventListener('change', async e => {
+      const f = e.target.files && e.target.files[0]; if (!f) return;
+      if (!ALLOWED_IMAGE_TYPES.includes(f.type)){ window.showToast('JPG, PNG or WebP only', 'error'); e.target.value=''; return; }
+      if (f.size > MAX_IMAGE_BYTES){ window.showToast('Image over 8MB', 'error'); e.target.value=''; return; }
+      const local = URL.createObjectURL(f);
+      setAvatar($('settingsAvatar'), local, $('setName').value);
+      setAvatar($('navAvatar'), local, $('setName').value);
+      try {
+        const url = await cloudUpload(f, 'ishfadi/hosts');
+        await rpc('update_agent_profile', { p_patch: { profile_photo_url: url } });
+        state.profile.profile_photo_url = url;
+        window.showToast(window.t('toast.saved'), 'success');
+      } catch(err){ window.showToast((err && err.message) || 'Upload failed', 'error'); }
+      finally { e.target.value = ''; }
+    });
+
+    // ---------- Notifications ----------
+    $('notifBtn')?.addEventListener('click', async () => {
+      const p = $('notifPanel'); p.classList.toggle('hidden');
+      if (!p.classList.contains('hidden')) await loadNotifications();
+    });
+    document.addEventListener('click', e => {
+      if ($('notifPanel').classList.contains('hidden')) return;
+      if (e.target.closest('#notifPanel') || e.target.closest('#notifBtn')) return;
+      $('notifPanel').classList.add('hidden');
+    });
+    async function loadNotifications(){
+      // get_my_notifications is not yet deployed per the sprint brief. Render a graceful placeholder;
+      // once Claude ships it, we drop it in here with zero UI changes.
+      try {
+        const rows = await rpc('get_my_notifications', {});
+        state.notifications = Array.isArray(rows) ? rows : [];
+      } catch(err){
+        state.notifications = null; // signal "not-yet-available"
+      }
+      renderNotifications();
+    }
+    function renderNotifications(){
+      const list = $('notifList'); const empty = $('notifEmpty');
+      if (state.notifications === null){
+        list.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center">'+escapeHtml(window.t('notif.comingSoon'))+'</div>';
+        empty.classList.add('hidden');
+        return;
+      }
+      if (!state.notifications.length){ list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+      const unread = state.notifications.filter(n => !n.read_at).length;
+      $('notifDot').classList.toggle('hidden', unread === 0);
+      list.innerHTML = state.notifications.map(n => `
+        <div class="p-3 border-b hover:bg-gray-50 ${n.read_at ? '' : 'bg-primary/5'}" data-notif-id="${n.id}">
+          <p class="text-sm font-medium text-gray-800">${escapeHtml(n.title || n.type || 'Notification')}</p>
+          <p class="text-xs text-gray-500">${escapeHtml(n.body || n.message || '')}</p>
+          <p class="text-[10px] text-gray-400 mt-1">${escapeHtml(fmtDate(n.created_at))}</p>
+        </div>`).join('');
+    }
+    document.addEventListener('click', async e => {
+      const n = e.target.closest('[data-notif-id]'); if (!n) return;
+      try { await rpc('mark_notification_read', { p_notification_id: n.getAttribute('data-notif-id') }); await loadNotifications(); } catch(_){}
+    });
+    $('notifMarkAll')?.addEventListener('click', async () => {
+      try { await rpc('mark_all_notifications_read', {}); await loadNotifications(); } catch(_){}
+    });
+
+    // ---------- Logout ----------
+    async function doLogout(){
+      const client = initSupabase(); if (client){ try { await client.auth.signOut(); } catch(e){} }
+      window.location.replace('/index.html');
+    }
+    $('sideLogoutBtn')?.addEventListener('click', doLogout);
+
+    // ---------- Boot triggers ----------
+    $('bootRetryBtn')?.addEventListener('click', boot);
+    document.addEventListener('DOMContentLoaded', boot);
+
+    // ---------- PWA (same guard as agent.html) ----------
+    if ('serviceWorker' in navigator && location.protocol !== 'blob:'){
+      const host = location.hostname || '';
+      const inPreview = host.startsWith('id-preview--') || host.startsWith('preview--') || host.endsWith('.lovableproject.com') || host.endsWith('.lovableproject-dev.com') || host.endsWith('.beta.lovable.dev');
+      const inIframe = window.top !== window.self;
+      if (!inPreview && !inIframe){
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/service-worker.js', { scope:'/' }).catch(()=>{}); });
+      }
+    }
+  })();
+  </script>
+</body>
+</html>
