@@ -1101,28 +1101,54 @@ function renderUsers(){
   $('#usersCount').textContent = `Showing ${rows.length} of ${DATA.users.length}`;
 }
 
-function renderProps(filter='All'){
-  $('#propTabs').innerHTML = DATA.propTabs.map(t=>`
-    <button onclick="renderProps('${t}')" class="px-3 py-1.5 rounded-lg text-sm border ${t===filter?'bg-primary text-white border-primary':'bg-white hover:bg-slate-50'}">${t}</button>`).join('');
-  const list = filter==='All' ? DATA.properties : DATA.properties.filter(p=>p.status===filter);
-  $('#propGrid').innerHTML = list.map(p=>`
+async function renderProps(){
+  $('#propTabs').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
+  $('#propGrid').innerHTML = '';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_properties_queue');
+  if (error) { $('#propTabs').innerHTML = '<p class="text-sm text-red-500">Failed to load: '+error.message+'</p>'; return; }
+
+  const k = data.kpis;
+  $('#propTabs').innerHTML = [
+    {l:'Pending review',v:k.pending_review,c:'warning',i:'⏳'},
+    {l:'Verified',v:k.verified,c:'success',i:'✅'},
+    {l:'Total listed',v:k.total,c:'primary',i:'🏡'},
+  ].map(x=>`<div class="bg-white rounded-2xl px-4 py-2.5 border flex items-center gap-2 text-sm">
+    <span>${x.i}</span><span class="text-gray-500">${x.l}:</span><span class="font-bold">${x.v}</span></div>`).join('');
+
+  const list = data.pending || [];
+  $('#propGrid').innerHTML = list.length ? list.map(p=>`
     <div class="bg-white rounded-2xl border card-hover overflow-hidden">
-      <div class="h-36 flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-secondary/20">${p.img}</div>
+      <div class="h-36 flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-secondary/20 bg-cover bg-center" ${p.cover_image_url ? `style="background-image:url('${p.cover_image_url}')"` : ''}>${p.cover_image_url ? '' : '🏡'}</div>
       <div class="p-4">
         <div class="flex justify-between items-start gap-2">
-          <div><p class="font-semibold">${p.title}</p><p class="text-xs text-gray-500">${p.city} · ${p.owner}</p></div>
-          ${badgeFor(p.status)}
+          <div><p class="font-semibold">${p.title || '(untitled)'}</p><p class="text-xs text-gray-500">${p.city || ''}${p.city && p.country ? ', ' : ''}${p.country || ''} · ${p.host_name}</p></div>
+          ${badgeFor('Pending')}
         </div>
         <div class="mt-3 flex items-center justify-between">
-          <p class="text-lg font-bold text-primary">${p.price}</p>
+          <p class="text-lg font-bold text-primary">${p.pricing_type === 'negotiable' ? 'Negotiable' : (p.pricing_amount != null ? '$' + Number(p.pricing_amount).toLocaleString() : '—')}</p>
           <div class="flex gap-1">
-            <button class="px-2.5 py-1 text-xs border rounded-lg hover:bg-slate-50">Preview</button>
-            <button class="px-2.5 py-1 text-xs bg-primary text-white rounded-lg hover:bg-primary-light">Approve</button>
+            <button class="px-2.5 py-1 text-xs border rounded-lg hover:bg-slate-50" onclick="handlePropDecision('${p.id}','reject',this)">Reject</button>
+            <button class="px-2.5 py-1 text-xs bg-primary text-white rounded-lg hover:bg-primary-light" onclick="handlePropDecision('${p.id}','approve',this)">Approve</button>
           </div>
         </div>
       </div>
-    </div>`).join('');
+    </div>`).join('') : '<p class="p-6 text-center text-gray-400 col-span-full">Queue is empty — nothing pending review.</p>';
 }
+
+async function handlePropDecision(propertyId, decision, btn) {
+  btn.closest('.bg-white')?.querySelectorAll('button').forEach(b => b.disabled = true);
+  const client = initAdminSupabase();
+  try {
+    const result = await client.rpc('admin_review_property', { p_property_id: propertyId, p_decision: decision });
+    if (result.error) { toast('Failed: ' + result.error.message, 'error'); return; }
+    toast(decision === 'approve' ? 'Listing approved' : 'Listing rejected', decision === 'approve' ? 'success' : 'error');
+    renderProps();
+  } catch (e) {
+    toast('Something went wrong.', 'error');
+  }
+}
+window.handlePropDecision = handlePropDecision;
 
 async function renderAgents(){
   $('#agentKpis').innerHTML = '<p class="text-sm text-gray-400 col-span-4">Loading real data…</p>';
@@ -1211,7 +1237,7 @@ async function renderVerif(){
   const k = data.kpis;
   $('#verifKpis').innerHTML = [
     {l:'In queue',v:k.pending_applications + k.pending_role_requests,c:'warning',i:'⏳'},
-    {l:'Verified agents',v:k.verified_total,c:'success',i:'✅'},
+    {l:'Verified accounts',v:k.verified_total,c:'success',i:'✅'},
     {l:'Role requests pending',v:k.pending_role_requests,c:'info',i:'📥'},
   ].map(x=>`<div class="bg-white rounded-2xl p-5 border card-hover">
     <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${x.l}</p><p class="text-2xl font-bold mt-1">${x.v}</p></div>
@@ -1222,7 +1248,7 @@ async function renderVerif(){
     <div class="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
       <div class="flex items-center gap-3 flex-1 min-w-0">
         <div class="avatar w-10 h-10">${initials(v.full_name)}</div>
-        <div><p class="font-semibold">${v.full_name}</p><p class="text-xs text-gray-500">${v.email} · ${v.country} · ${v.kind==='role_request'?'Additional role request':'Agent application'} · ${new Date(v.submitted_at).toLocaleDateString()}</p></div>
+        <div><p class="font-semibold">${v.full_name}</p><p class="text-xs text-gray-500">${v.email} · ${v.country} · ${v.kind==='role_request'?'Additional role request ('+v.requested_role+')':v.kind==='host_application'?'Host application'+(v.host_type?' ('+v.host_type+')':''):'Agent application'} · ${new Date(v.submitted_at).toLocaleDateString()}</p></div>
       </div>
       <div class="flex gap-2">
         <button class="px-3 py-1.5 text-sm bg-success text-white rounded-lg" onclick="handleVerifDecision('${v.kind}','${v.user_id||''}','${v.request_id||''}','approve',this)">Approve</button>
@@ -1238,6 +1264,8 @@ async function handleVerifDecision(kind, userId, requestId, decision, btn) {
     let result;
     if (kind === 'role_request') {
       result = await client.rpc('approve_role_request', { p_request_id: requestId, p_decision: decision });
+    } else if (kind === 'host_application') {
+      result = await client.rpc('verify_host', { p_user_id: userId, p_decision: decision });
     } else {
       result = await client.rpc('verify_agent', { p_user_id: userId, p_decision: decision });
     }
@@ -1504,7 +1532,7 @@ const RENDER_MAP = {
   dashboard: ()=>{ renderKpis(); renderActivity(); renderPending(); renderDashboardCharts(); },
   analytics: renderAnalyticsCharts,
   users: renderUsers,
-  properties: ()=>renderProps('All'),
+  properties: ()=>renderProps(),
   agents: renderAgents,
   waiting: renderWaiting,
   verification: renderVerif,

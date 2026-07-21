@@ -2396,6 +2396,87 @@
   })();
   </script>
 
+  <script>
+  /* ==========================================================================
+     Hidden admin entry — no visible link anywhere on the page.
+     Mobile: hold 3 fingers on the screen for 3 seconds.
+     Desktop: hold A + S + D + F together for 3 seconds.
+     Note: this only hides the *path* to the page — it is not real access
+     control. /admin.html itself still requires a real admin login
+     (is_admin() checked server-side on every RPC), so reaching the page
+     this way or by typing the URL directly does nothing without that.
+     ========================================================================== */
+  (function () {
+    var HOLD_MS = 3000;
+    var ADMIN_URL = '/admin.html';
+    var triggered = false;
+
+    function goToAdmin() {
+      if (triggered) return;
+      triggered = true;
+      window.location.href = ADMIN_URL;
+    }
+
+    // ---- Mobile: 3-finger hold ----
+    var touchTimer = null;
+
+    function clearTouchTimer() {
+      if (touchTimer) { clearTimeout(touchTimer); touchTimer = null; }
+    }
+
+    document.addEventListener('touchstart', function (e) {
+      if (e.touches && e.touches.length === 3) {
+        clearTouchTimer();
+        touchTimer = setTimeout(goToAdmin, HOLD_MS);
+      } else {
+        clearTouchTimer();
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function (e) {
+      if (!e.touches || e.touches.length !== 3) clearTouchTimer();
+    }, { passive: true });
+
+    document.addEventListener('touchend', clearTouchTimer, { passive: true });
+    document.addEventListener('touchcancel', clearTouchTimer, { passive: true });
+
+    // ---- Desktop: hold A + S + D + F together ----
+    var COMBO = ['a', 's', 'd', 'f'];
+    var pressed = new Set();
+    var keyTimer = null;
+
+    function clearKeyTimer() {
+      if (keyTimer) { clearTimeout(keyTimer); keyTimer = null; }
+    }
+
+    function hasFullCombo() {
+      return COMBO.every(function (k) { return pressed.has(k); });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      var k = (e.key || '').toLowerCase();
+      if (COMBO.indexOf(k) === -1) return;
+      pressed.add(k);
+      if (hasFullCombo() && !keyTimer) {
+        keyTimer = setTimeout(goToAdmin, HOLD_MS);
+      }
+    });
+
+    document.addEventListener('keyup', function (e) {
+      var k = (e.key || '').toLowerCase();
+      if (COMBO.indexOf(k) === -1) return;
+      pressed.delete(k);
+      if (!hasFullCombo()) clearKeyTimer();
+    });
+
+    window.addEventListener('blur', function () {
+      pressed.clear();
+      clearKeyTimer();
+      clearTouchTimer();
+    });
+  })();
+  </script>
+
   <!-- Sign-In Modal (additive; returning users) -->
   <div id="signInModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-signin-dismiss></div>

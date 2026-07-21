@@ -49,6 +49,7 @@ const OFFLINE_URL = "/offline.html";
 const APP_SHELL = [
   "/",
   "/agent.html",
+  "/seller.html",
   "/index.html",
   "/offline.html",
   "/manifest.json",
@@ -74,10 +75,11 @@ const APP_SHELL = [
 ];
 
 /* ==========================================================================
-   Future Pages — not precached yet (they don't exist), but the HTML
-   strategy below already applies to them automatically once they ship.
-   buyer.html, host.html, agent.html, admin.html, property.html,
-   booking.html, chat.html, profile.html
+   admin.html — deliberately NOT precached. It's MFA-gated and has no
+   meaningful offline use case as an internal review tool.
+   Future pages (buyer.html, host.html landing, property.html, booking.html,
+   chat.html, profile.html) aren't precached yet since they don't exist;
+   the HTML strategy below will apply to them automatically once they ship.
    ========================================================================== */
 
 /* ==========================================================================
