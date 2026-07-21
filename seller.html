@@ -1524,7 +1524,7 @@
         status.textContent = `Uploading ${++done}/${files.length}…`;
         try {
           const url = await cloudUpload(f, 'ishfadi/properties');
-          const result = await rpc('add_property_image', { p_property_id: propId, p_url: url });
+          const result = await rpc('add_property_image', { p_property_id: propId, p_cloudinary_url: url });
           const imageId = (result && (result.id || result.image_id)) || (Array.isArray(result) && result[0] && result[0].id);
           state.photoDraft.push({ id: imageId, url: url, is_cover: state.photoDraft.length === 0 });
           renderPhotoGrid();
