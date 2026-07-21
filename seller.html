@@ -542,6 +542,17 @@
         <p class="text-sm text-gray-500" data-i18n="set.subtitle">Update your profile and communication preferences.</p>
       </div>
 
+      <div class="bg-white rounded-xl border p-6">
+        <p class="text-sm font-medium text-gray-700 mb-2" data-i18n="set.language">Language</p>
+        <div class="lang-switcher inline-block" id="langSwitcherSettings">
+          <button type="button" class="lang-trigger !text-primary !border-primary/20 !bg-primary/5" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+            <span class="lang-current-label">English</span>
+          </button>
+          <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+        </div>
+      </div>
+
       <form id="settingsForm" class="bg-white rounded-xl border p-6 space-y-5">
         <div class="flex items-center gap-4">
           <div id="settingsAvatar" class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/70 text-white font-semibold flex items-center justify-center text-xl overflow-hidden">?</div>
@@ -803,7 +814,7 @@
         avail:{ title:'Availability calendar', subtitle:'Block dates when your property is unavailable — for personal use, maintenance, or already-booked elsewhere.', pickProperty:'Property:', hint:'Click a start date, then an end date to block that range.', existing:'Existing blocks' },
         earn:{ title:'Earnings', subtitle:'Payouts and payment history will appear here once payments are enabled for your account.', available:'Available balance', pending:'Awaiting backend', month:'This month', lifetime:'Lifetime earnings', emptyLong:"Payments are the final phase of the ISHFADI rollout. Once launched, your payouts, invoices and preferred payout method will live in this section." },
         rev:{ title:'Reviews', subtitle:'Reviews will appear here after guests complete a booking.', soonTitle:'Coming soon', soonSub:"Guest reviews unlock after ISHFADI's booking system goes live. We'll never generate fake reviews — this section stays empty until a real guest can leave one." },
-        set:{ title:'Settings', subtitle:'Update your profile and communication preferences.', uploadPhoto:'Upload new photo', photoHint:'Square photo recommended. Stored on Cloudinary.', fullName:'Full name', email:'Email', phone:'Phone', country:'Country', city:'City', hostType:'Host type', notif:'Notifications', emailNotif:'Email notifications', pushNotif:'Push notifications', save:'Save preferences', saved:'Preferences saved.' },
+        set:{ title:'Settings', subtitle:'Update your profile and communication preferences.', language:'Language', uploadPhoto:'Upload new photo', photoHint:'Square photo recommended. Stored on Cloudinary.', fullName:'Full name', email:'Email', phone:'Phone', country:'Country', city:'City', hostType:'Host type', notif:'Notifications', emailNotif:'Email notifications', pushNotif:'Push notifications', save:'Save preferences', saved:'Preferences saved.' },
         notif:{ title:'Notifications', markAll:'Mark all read', empty:'No notifications yet.', comingSoon:'Notification feed coming soon.' },
         common:{ cancel:'Cancel', confirm:'Confirm', add:'Add', save:'Save', close:'Close', loading:'Loading…', deleteConfirm:'Delete this listing? This cannot be undone.', pauseConfirm:'Pause this listing? It will be hidden from guests until you resume it.', archiveConfirm:'Archive this listing?', removeBlockConfirm:'Remove this availability block?' },
         toast:{ saved:'Saved.', deleted:'Deleted.', submitted:'Submitted for review.', paused:'Listing paused.', resumed:'Listing resumed.', archived:'Listing archived.', restored:'Restored to draft.', duplicated:'Duplicate created.', copyFail:'Copy failed.', uploadFail:'Upload failed.', docSubmitted:'Document submitted.', blockAdded:'Availability block added.', blockRemoved:'Block removed.', notAllowed:"You can't edit a listing while it's live or under review.", signedOut:'Signed out.' }
@@ -1140,7 +1151,7 @@
       if (l.pricing_type === 'negotiable') return 'Negotiable';
       if (l.pricing_type === 'custom') return l.pricing_custom_label || 'Custom';
       const suffix = { day:'/day', week:'/week', month:'/month', year:'/year', sale:'' }[l.pricing_type] || '';
-      return fmtMoney(l.price_amount, l.currency || 'USD') + suffix;
+      return fmtMoney(l.pricing_amount, l.pricing_currency || 'USD') + suffix;
     }
 
     function listingCardHTML(l){
@@ -1153,7 +1164,7 @@
           </div>
           <div class="p-4">
             <p class="font-semibold text-gray-800 truncate">${escapeHtml(l.title || 'Untitled')}</p>
-            <p class="text-xs text-gray-500 mb-2 truncate">${escapeHtml([l.city, l.country].filter(Boolean).join(', ') || '—')}</p>
+            <p class="text-xs text-gray-500 mb-2 truncate">${escapeHtml([l.city, l.country_name].filter(Boolean).join(', ') || '—')}</p>
             <p class="text-sm font-semibold text-primary mb-3">${escapeHtml(priceLabel(l))}</p>
             <div class="flex flex-wrap gap-2">
               ${listingActionsHTML(l)}
@@ -1368,12 +1379,12 @@
       $('lm_custom_property_type').value = listing?.custom_property_type || '';
       $('lm_customTypeWrap').style.display = ($('lm_property_type').value === 'other') ? 'block' : 'none';
       $('lm_pricing_type').value = listing?.pricing_type || 'day';
-      $('lm_price_amount').value = listing?.price_amount ?? '';
-      $('lm_currency').value = listing?.currency || 'USD';
+      $('lm_price_amount').value = listing?.pricing_amount ?? '';
+      $('lm_currency').value = listing?.pricing_currency || 'USD';
       $('lm_pricing_custom_label').value = listing?.pricing_custom_label || '';
       $('lm_city').value = listing?.city || '';
-      $('lm_country').value = listing?.country || '';
-      $('lm_address').value = listing?.address || '';
+      $('lm_country').value = listing?.country_name || '';
+      $('lm_address').value = listing?.address_line || '';
       $('lm_latitude').value = listing?.latitude ?? '';
       $('lm_longitude').value = listing?.longitude ?? '';
       $('lm_pinToggle').checked = !!(listing?.latitude && listing?.longitude);
@@ -1465,12 +1476,12 @@
         property_type: $('lm_property_type').value,
         custom_property_type: $('lm_property_type').value === 'other' ? $('lm_custom_property_type').value.trim() : null,
         pricing_type: pt,
-        price_amount: (pt === 'negotiable') ? null : (parseFloat($('lm_price_amount').value) || null),
-        currency: ($('lm_currency').value || 'USD').toUpperCase(),
+        pricing_amount: (pt === 'negotiable') ? null : (parseFloat($('lm_price_amount').value) || null),
+        pricing_currency: ($('lm_currency').value || 'USD').toUpperCase(),
         pricing_custom_label: (pt === 'custom') ? $('lm_pricing_custom_label').value.trim() : null,
         city: $('lm_city').value.trim() || null,
-        country: $('lm_country').value.trim() || null,
-        address: $('lm_address').value.trim() || null,
+        country_name: $('lm_country').value.trim() || null,
+        address_line: $('lm_address').value.trim() || null,
         latitude: $('lm_pinToggle').checked ? (parseFloat($('lm_latitude').value) || null) : null,
         longitude: $('lm_pinToggle').checked ? (parseFloat($('lm_longitude').value) || null) : null,
         amenities: amenities

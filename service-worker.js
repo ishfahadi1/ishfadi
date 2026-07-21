@@ -75,8 +75,10 @@ const APP_SHELL = [
 ];
 
 /* ==========================================================================
-   admin.html — deliberately NOT precached. It's MFA-gated and has no
-   meaningful offline use case as an internal review tool.
+   The admin page — deliberately NOT precached. It's auth-gated and has no
+   meaningful offline use case as an internal review tool. It also no longer
+   lives at a guessable filename (admin.html is retired and now 404s), so it
+   isn't listed here by name on purpose.
    Future pages (buyer.html, host.html landing, property.html, booking.html,
    chat.html, profile.html) aren't precached yet since they don't exist;
    the HTML strategy below will apply to them automatically once they ship.

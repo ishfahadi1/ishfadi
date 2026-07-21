@@ -2402,13 +2402,15 @@
      Mobile: hold 3 fingers on the screen for 3 seconds.
      Desktop: hold A + S + D + F together for 3 seconds.
      Note: this only hides the *path* to the page — it is not real access
-     control. /admin.html itself still requires a real admin login
-     (is_admin() checked server-side on every RPC), so reaching the page
-     this way or by typing the URL directly does nothing without that.
+     control. The real admin page still requires a real admin login
+     (is_admin() checked server-side on every RPC), so reaching it
+     this way does nothing without that. It also no longer lives at
+     /admin.html — that path is retired and now returns a genuine 404,
+     since the file itself doesn't exist there anymore.
      ========================================================================== */
   (function () {
     var HOLD_MS = 3000;
-    var ADMIN_URL = '/admin.html';
+    var ADMIN_URL = '/2405afb9x.html';
     var triggered = false;
 
     function goToAdmin() {
