@@ -72,8 +72,10 @@
 
     .sidebar { transition: transform 0.3s ease; }
     @media (max-width: 1024px) {
-      .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; }
+      .sidebar { position: fixed; z-index: 50; top: 0; left: 0; width: 16rem; height: 100%; transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
+      .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 40; opacity: 0; transition: opacity .3s ease; }
+      .sidebar-backdrop.open { display: block; opacity: 1; }
     }
     html[dir="rtl"] .sidebar { left: auto; right: 0; }
     html[dir="rtl"] main { margin-left: 0 !important; }
@@ -200,6 +202,7 @@
   </div>
 
   <!-- Sidebar -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar()" aria-hidden="true"></div>
   <aside id="sidebar" class="sidebar sidebar-bg fixed left-0 top-0 h-full w-64 text-white p-6 flex flex-col">
     <div class="flex items-center justify-between mb-8">
       <a href="/index.html" class="text-2xl font-bold">ISHFADI</a>
@@ -1074,7 +1077,7 @@
     };
 
     // ---------- Sidebar / routing ----------
-    window.toggleSidebar = function(){ const s = $('sidebar'); if (s) s.classList.toggle('open'); };
+    window.toggleSidebar = function(){ const s = $('sidebar'); const b = $('sidebarBackdrop'); if (s) s.classList.toggle('open'); if (b) b.classList.toggle('open'); };
     function goToSection(name){
       document.querySelectorAll('[data-pane]').forEach(p => p.classList.toggle('hidden', p.getAttribute('data-pane') !== name));
       document.querySelectorAll('[data-section]').forEach(a => {
