@@ -29,6 +29,8 @@
   @media (max-width: 1024px) {
     .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; }
     .sidebar.open { transform: translateX(0); }
+    html[dir="rtl"] .sidebar { transform: translateX(100%); }
+    html[dir="rtl"] .sidebar.open { transform: translateX(0); }
   }
   .sidebar-bg {
     background:
@@ -51,6 +53,7 @@
     color: rgba(255,255,255,.7); transition: background .2s, color .2s; font-size:.9rem; }
   .nav-link:hover { background: rgba(255,255,255,.08); color:#fff; }
   .nav-link.active { background: rgba(255,255,255,.12); color:#fff; box-shadow: inset 3px 0 0 #d4a574; }
+  html[dir="rtl"] .nav-link.active { box-shadow: inset -3px 0 0 #d4a574; }
   .nav-link .nav-emoji { width:1.5rem; text-align:center; font-size: 1.05rem; }
   .nav-group-label { padding: 1rem 1rem .35rem; font-size:.68rem; letter-spacing:.08em;
     text-transform: uppercase; color: rgba(255,255,255,.4); font-weight:600; }
@@ -223,7 +226,7 @@
 
 
 <!-- ============ SIDEBAR ============ -->
-<aside id="sidebar" class="sidebar sidebar-bg fixed left-0 top-0 h-full w-64 text-white flex flex-col z-40 admin-app-shell" style="display:none;">
+<aside id="sidebar" class="sidebar sidebar-bg fixed start-0 top-0 h-full w-64 text-white flex flex-col z-40 admin-app-shell" style="display:none;">
   <div class="flex items-center justify-between px-6 h-16 border-b border-white/10">
     <a href="index.html" class="text-2xl font-extrabold tracking-tight">ISHFADI</a>
     <button onclick="toggleSidebar()" class="lg:hidden text-white/70 hover:text-white">
@@ -276,7 +279,7 @@
 </aside>
 
 <!-- ============ MAIN ============ -->
-<main class="lg:ml-64 min-h-screen admin-app-shell" id="mainContent" style="display:none;">
+<main class="lg:ms-64 min-h-screen admin-app-shell" id="mainContent" style="display:none;">
 
   <!-- Topbar -->
   <header class="glass border-b sticky top-0 z-30">
