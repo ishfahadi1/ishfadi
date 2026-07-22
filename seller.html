@@ -978,7 +978,11 @@
       if (folder) fd.append('folder', folder);
       const isImg = file.type.startsWith('image/');
       const res = await fetch(isImg ? CLOUDINARY_IMG_URL : CLOUDINARY_RAW_URL, { method:'POST', body: fd });
-      if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+      if (!res.ok) {
+        let detail = '';
+        try { const errJson = await res.json(); detail = errJson?.error?.message || ''; } catch(_) {}
+        throw new Error('Upload failed (' + res.status + ')' + (detail ? ': ' + detail : ''));
+      }
       const json = await res.json();
       if (!json || !json.secure_url) throw new Error('Upload response missing secure_url');
       return json.secure_url;
@@ -1583,7 +1587,7 @@
           const imageId = (result && (result.id || result.image_id)) || (Array.isArray(result) && result[0] && result[0].id);
           state.photoDraft.push({ id: imageId, url: url, is_cover: state.photoDraft.length === 0 });
           renderPhotoGrid();
-        } catch(err){ console.error(err); window.showToast('Upload failed for '+f.name, 'error'); }
+        } catch(err){ console.error(err); window.showToast('Upload failed for ' + f.name + ': ' + ((err && err.message) || 'unknown error'), 'error'); }
       }
       status.textContent = '';
       e.target.value = '';
