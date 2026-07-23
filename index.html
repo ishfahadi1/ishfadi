@@ -2399,7 +2399,14 @@
   <script>
   /* ==========================================================================
      Hidden admin entry — no visible link anywhere on the page.
-     Mobile: hold 3 fingers on the screen for 3 seconds.
+     Mobile: tap the bottom-right corner 7 times in a row, quickly
+     (same pattern as Android's "tap Build Number 7 times" trick —
+     no multi-touch involved, so it's reliable on every phone/browser.
+     A 3-finger hold was tried first but real devices/OSes routinely
+     intercept 3+ finger touches for their own gestures — reachability,
+     screenshots, accessibility — before the page ever sees all 3
+     touches land, so the timer often never started. A single tap on
+     an exact hidden spot has no such conflict.)
      Desktop: hold A + S + D + F together for 3 seconds.
      Note: this only hides the *path* to the page — it is not real access
      control. The real admin page still requires a real admin login
@@ -2419,28 +2426,32 @@
       window.location.href = ADMIN_URL;
     }
 
-    // ---- Mobile: 3-finger hold ----
-    var touchTimer = null;
+    // ---- Mobile (and any pointer device): 7 taps in the bottom-right corner within 3s ----
+    var TAP_ZONE_PX = 56;   // hidden hotspot size in the corner
+    var TAPS_NEEDED = 7;
+    var TAP_WINDOW_MS = 3000;
+    var tapTimes = [];
 
-    function clearTouchTimer() {
-      if (touchTimer) { clearTimeout(touchTimer); touchTimer = null; }
-    }
+    var tapZone = document.createElement('div');
+    tapZone.setAttribute('aria-hidden', 'true');
+    tapZone.style.cssText = [
+      'position:fixed', 'right:0', 'bottom:0',
+      'width:' + TAP_ZONE_PX + 'px', 'height:' + TAP_ZONE_PX + 'px',
+      'z-index:2147483647', 'background:transparent', 'cursor:default'
+    ].join(';');
+    document.addEventListener('DOMContentLoaded', function () {
+      document.body.appendChild(tapZone);
+    });
 
-    document.addEventListener('touchstart', function (e) {
-      if (e.touches && e.touches.length === 3) {
-        clearTouchTimer();
-        touchTimer = setTimeout(goToAdmin, HOLD_MS);
-      } else {
-        clearTouchTimer();
+    tapZone.addEventListener('click', function () {
+      var now = Date.now();
+      tapTimes.push(now);
+      tapTimes = tapTimes.filter(function (t) { return now - t <= TAP_WINDOW_MS; });
+      if (tapTimes.length >= TAPS_NEEDED) {
+        tapTimes = [];
+        goToAdmin();
       }
-    }, { passive: true });
-
-    document.addEventListener('touchmove', function (e) {
-      if (!e.touches || e.touches.length !== 3) clearTouchTimer();
-    }, { passive: true });
-
-    document.addEventListener('touchend', clearTouchTimer, { passive: true });
-    document.addEventListener('touchcancel', clearTouchTimer, { passive: true });
+    });
 
     // ---- Desktop: hold A + S + D + F together ----
     var COMBO = ['a', 's', 'd', 'f'];
@@ -2474,7 +2485,7 @@
     window.addEventListener('blur', function () {
       pressed.clear();
       clearKeyTimer();
-      clearTouchTimer();
+      tapTimes = [];
     });
   })();
   </script>
