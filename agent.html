@@ -1418,7 +1418,7 @@
     function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function initials(name){
       if (!name) return 'A';
-      return name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() || '').join('') || 'A';
+      return name.trim().split(/\s+/).slice(0,2).map(p => (p[0] && p[0].toUpperCase()) || '').join('') || 'A';
     }
     function fmtDate(iso){
       if (!iso) return '—';
@@ -1529,7 +1529,7 @@
       requestAnimationFrame(() => {
         const target = document.getElementById('dashboardChecklistCard');
         if (!target) { window.scrollTo({ top: 0, behavior:'smooth' }); return; }
-        const navH = document.querySelector('nav[aria-label="Primary"]')?.offsetHeight || 80;
+        const navH = (document.querySelector('nav[aria-label="Primary"]') || {}).offsetHeight || 80;
         const y = target.getBoundingClientRect().top + window.pageYOffset - navH - 16;
         window.scrollTo({ top: Math.max(y, 0), behavior:'smooth' });
         // Focus for keyboard users

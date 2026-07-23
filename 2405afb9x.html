@@ -784,7 +784,7 @@ async function handleMfaState(client) {
   }
 
   const { data: factorsData } = await client.auth.mfa.listFactors();
-  const verifiedTotp = (factorsData?.totp || []).find(f => f.status === 'verified');
+  const verifiedTotp = ((factorsData || {}).totp || []).find(f => f.status === 'verified');
 
   if (verifiedTotp) {
     // Factor exists -- just needs this session to complete a challenge.
@@ -796,7 +796,7 @@ async function handleMfaState(client) {
     // attempt (page reload mid-setup, etc) -- leaving these around is
     // exactly what causes "factor with this name already exists" on
     // the next enroll attempt.
-    const staleFactors = (factorsData?.totp || []).filter(f => f.status !== 'verified');
+    const staleFactors = ((factorsData || {}).totp || []).filter(f => f.status !== 'verified');
     for (const stale of staleFactors) {
       await client.auth.mfa.unenroll({ factorId: stale.id }).catch(() => {});
     }
@@ -1047,6 +1047,7 @@ const DATA = {
 
 /* ====== Helpers ====== */
 const $ = (s, r=document) => r.querySelector(s);
+function nz(v, fallback){ return (v === null || v === undefined) ? fallback : v; }
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 const fmt = n => typeof n==='number' ? n.toLocaleString() : n;
@@ -1100,9 +1101,9 @@ function renderPending(){
 }
 
 function renderUsers(){
-  const q = ($('#userSearch')?.value||'').toLowerCase();
-  const role = $('#userFilter')?.value||'';
-  const status = $('#userStatus')?.value||'';
+  const q = (($('#userSearch') || {}).value||'').toLowerCase();
+  const role = ($('#userFilter') || {}).value||'';
+  const status = ($('#userStatus') || {}).value||'';
   const rows = DATA.users.filter(r=>{
     const [n,e,ro,c,st]=r;
     return (!q||n.toLowerCase().includes(q)||e.toLowerCase().includes(q))
@@ -1166,7 +1167,7 @@ async function renderProps(){
 }
 
 async function handlePropDecision(propertyId, decision, btn) {
-  btn.closest('.bg-white')?.querySelectorAll('button').forEach(b => b.disabled = true);
+  (function(){ var __c = btn.closest('.bg-white'); if (__c) __c.querySelectorAll('button').forEach(b => b.disabled = true); })();
   const client = initAdminSupabase();
   try {
     const result = await client.rpc('admin_review_property', { p_property_id: propertyId, p_decision: decision });
@@ -1287,7 +1288,7 @@ async function renderVerif(){
 }
 
 async function handleVerifDecision(kind, userId, requestId, decision, btn) {
-  btn.closest('.flex.flex-col, .flex.flex-row')?.querySelectorAll('button').forEach(b => b.disabled = true);
+  (function(){ var __c = btn.closest('.flex.flex-col, .flex.flex-row'); if (__c) __c.querySelectorAll('button').forEach(b => b.disabled = true); })();
   const client = initAdminSupabase();
   try {
     let result;
@@ -1499,7 +1500,7 @@ function renderNotifPanel(){
 
 /* ====== Charts ====== */
 let charts = {};
-function destroyCharts(){ Object.values(charts).forEach(c=>c?.destroy?.()); charts={}; }
+function destroyCharts(){ Object.values(charts).forEach(c=>{ if (c && c.destroy) c.destroy(); }); charts={}; }
 
 function mkLine(id, labels, datasets){
   charts[id] = new Chart(document.getElementById(id),{
@@ -1589,7 +1590,7 @@ function goto(section){
   $$('[data-pane]').forEach(p=>p.classList.toggle('active', p.dataset.pane===section));
   $('#crumb').textContent = TITLES[section]||section;
   destroyCharts();
-  RENDER_MAP[section]?.();
+  if (RENDER_MAP[section]) RENDER_MAP[section]();
   if(window.innerWidth<1024) $('#sidebar').classList.remove('open');
   window.scrollTo({top:0,behavior:'smooth'});
 }

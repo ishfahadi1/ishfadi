@@ -72,12 +72,13 @@
 
     .sidebar { transition: transform 0.3s ease; }
     @media (max-width: 1024px) {
-      .sidebar { position: fixed; z-index: 50; top: 0; left: 0; width: 16rem; height: 100%; transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
+      .sidebar { position: fixed; z-index: 50; top: 0; left: 0; right: auto; width: 16rem; height: 100%; transform: translate3d(-100%,0,0); backface-visibility: hidden; }
+      .sidebar.open { transform: translate3d(0,0,0); }
       .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 40; opacity: 0; transition: opacity .3s ease; }
       .sidebar-backdrop.open { display: block; opacity: 1; }
     }
     html[dir="rtl"] .sidebar { left: auto; right: 0; }
+    html[dir="rtl"] .sidebar:not(.open) { transform: translate3d(100%,0,0); }
     html[dir="rtl"] main { margin-left: 0 !important; }
     @media (min-width: 1024px) { html[dir="rtl"] main { margin-right: 16rem; } }
 
@@ -983,7 +984,7 @@
       const res = await fetch(isImg ? CLOUDINARY_IMG_URL : CLOUDINARY_RAW_URL, { method:'POST', body: fd });
       if (!res.ok) {
         let detail = '';
-        try { const errJson = await res.json(); detail = errJson?.error?.message || ''; } catch(_) {}
+        try { const errJson = await res.json(); detail = ((errJson || {}).error || {}).message || ''; } catch(_) {}
         throw new Error('Upload failed (' + res.status + ')' + (detail ? ': ' + detail : ''));
       }
       const json = await res.json();
@@ -1022,8 +1023,10 @@
 
     // ---------- Helpers ----------
     const $ = id => document.getElementById(id);
+    function nz(v, fallback){ return (v === null || v === undefined) ? fallback : v; }
+    function on(el, evt, fn){ if (el) el.addEventListener(evt, fn); }
     function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-    function initials(name){ if (!name) return '?'; return name.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() || '').join('') || '?'; }
+    function initials(name){ if (!name) return '?'; return name.trim().split(/\s+/).slice(0,2).map(p => (p[0] && p[0].toUpperCase()) || '').join('') || '?'; }
     function fmtDate(iso){ if (!iso) return '—'; try { return new Date(iso).toLocaleDateString(window.getCurrentLang(), { year:'numeric', month:'short', day:'numeric' }); } catch(e){ return iso; } }
     function fmtMoney(amount, currency){ if (amount == null) return '—'; try { return new Intl.NumberFormat(window.getCurrentLang(), { style:'currency', currency: currency || 'USD' }).format(amount); } catch(e){ return (currency||'') + ' ' + amount; } }
     function setAvatar(node, url, name){
@@ -1175,10 +1178,10 @@
 
     function renderStats(){
       const c = state.listingCounts || {};
-      const total = c.total ?? state.listings.length;
-      const verified = c.verified ?? state.listings.filter(l => l.status === 'verified').length;
-      const pending = c.pending_review ?? state.listings.filter(l => l.status === 'pending_review').length;
-      const drafts = c.draft ?? state.listings.filter(l => l.status === 'draft').length;
+      const total = nz(c.total, state.listings.length);
+      const verified = nz(c.verified, state.listings.filter(l => l.status === 'verified').length);
+      const pending = nz(c.pending_review, state.listings.filter(l => l.status === 'pending_review').length);
+      const drafts = nz(c.draft, state.listings.filter(l => l.status === 'draft').length);
       document.querySelectorAll('[data-stat="total"]').forEach(e => e.textContent = total);
       document.querySelectorAll('[data-stat="verified"]').forEach(e => e.textContent = verified);
       document.querySelectorAll('[data-stat="pending"]').forEach(e => e.textContent = pending);
@@ -1424,21 +1427,21 @@
       const isNew = !listing;
       $('listingModalTitle').textContent = isNew ? window.t('lmod.addTitle') : window.t('lmod.editTitle');
       $('lm_id').value = listing ? listing.id : '';
-      $('lm_title').value = listing?.title || '';
-      $('lm_description').value = listing?.description || '';
-      $('lm_property_type').value = listing?.property_type || 'apartment';
-      $('lm_custom_property_type').value = listing?.custom_property_type || '';
+      $('lm_title').value = (listing || {}).title || '';
+      $('lm_description').value = (listing || {}).description || '';
+      $('lm_property_type').value = (listing || {}).property_type || 'apartment';
+      $('lm_custom_property_type').value = (listing || {}).custom_property_type || '';
       $('lm_customTypeWrap').style.display = ($('lm_property_type').value === 'other') ? 'block' : 'none';
-      $('lm_pricing_type').value = listing?.pricing_type || 'day';
-      $('lm_price_amount').value = listing?.pricing_amount ?? '';
-      $('lm_currency').value = listing?.pricing_currency || 'USD';
-      $('lm_pricing_custom_label').value = listing?.pricing_custom_label || '';
-      $('lm_city').value = listing?.city || '';
-      $('lm_country').value = listing?.country_name || '';
-      $('lm_address').value = listing?.address_line || '';
-      $('lm_latitude').value = listing?.latitude ?? '';
-      $('lm_longitude').value = listing?.longitude ?? '';
-      $('lm_pinToggle').checked = !!(listing?.latitude && listing?.longitude);
+      $('lm_pricing_type').value = (listing || {}).pricing_type || 'day';
+      $('lm_price_amount').value = nz((listing || {}).pricing_amount, '');
+      $('lm_currency').value = (listing || {}).pricing_currency || 'USD';
+      $('lm_pricing_custom_label').value = (listing || {}).pricing_custom_label || '';
+      $('lm_city').value = (listing || {}).city || '';
+      $('lm_country').value = (listing || {}).country_name || '';
+      $('lm_address').value = (listing || {}).address_line || '';
+      $('lm_latitude').value = nz((listing || {}).latitude, '');
+      $('lm_longitude').value = nz((listing || {}).longitude, '');
+      $('lm_pinToggle').checked = !!((listing || {}).latitude && (listing || {}).longitude);
       $('lm_mapWrap').classList.toggle('hidden', !$('lm_pinToggle').checked);
 
       // Pricing type visibility rules
@@ -1446,13 +1449,13 @@
 
       // Amenities
       buildAmenitiesGrid();
-      const setAmenities = Array.isArray(listing?.amenities) ? listing.amenities : [];
+      const setAmenities = Array.isArray((listing || {}).amenities) ? listing.amenities : [];
       $('lm_amenitiesGrid').querySelectorAll('.lm-amenity').forEach(cb => { cb.checked = setAmenities.includes(cb.value); });
       state.customAmenities = setAmenities.filter(a => !AMENITIES.includes(a));
       renderCustomAmenities();
 
       // Photos
-      if (Array.isArray(listing?.images)){
+      if (Array.isArray((listing || {}).images)){
         state.photoDraft = listing.images.map(im => ({ id: im.id, url: im.url || im.secure_url, is_cover: !!im.is_cover }));
       }
       renderPhotoGrid();
@@ -1541,7 +1544,7 @@
     }
 
     // Save listing
-    $('listingForm')?.addEventListener('submit', async e => {
+    on($('listingForm'), 'submit', async e => {
       e.preventDefault();
       const btn = $('lm_saveBtn'); btn.disabled = true;
       try {
@@ -1563,7 +1566,7 @@
     });
 
     // Submit for review from modal
-    $('lm_submitReview')?.addEventListener('click', async () => {
+    on($('lm_submitReview'), 'click', async () => {
       const id = $('lm_id').value; if (!id) return;
       try {
         await rpc('set_property_status', { p_property_id: id, p_action: 'submit_for_review' });
@@ -1574,7 +1577,7 @@
     });
 
     // Photo upload
-    $('lm_photoInput')?.addEventListener('change', async e => {
+    on($('lm_photoInput'), 'change', async e => {
       const propId = $('lm_id').value;
       if (!propId){ window.showToast('Save the listing as a draft first', 'error'); return; }
       const files = Array.from(e.target.files || []);
@@ -1598,7 +1601,7 @@
 
     // ---------- Verification ----------
     function renderVerifBanner(){
-      const items = CHECKLIST[state.profile?.host_type] || CHECKLIST.individual;
+      const items = CHECKLIST[(state.profile || {}).host_type] || CHECKLIST.individual;
       const missing = items.filter(it => !state.verificationDocs.find(d => d.document_type === it.key));
       const needsAction = missing.length > 0 || state.verificationStatus === 'rejected';
       $('verifBanner').classList.toggle('hidden', !needsAction);
@@ -1611,7 +1614,7 @@
 
     function renderVerificationChecklist(){
       const wrap = $('verificationChecklist'); if (!wrap) return;
-      const items = CHECKLIST[state.profile?.host_type] || CHECKLIST.individual;
+      const items = CHECKLIST[(state.profile || {}).host_type] || CHECKLIST.individual;
       // Status card
       const statusMap = { pending:['warning','Pending'], verified:['success','Verified'], rejected:['danger','Rejected'] };
       const [sc, sl] = statusMap[state.verificationStatus] || statusMap.pending;
@@ -1621,7 +1624,7 @@
       wrap.innerHTML = items.map(it => {
         const doc = state.verificationDocs.find(d => d.document_type === it.key);
         const submitted = !!doc;
-        const status = doc?.status || (submitted ? 'submitted' : 'unsubmitted');
+        const status = (doc || {}).status || (submitted ? 'submitted' : 'unsubmitted');
         const badge = status === 'approved' ? 'b-verified' : status === 'rejected' ? 'b-rejected' : submitted ? 'b-pending' : 'b-draft';
         return `
           <div class="bg-white border rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3">
@@ -1719,8 +1722,8 @@
       $('convThread').classList.remove('hidden');
       $('convThread').classList.add('flex');
       const conv = state.conversations.find(x => x.id === id);
-      $('convOtherName').textContent = conv?.other_participant_name || conv?.other_name || 'Guest';
-      $('convProperty').textContent = conv?.property_title || '';
+      $('convOtherName').textContent = (conv || {}).other_participant_name || (conv || {}).other_name || 'Guest';
+      $('convProperty').textContent = (conv || {}).property_title || '';
       setAvatar($('convOtherAvatar'), null, $('convOtherName').textContent);
       try {
         const msgs = await rpc('get_messages', { p_conversation_id: id });
@@ -1743,9 +1746,9 @@
       }).join('');
       el.scrollTop = el.scrollHeight;
     }
-    $('convBackBtn')?.addEventListener('click', () => { state.activeConversationId = null; $('convThread').classList.add('hidden'); $('convThread').classList.remove('flex'); renderConversationList(); });
+    on($('convBackBtn'), 'click', () => { state.activeConversationId = null; $('convThread').classList.add('hidden'); $('convThread').classList.remove('flex'); renderConversationList(); });
 
-    $('msgForm')?.addEventListener('submit', async e => {
+    on($('msgForm'), 'submit', async e => {
       e.preventDefault();
       if (!state.activeConversationId) return;
       const inp = $('msgInput');
@@ -1758,7 +1761,7 @@
       } catch(err){ window.showToast((err && err.message) || 'Send failed', 'error'); }
     });
 
-    $('msgAttach')?.addEventListener('change', async e => {
+    on($('msgAttach'), 'change', async e => {
       const f = e.target.files && e.target.files[0]; if (!f || !state.activeConversationId) return;
       try {
         const url = await cloudUpload(f, 'ishfadi/messages');
@@ -1790,9 +1793,9 @@
       state.availability.selectStart = null;
       await loadAvailability();
     }
-    $('availPropSel')?.addEventListener('change', async e => { state.availability.propertyId = e.target.value; state.availability.selectStart = null; await loadAvailability(); });
-    $('calPrev')?.addEventListener('click', () => { const a = state.availability; a.viewMonth--; if (a.viewMonth < 0){ a.viewMonth = 11; a.viewYear--; } renderCalendar(); });
-    $('calNext')?.addEventListener('click', () => { const a = state.availability; a.viewMonth++; if (a.viewMonth > 11){ a.viewMonth = 0; a.viewYear++; } renderCalendar(); });
+    on($('availPropSel'), 'change', async e => { state.availability.propertyId = e.target.value; state.availability.selectStart = null; await loadAvailability(); });
+    on($('calPrev'), 'click', () => { const a = state.availability; a.viewMonth--; if (a.viewMonth < 0){ a.viewMonth = 11; a.viewYear--; } renderCalendar(); });
+    on($('calNext'), 'click', () => { const a = state.availability; a.viewMonth++; if (a.viewMonth > 11){ a.viewMonth = 0; a.viewYear++; } renderCalendar(); });
 
     async function loadAvailability(){
       if (!state.availability.propertyId){ state.availability.blocks = []; renderCalendar(); renderBlockList(); return; }
@@ -1862,7 +1865,7 @@
     function renderSettings(){
       const p = state.profile || {};
       $('setName').value = p.full_name || '';
-      $('setEmail').value = p.email || state.session?.user?.email || '';
+      $('setEmail').value = p.email || ((state.session || {}).user || {}).email || '';
       $('setPhone').value = p.phone || '';
       $('setCountry').value = p.country || '';
       $('setCity').value = p.city || '';
@@ -1871,7 +1874,7 @@
       $('setNotifPush').checked = !!p.notif_push;
       setAvatar($('settingsAvatar'), p.profile_photo_url, p.full_name);
     }
-    $('settingsForm')?.addEventListener('submit', async e => {
+    on($('settingsForm'), 'submit', async e => {
       e.preventDefault();
       const btn = $('settingsSaveBtn'); btn.disabled = true;
       try {
@@ -1889,7 +1892,7 @@
       finally { btn.disabled = false; }
     });
 
-    $('settingsPhotoInput')?.addEventListener('change', async e => {
+    on($('settingsPhotoInput'), 'change', async e => {
       const f = e.target.files && e.target.files[0]; if (!f) return;
       if (!ALLOWED_IMAGE_TYPES.includes(f.type)){ window.showToast('JPG, PNG or WebP only', 'error'); e.target.value=''; return; }
       if (f.size > MAX_IMAGE_BYTES){ window.showToast('Image over 8MB', 'error'); e.target.value=''; return; }
@@ -1906,7 +1909,7 @@
     });
 
     // ---------- Notifications ----------
-    $('notifBtn')?.addEventListener('click', async () => {
+    on($('notifBtn'), 'click', async () => {
       const p = $('notifPanel'); p.classList.toggle('hidden');
       if (!p.classList.contains('hidden')) await loadNotifications();
     });
@@ -1948,7 +1951,7 @@
       const n = e.target.closest('[data-notif-id]'); if (!n) return;
       try { await rpc('mark_notification_read', { p_notification_id: n.getAttribute('data-notif-id') }); await loadNotifications(); } catch(_){}
     });
-    $('notifMarkAll')?.addEventListener('click', async () => {
+    on($('notifMarkAll'), 'click', async () => {
       try { await rpc('mark_all_notifications_read', {}); await loadNotifications(); } catch(_){}
     });
 
@@ -1957,10 +1960,10 @@
       const client = initSupabase(); if (client){ try { await client.auth.signOut(); } catch(e){} }
       window.location.replace('/index.html');
     }
-    $('sideLogoutBtn')?.addEventListener('click', doLogout);
+    on($('sideLogoutBtn'), 'click', doLogout);
 
     // ---------- Boot triggers ----------
-    $('bootRetryBtn')?.addEventListener('click', boot);
+    on($('bootRetryBtn'), 'click', boot);
     document.addEventListener('DOMContentLoaded', boot);
 
     // ---------- PWA (same guard as agent.html) ----------

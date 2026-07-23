@@ -63,8 +63,8 @@ const APP_SHELL = [
 "/icons/icon-1024.png",
 
 // Maskable icons
-"/icons/maskable-icon-192.png",
-"/icons/maskable-icon-512.png",
+"/icons/maskable-192.png",
+"/icons/maskable-512.png",
 
 // Apple
 "/icons/apple-touch-icon.png",
@@ -159,7 +159,7 @@ self.addEventListener("message", (event) => {
   }
 
   if (data && data.type === "CHECK_VERSION") {
-    event.source?.postMessage({ type: "SW_VERSION", version: CACHE_VERSION });
+    if (event.source) { event.source.postMessage({ type: "SW_VERSION", version: CACHE_VERSION }); }
   }
 });
 
@@ -256,10 +256,12 @@ async function networkFirstHTML(event) {
     const cached = await cache.match(request);
     if (cached) return cached;
 
-    const shellMatch =
-      (await caches.match(request.url)) ||
-      (await caches.match("/index.html")) ||
-      (await caches.match("/waiting-list.html"));
+    // Only serve a cached copy of the EXACT page requested (e.g. user already
+    // visited this page before going offline). Do NOT fall back to an unrelated
+    // page like index.html here — that used to silently mask this whole offline
+    // page behind the marketing homepage for any URL that wasn't in the runtime
+    // cache, since index.html is always precached and matched first.
+    const shellMatch = await caches.match(request.url);
     if (shellMatch) return shellMatch;
 
     const offline = await caches.match(OFFLINE_URL);
