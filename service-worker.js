@@ -18,7 +18,7 @@
    - Push Notifications, Notification Click, Background Sync, Update flow
    ========================================================================== */
 
-const CACHE_VERSION = "v3.0.2";
+const CACHE_VERSION = "v3.0.3";
 
 /* ==========================================================================
    Cache Names — one purpose per cache, never mixed
@@ -67,8 +67,7 @@ const APP_SHELL = [
 "/icons/maskable-512.png",
 
 // Apple
-"/icons/apple-touch-icon.png",
-"/icons/apple-touch-icon-180.png",
+"/icons/icon-180.png",
 
 // Favicons
 "/favicon.ico",

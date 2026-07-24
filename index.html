@@ -2313,7 +2313,7 @@
       const inPreview = host.startsWith('id-preview--') || host.startsWith('preview--') || host.endsWith('.lovableproject.com') || host.endsWith('.lovableproject-dev.com') || host.endsWith('.beta.lovable.dev');
       const inIframe = window.top !== window.self;
       if (!inPreview && !inIframe) {
-        window.addEventListener('load', () => { navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(()=>{}); });
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch((err) => { console.error('Service worker registration failed:', err); }); });
       }
     }
 
