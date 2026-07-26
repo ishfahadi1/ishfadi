@@ -373,13 +373,12 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="font-semibold text-gray-800">Platform growth</h3>
-            <p class="text-xs text-gray-500">Users, properties & revenue · last 12 months</p>
+            <p class="text-xs text-gray-500">Needs a daily-snapshots table to show real history</p>
           </div>
-          <select class="text-sm border rounded-lg px-2 py-1 bg-white">
-            <option>Last 12 months</option><option>Last 6 months</option><option>This year</option>
-          </select>
         </div>
-        <canvas id="growthChart" height="120"></canvas>
+        <div class="rounded-xl border border-dashed p-8 text-center text-sm text-gray-400">
+          Historical growth trends aren't tracked yet — only current totals (shown in the KPI cards above) are real right now. Tell me if you want a daily-snapshot table built for this.
+        </div>
       </div>
       <div class="bg-white rounded-2xl p-6 border">
         <h3 class="font-semibold text-gray-800 mb-4">User mix</h3>
@@ -406,18 +405,23 @@
   <!-- ANALYTICS -->
   <section data-pane="analytics" class="p-4 sm:p-6">
     <div class="grid lg:grid-cols-2 gap-6 mb-6">
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Monthly revenue</h3><canvas id="revChart" height="160"></canvas></div>
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">User acquisition</h3><canvas id="acqChart" height="160"></canvas></div>
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Properties by country</h3><canvas id="countryChart" height="160"></canvas></div>
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Agent performance</h3><canvas id="agentChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold mb-3">Monthly revenue</h3>
+        <div class="rounded-xl border border-dashed p-6 text-center text-sm text-gray-400">No payments backend yet.</div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold mb-3">User acquisition trend</h3>
+        <div class="rounded-xl border border-dashed p-6 text-center text-sm text-gray-400">Needs a daily-snapshots table to show real history.</div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Users by country</h3><canvas id="countryChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold mb-3">Agent performance trend</h3>
+        <div class="rounded-xl border border-dashed p-6 text-center text-sm text-gray-400">Needs a daily-snapshots table to show real history.</div>
+      </div>
       <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Referral funnel</h3><canvas id="funnelChart" height="160"></canvas></div>
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">System health</h3>
-        <div class="space-y-4">
-          <div><div class="flex justify-between text-sm mb-1"><span>API uptime</span><span class="font-semibold text-success">99.98%</span></div><div class="progress"><span style="width:99.98%"></span></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>Avg response</span><span class="font-semibold">142ms</span></div><div class="progress"><span style="width:72%"></span></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>Database load</span><span class="font-semibold text-warning">63%</span></div><div class="progress"><span style="width:63%"></span></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>Storage used</span><span class="font-semibold">412 GB / 1 TB</span></div><div class="progress"><span style="width:41%"></span></div></div>
-        </div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold mb-3">System health</h3>
+        <div class="rounded-xl border border-dashed p-6 text-center text-sm text-gray-400">Not connected to any monitoring/observability service yet.</div>
       </div>
     </div>
   </section>
@@ -526,16 +530,6 @@
   <!-- REVENUE -->
   <section data-pane="revenue" class="p-4 sm:p-6">
     <div class="grid sm:grid-cols-4 gap-4 mb-6" id="revKpis"></div>
-    <div class="grid lg:grid-cols-3 gap-6 mb-6">
-      <div class="lg:col-span-2 bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-3">Revenue trend</h3>
-        <canvas id="revTrend" height="120"></canvas>
-      </div>
-      <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-3">Revenue mix</h3>
-        <canvas id="revMix" height="180"></canvas>
-      </div>
-    </div>
     <div class="bg-white rounded-2xl border overflow-hidden">
       <div class="p-5 border-b"><h3 class="font-semibold">Latest transactions</h3></div>
       <div class="overflow-x-auto"><table class="enterprise">
@@ -568,7 +562,7 @@
         <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg">+ Add country</button>
       </div>
       <div class="overflow-x-auto"><table class="enterprise">
-        <thead><tr><th>Country</th><th>Users</th><th>Properties</th><th>Revenue</th><th>Growth</th><th>Status</th></tr></thead>
+        <thead><tr><th>Country</th><th>Users</th><th>Properties</th><th>Status</th></tr></thead>
         <tbody id="countriesTable"></tbody>
       </table></div>
     </div>
@@ -641,19 +635,16 @@
   <section data-pane="communication" class="p-4 sm:p-6">
     <div class="bg-white rounded-2xl border grid md:grid-cols-3 min-h-[480px] overflow-hidden">
       <div class="border-r">
-        <div class="p-4 border-b"><input placeholder="Search threads" class="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+        <div class="p-4 border-b"><input id="threadSearch" oninput="filterThreads(this.value)" placeholder="Search threads" class="w-full px-3 py-2 border rounded-lg text-sm" /></div>
         <div id="threadList" class="divide-y max-h-[460px] overflow-auto"></div>
       </div>
       <div class="md:col-span-2 flex flex-col">
-        <div class="p-4 border-b flex items-center gap-3">
-          <div class="avatar w-9 h-9">AM</div>
-          <div><p class="font-semibold text-sm">Amani Khalid</p><p class="text-xs text-gray-500">Agent · UAE</p></div>
+        <div id="chatHeader" class="p-4 border-b flex items-center gap-3">
+          <div class="avatar w-9 h-9">—</div>
+          <div><p class="font-semibold text-sm">Select a conversation</p><p class="text-xs text-gray-500">Real, read-only oversight</p></div>
         </div>
         <div id="chatBody" class="flex-1 p-5 space-y-3 overflow-auto bg-slate-50"></div>
-        <div class="p-3 border-t flex gap-2">
-          <input placeholder="Reply…" class="flex-1 px-3 py-2 border rounded-lg text-sm" />
-          <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold">Send</button>
-        </div>
+        <div class="p-3 border-t text-xs text-gray-400 text-center">Admin reply isn't available yet — this view is read-only oversight of real user↔user conversations.</div>
       </div>
     </div>
   </section>
@@ -680,12 +671,12 @@
       <div class="lg:col-span-2 bg-white rounded-2xl border overflow-hidden">
         <div class="p-5 border-b"><h3 class="font-semibold">Audit log</h3></div>
         <div class="overflow-x-auto"><table class="enterprise">
-          <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>IP</th></tr></thead>
+          <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th></tr></thead>
           <tbody id="auditTable"></tbody>
         </table></div>
       </div>
       <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-4">Permission matrix</h3>
+        <h3 class="font-semibold mb-4">Admin access</h3>
         <div id="permMatrix" class="space-y-2 text-sm"></div>
       </div>
     </div>
@@ -752,6 +743,11 @@ function authGateShowStep(step) {
   authGateEls.stepPassword.classList.toggle('hidden', step !== 'password');
   authGateEls.stepMfaChallenge.classList.toggle('hidden', step !== 'challenge');
   authGateEls.stepMfaEnroll.classList.toggle('hidden', step !== 'enroll');
+}
+
+function setDate(){
+  const el = $('#todayDate');
+  if (el) el.textContent = new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
 }
 
 async function unlockDashboard() {
@@ -907,144 +903,6 @@ window.adminSignOut = adminSignOut;
   }
 })();
 
-</script>
-<script>
-/* ============================================================
-   ISHFADI ADMIN — Frontend only
-   Hardcoded enterprise demo data, structured so swapping to
-   Supabase later is a one-line change per loader function.
-   ============================================================ */
-const DATA = {
-  kpis: [
-    { label:'Total users',       value: 18432, delta:'+12.4%', color:'primary', icon:'👥' },
-    { label:'Buyers',            value: 11250, delta:'+8.1%',  color:'info',    icon:'🔎' },
-    { label:'Sellers',           value:  4820, delta:'+15.3%', color:'success', icon:'🏷️' },
-    { label:'Agents',            value:   942, delta:'+6.7%',  color:'gold',    icon:'🤝' },
-    { label:'Waiting list',      value:   312, delta:'+22%',   color:'warning', icon:'⏳' },
-    { label:'Verified users',    value: 14201, delta:'+9%',    color:'success', icon:'✅' },
-    { label:'Properties',        value:  7621, delta:'+11%',   color:'primary', icon:'🏡' },
-    { label:'Verified listings', value:  6480, delta:'+13%',   color:'info',    icon:'🛡️' },
-    { label:'Revenue (MTD)',     value: '$284k', delta:'+18%', color:'success', icon:'💰' },
-    { label:'Countries',         value:    27, delta:'+2',     color:'primary', icon:'🌍' },
-    { label:'Cities',            value:   312, delta:'+9',     color:'info',    icon:'📍' },
-    { label:'Growth rate',       value: '6.4%', delta:'+0.8',  color:'success', icon:'📈' },
-    { label:'Subscriptions',     value:  1820, delta:'+4.2%',  color:'primary', icon:'🎟️' },
-    { label:'Pending reviews',   value:    48, delta:'-12',    color:'warning', icon:'🕒' },
-    { label:'Open reports',      value:     7, delta:'+3',     color:'danger',  icon:'🚩' },
-    { label:'New today',         value:    23, delta:'+5',     color:'info',    icon:'🌟' },
-  ],
-  activity: [
-    { who:'Amani Khalid', action:'approved property', target:'Marina Heights #2104', t:'2m ago', tag:'approval' },
-    { who:'System',       action:'flagged user',      target:'jdoe@example.com',      t:'14m ago', tag:'security' },
-    { who:'Layla Hassan', action:'paid commission',   target:'$1,820 → Yusuf A.',     t:'1h ago',  tag:'revenue' },
-    { who:'Rashid Saeed', action:'updated CMS',       target:'Homepage hero',          t:'3h ago',  tag:'cms' },
-    { who:'Omar Idris',   action:'verified agent',    target:'Sara Lopez',             t:'5h ago',  tag:'verify' },
-    { who:'System',       action:'auto-rejected listing', target:'#9921 (low quality images)', t:'Yesterday', tag:'system' },
-  ],
-  pending: [
-    { label:'Verifications', n:24, to:'verification' },
-    { label:'Property listings', n:12, to:'properties' },
-    { label:'Agent applications', n:8, to:'agents' },
-    { label:'User reports', n:7, to:'reports' },
-    { label:'Refund requests', n:3, to:'revenue' },
-  ],
-  users: [
-    ['Amani Khalid','amani@ishfadi.com','Agent','UAE','Active','2024-11-12'],
-    ['John Doe','john.doe@example.com','Buyer','USA','Active','2025-02-04'],
-    ['Layla Hassan','layla@ishfadi.com','Seller','Egypt','Pending','2025-03-21'],
-    ['Yusuf Ahmed','yusuf@property.io','Agent','Saudi Arabia','Active','2024-08-09'],
-    ['Sara Lopez','sara@latam.co','Buyer','Spain','Suspended','2025-01-17'],
-    ['Omar Idris','omar.id@host.com','Seller','Morocco','Active','2025-04-02'],
-    ['Maya Chen','maya@homes.cn','Buyer','China','Active','2025-05-11'],
-    ['Kareem N.','kareem@brokers.qa','Agent','Qatar','Active','2024-12-29'],
-  ],
-  properties: [
-    { title:'Marina Heights #2104', city:'Dubai', price:'$1.2M', status:'Pending',  img:'🏙️', owner:'Layla H.' },
-    { title:'Palm Villa 14',         city:'Abu Dhabi', price:'$3.4M', status:'Approved', img:'🏝️', owner:'Yusuf A.' },
-    { title:'Cairo Loft 7B',         city:'Cairo', price:'$320K', status:'Featured', img:'🏢', owner:'Omar I.' },
-    { title:'Riyadh Tower 19',       city:'Riyadh', price:'$2.1M', status:'Rejected', img:'🌆', owner:'Kareem N.' },
-    { title:'Madrid Suite 3',        city:'Madrid', price:'$540K', status:'Approved', img:'🏘️', owner:'Sara L.' },
-    { title:'Beijing Skyhome',       city:'Beijing', price:'$1.8M', status:'Expired',  img:'🌇', owner:'Maya C.' },
-    { title:'Casablanca Estate',     city:'Casablanca', price:'$760K', status:'Hidden',   img:'🏛️', owner:'Omar I.' },
-    { title:'Doha Pearl 88',         city:'Doha', price:'$2.6M', status:'Approved', img:'🌉', owner:'Kareem N.' },
-    { title:'Alex Coast Villa',      city:'Alexandria', price:'$890K', status:'Pending',  img:'🏖️', owner:'Layla H.' },
-  ],
-  propTabs: ['All','Pending','Approved','Rejected','Featured','Expired','Hidden'],
-  agents: [
-    ['Amani Khalid','UAE','Gold',  48,'$28,400', 'Yes','Active'],
-    ['Yusuf Ahmed','Saudi Arabia','Platinum', 62,'$41,200','Yes','Active'],
-    ['Kareem N.','Qatar','Silver', 21,'$11,800','Yes','Active'],
-    ['Sara Lopez','Spain','Bronze',  8,'$3,600','No', 'Pending'],
-    ['Hassan Ali','Egypt','Gold',   37,'$22,500','Yes','Active'],
-    ['Nadia M.','Morocco','Silver', 19,'$9,400','Yes','Active'],
-  ],
-  waiting: [
-    ['Ali Mansour','ali@m.com','Buyer','UAE','Instagram','2025-06-12'],
-    ['Fatma Y.','fatma@y.com','Seller','Egypt','Referral','2025-06-15'],
-    ['George Park','gp@p.io','Agent','Korea','Google','2025-06-17'],
-    ['Aisha B.','aisha@b.com','Buyer','Nigeria','TikTok','2025-06-19'],
-    ['Carlos R.','carlos@r.es','Buyer','Spain','Friend','2025-06-21'],
-    ['Mei Wong','mei@w.cn','Seller','China','LinkedIn','2025-06-23'],
-  ],
-  verif: [
-    { user:'Sara Lopez', type:'National ID',  country:'Spain',  submitted:'2 days ago' },
-    { user:'Layla Hassan', type:'Property deed', country:'Egypt', submitted:'5 hours ago' },
-    { user:'Maya Chen',  type:'Business license', country:'China', submitted:'Yesterday' },
-    { user:'Ali Mansour', type:'GPS location',  country:'UAE',    submitted:'1 hour ago' },
-  ],
-  transactions: [
-    ['TX-10231','Amani Khalid','Commission','$1,820','Paid','2026-06-20'],
-    ['TX-10232','Yusuf Ahmed','Subscription','$49','Paid','2026-06-21'],
-    ['TX-10233','Layla Hassan','Listing fee','$120','Pending','2026-06-22'],
-    ['TX-10234','Sara Lopez','Refund','-$49','Refunded','2026-06-23'],
-    ['TX-10235','Kareem N.','Commission','$840','Paid','2026-06-24'],
-  ],
-  countries: [
-    ['🇦🇪 UAE',5420,1820,'$120k','+18%','Active'],
-    ['🇸🇦 Saudi Arabia',3210,1402,'$98k','+22%','Active'],
-    ['🇪🇬 Egypt',2840,940,'$42k','+11%','Active'],
-    ['🇶🇦 Qatar',1820,610,'$54k','+8%','Active'],
-    ['🇪🇸 Spain',1240,420,'$31k','+14%','Active'],
-    ['🇲🇦 Morocco',780,260,'$12k','+6%','Active'],
-    ['🇨🇳 China',640,180,'$22k','+9%','Pilot'],
-  ],
-  reports: [
-    ['RP-501','Fraud','Suspicious listing #9921','Maya Chen','High','Open'],
-    ['RP-502','Property','Wrong location','John Doe','Medium','In review'],
-    ['RP-503','User','Spam messages','Sara Lopez','Low','Open'],
-    ['RP-504','Agent','Misrepresentation','Layla Hassan','High','Open'],
-    ['RP-505','Fraud','Duplicate account','System','Medium','Resolved'],
-    ['RP-506','Property','Outdated price','Omar Idris','Low','Open'],
-    ['RP-507','User','Harassment','Ali Mansour','High','In review'],
-  ],
-  notifs: [
-    { t:'New agent application', d:'Sara Lopez applied to become an agent.', when:'2m', tag:'agent' },
-    { t:'Property flagged',      d:'Listing #9921 was flagged for fraud.',     when:'14m', tag:'report' },
-    { t:'Payout processed',      d:'$1,820 paid to Amani Khalid.',             when:'1h',  tag:'revenue' },
-    { t:'Verification queued',   d:'12 documents awaiting review.',            when:'3h',  tag:'verify' },
-  ],
-  threads: [
-    { name:'Amani Khalid', role:'Agent · UAE', last:'Thanks for the quick approval!', unread:0, init:'AM' },
-    { name:'Layla Hassan', role:'Seller · Egypt', last:'When will the deed be reviewed?', unread:2, init:'LH' },
-    { name:'Sara Lopez',   role:'Buyer · Spain', last:'My account was suspended…', unread:1, init:'SL' },
-    { name:'Kareem N.',    role:'Agent · Qatar', last:'Sending updated commission report.', unread:0, init:'KN' },
-  ],
-  audit: [
-    ['09:42','Rashid Saeed','Approved property','#2104 Marina Heights','41.221.10.8'],
-    ['09:11','Layla Hassan','Updated profile','Self','89.21.4.66'],
-    ['08:50','System','Auto-flagged user','jdoe@example.com','—'],
-    ['08:20','Omar Idris','Verified agent','Sara Lopez','156.21.55.4'],
-    ['07:58','Rashid Saeed','Changed permission','Role: Moderator','41.221.10.8'],
-  ],
-  perms: [
-    ['Super Admin', 'Full access'],
-    ['Admin', 'Manage users, properties, reports'],
-    ['Moderator', 'Review listings & verifications'],
-    ['Finance', 'Revenue & payouts only'],
-    ['Support', 'Read-only + messaging'],
-  ],
-};
-
 /* ====== Helpers ====== */
 const $ = (s, r=document) => r.querySelector(s);
 function nz(v, fallback){ return (v === null || v === undefined) ? fallback : v; }
@@ -1066,9 +924,57 @@ function colorBg(c){
           warning:'bg-amber-50 text-amber-600',danger:'bg-red-50 text-red-600',gold:'bg-yellow-50 text-yellow-700'}[c]||'bg-slate-100 text-slate-700';
 }
 
-/* ====== Renderers ====== */
-function renderKpis(){
-  $('#kpiGrid').innerHTML = DATA.kpis.map(k=>`
+function timeAgo(iso){
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if (h < 24) return h+'h ago';
+  const d = Math.floor(h/24);
+  if (d < 30) return d+'d ago';
+  return new Date(iso).toLocaleDateString();
+}
+
+let _dashSummaryCache = null;
+async function loadDashboardSummary(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_dashboard_summary');
+  if (error) { $('#kpiGrid').innerHTML = '<p class="text-sm text-red-500 col-span-full">Failed to load: '+error.message+'</p>'; return null; }
+  _dashSummaryCache = data;
+  return data;
+}
+
+async function renderDashboard(){
+  _dashSummaryCache = null;
+  $('#kpiGrid').innerHTML = '<p class="text-sm text-gray-400 col-span-full">Loading real data…</p>';
+  $('#activityFeed').innerHTML = '<p class="p-4 text-sm text-gray-400">Loading real data…</p>';
+  $('#pendingQueue').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
+  const d = await loadDashboardSummary();
+  if (!d) return;
+  renderKpis(d); renderActivity(d); renderPending(d); renderDashboardCharts(d);
+}
+
+function renderKpis(d){
+  d = d || _dashSummaryCache; if (!d) return;
+  const tiles = [
+    { label:'Total users',        value: d.total_reserved,      color:'primary', icon:'👥' },
+    { label:'Buyers',              value: d.total_buyers,         color:'info',    icon:'🔎' },
+    { label:'Hosts',                value: d.total_hosts,           color:'success', icon:'🏷️' },
+    { label:'Agents',               value: d.total_agents,          color:'gold',    icon:'🤝' },
+    { label:'Waiting list',         value: d.waiting_list,          color:'warning', icon:'⏳' },
+    { label:'Verified users',       value: d.verified_users,        color:'success', icon:'✅' },
+    { label:'Properties',           value: d.properties_total,      color:'primary', icon:'🏡' },
+    { label:'Verified listings',    value: d.verified_listings,     color:'info',    icon:'🛡️' },
+    { label:'Active countries',     value: d.countries_active,      color:'primary', icon:'🌍' },
+    { label:'Active cities',        value: d.cities_active,         color:'info',    icon:'📍' },
+    { label:'New today',            value: d.new_today,             color:'info',    icon:'🌟' },
+    { label:'Signups (24h)',        value: d.signups_last_24h,      color:'success', icon:'📈' },
+    { label:'Pending agent reviews',value: d.pending_agent_reviews, color:'warning', icon:'🕒' },
+    { label:'Pending listings',     value: d.pending_properties,    color:'warning', icon:'🏗️' },
+  ];
+  $('#kpiGrid').innerHTML = tiles.map(k=>`
     <div class="bg-white rounded-2xl p-5 border card-hover">
       <div class="flex items-start justify-between">
         <div>
@@ -1077,59 +983,82 @@ function renderKpis(){
         </div>
         <div class="kpi-icon ${colorBg(k.color)}">${k.icon}</div>
       </div>
-      <p class="text-xs mt-2 ${k.delta.startsWith('-')?'text-danger':'text-success'}">${k.delta.startsWith('-')?'▼':'▲'} ${k.delta.replace(/^[-+]/,'')} vs last period</p>
     </div>`).join('');
 }
 
-function renderActivity(){
-  $('#activityFeed').innerHTML = DATA.activity.map(a=>`
+function renderActivity(d){
+  d = d || _dashSummaryCache; if (!d) return;
+  const items = d.recent_activity || [];
+  $('#activityFeed').innerHTML = items.length ? items.map(a=>`
     <div class="p-4 flex items-start gap-3">
-      <div class="avatar w-9 h-9">${initials(a.who)}</div>
+      <div class="avatar w-9 h-9">${initials(a.admin_name || 'Admin')}</div>
       <div class="flex-1 min-w-0">
-        <p class="text-sm"><span class="font-semibold">${a.who}</span> ${a.action} <span class="text-gray-500">${a.target}</span></p>
-        <p class="text-xs text-gray-400 mt-0.5">${a.t} · <span class="badge badge-muted">${a.tag}</span></p>
+        <p class="text-sm"><span class="font-semibold">${a.admin_name || 'Admin'}</span> ${(a.action||'').replace(/_/g,' ')}${a.target_name ? ' <span class="text-gray-500">'+a.target_name+'</span>' : ''}</p>
+        <p class="text-xs text-gray-400 mt-0.5">${timeAgo(a.time)}</p>
       </div>
-    </div>`).join('');
+    </div>`).join('') : '<p class="p-6 text-center text-sm text-gray-400">No admin activity yet.</p>';
 }
 
-function renderPending(){
-  $('#pendingQueue').innerHTML = DATA.pending.map(p=>`
+function renderPending(d){
+  d = d || _dashSummaryCache; if (!d) return;
+  const items = [
+    { label:'Verifications (agents & hosts)', n: d.pending_agent_reviews, to:'verification' },
+    { label:'Property listings',               n: d.pending_properties,   to:'properties' },
+  ];
+  $('#pendingQueue').innerHTML = items.map(p=>`
     <button class="w-full flex items-center justify-between p-3 rounded-xl border hover:bg-slate-50" onclick="goto('${p.to}')">
       <span class="text-sm font-medium">${p.label}</span>
       <span class="badge badge-warning">${p.n}</span>
     </button>`).join('');
 }
 
-function renderUsers(){
-  const q = (($('#userSearch') || {}).value||'').toLowerCase();
+let _usersCache = [];
+async function renderUsers(){
+  const q = (($('#userSearch') || {}).value||'');
   const role = ($('#userFilter') || {}).value||'';
   const status = ($('#userStatus') || {}).value||'';
-  const rows = DATA.users.filter(r=>{
-    const [n,e,ro,c,st]=r;
-    return (!q||n.toLowerCase().includes(q)||e.toLowerCase().includes(q))
-      && (!role||ro===role) && (!status||st===status);
-  });
-  $('#usersTable').innerHTML = rows.map(r=>`
+  $('#usersTable').innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-6">Loading real data…</td></tr>';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_users_list', { p_search: q, p_role: role, p_status: status, p_limit: 200, p_offset: 0 });
+  if (error) { $('#usersTable').innerHTML = '<tr><td colspan="6" class="text-center text-red-500 py-6">Failed to load: '+error.message+'</td></tr>'; return; }
+  const rows = data.rows || [];
+  _usersCache = rows;
+  $('#usersTable').innerHTML = rows.length ? rows.map(r=>`
     <tr>
       <td>
         <div class="flex items-center gap-3">
-          <div class="avatar w-9 h-9">${initials(r[0])}</div>
-          <div><p class="font-medium">${r[0]}</p><p class="text-xs text-gray-500">${r[1]}</p></div>
+          <div class="avatar w-9 h-9">${initials(r.full_name)}</div>
+          <div><p class="font-medium">${r.full_name}</p><p class="text-xs text-gray-500">${r.email}</p></div>
         </div>
       </td>
-      <td>${badgeFor(r[2])}</td>
-      <td>${r[3]}</td>
-      <td>${badgeFor(r[4])}</td>
-      <td class="text-gray-500">${r[5]}</td>
+      <td>${(r.roles||[]).join(', ')}</td>
+      <td>${r.country}</td>
+      <td>${badgeFor(statusLabel(r.status))}</td>
+      <td class="text-gray-500">${new Date(r.created_at).toLocaleDateString()}</td>
       <td>
         <div class="flex gap-2">
-          <button class="text-primary hover:underline text-sm" onclick="openUser('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}')">View</button>
-          <button class="text-gray-500 hover:text-danger text-sm" onclick="toast('User suspended','success')">Suspend</button>
+          <button class="text-primary hover:underline text-sm" onclick="openUser('${r.user_id}')">View</button>
+          ${r.status !== 'cancelled'
+            ? `<button class="text-gray-500 hover:text-danger text-sm" onclick="handleUserStatus('${r.user_id}','cancelled')">Cancel account</button>`
+            : `<button class="text-gray-500 hover:text-success text-sm" onclick="handleUserStatus('${r.user_id}','activated')">Reactivate</button>`}
         </div>
       </td>
-    </tr>`).join('');
-  $('#usersCount').textContent = `Showing ${rows.length} of ${DATA.users.length}`;
+    </tr>`).join('') : '<tr><td colspan="6" class="text-center text-gray-400 py-6">No users match.</td></tr>';
+  $('#usersCount').textContent = `Showing ${rows.length} of ${data.total}`;
 }
+
+function statusLabel(s){ return {reserved:'Pending', verified:'Verified', activated:'Active', cancelled:'Suspended'}[s] || s; }
+
+async function handleUserStatus(userId, status){
+  const msg = status === 'cancelled' ? 'Cancel this account? The user will lose access immediately.' : 'Reactivate this account?';
+  if (!confirm(msg)) return;
+  const client = initAdminSupabase();
+  const { error } = await client.rpc('admin_set_user_status', { p_user_id: userId, p_status: status });
+  if (error) { toast('Failed: ' + error.message, 'error'); return; }
+  toast(status === 'cancelled' ? 'Account cancelled' : 'Account reactivated', 'success');
+  renderUsers();
+}
+window.handleUserStatus = handleUserStatus;
 
 async function renderProps(){
   $('#propTabs').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
@@ -1308,194 +1237,268 @@ async function handleVerifDecision(kind, userId, requestId, decision, btn) {
 }
 window.handleVerifDecision = handleVerifDecision;
 
+function notBuiltPlaceholder(containerId, title, reason){
+  const el = $('#'+containerId);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="col-span-full bg-white rounded-2xl border border-dashed p-10 text-center">
+      <div class="text-4xl mb-3">🚧</div>
+      <p class="font-semibold text-gray-700">${title} isn't connected to real data yet</p>
+      <p class="text-sm text-gray-500 mt-1 max-w-md mx-auto">${reason}</p>
+    </div>`;
+}
+
 function renderRevenue(){
-  $('#revKpis').innerHTML = [
-    {l:'Total revenue',v:'$2.84M',c:'success',i:'💰'},
-    {l:'MTD income',v:'$284k',c:'primary',i:'📈'},
-    {l:'Projected (mo)',v:'$320k',c:'info',i:'🎯'},
-    {l:'Refunds',v:'$1.2k',c:'danger',i:'↩️'},
-  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
-    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
-    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  $('#txTable').innerHTML = DATA.transactions.map(t=>`<tr>
-    <td class="font-mono text-xs">${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td>
-    <td class="font-semibold">${t[3]}</td><td>${badgeFor(t[4])}</td><td class="text-gray-500">${t[5]}</td></tr>`).join('');
-}
-
-function renderReferrals(){
-  $('#refKpis').innerHTML = [
-    {l:'Total clicks',v:'48,290',c:'info',i:'🖱️'},
-    {l:'Signups',v:'5,420',c:'primary',i:'📝'},
-    {l:'Verified',v:'3,180',c:'success',i:'✅'},
-    {l:'Conversion',v:'6.6%',c:'gold',i:'🎯'}
-  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
-    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
-    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  const funnel=[['Link clicks',48290,100],['Signups',5420,11.2],['Verified',3180,6.6],['Active users',2410,5.0],['Paying',820,1.7]];
-  $('#refFunnel').innerHTML = funnel.map(f=>`
-    <div><div class="flex justify-between text-sm mb-1"><span>${f[0]}</span><span class="text-gray-500">${fmt(f[1])} · ${f[2]}%</span></div>
-    <div class="progress"><span style="width:${f[2]}%"></span></div></div>`).join('');
-  $('#topReferrers').innerHTML = DATA.agents.slice(0,5).map((a,i)=>`
-    <div class="flex items-center gap-3"><span class="w-6 text-center font-bold ${i<3?'text-amber-600':'text-gray-400'}">${i+1}</span>
-      <div class="avatar w-9 h-9">${initials(a[0])}</div>
-      <div class="flex-1"><p class="text-sm font-medium">${a[0]}</p><p class="text-xs text-gray-500">${a[3]} referrals</p></div>
-      <span class="text-sm font-semibold">${a[4]}</span></div>`).join('');
-}
-
-function renderCountries(){
-  $('#countriesTable').innerHTML = DATA.countries.map(r=>`<tr>
-    <td class="font-semibold">${r[0]}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td>
-    <td class="font-semibold">${r[3]}</td><td class="text-success">${r[4]}</td><td>${badgeFor(r[5])}</td></tr>`).join('');
-}
-
-function renderRankings(){
-  const tiers=[['Platinum','🏆',95],['Gold','🥇',72],['Silver','🥈',55],['Bronze','🥉',30]];
-  $('#rankTiers').innerHTML = tiers.map(t=>`
-    <div class="p-3 border rounded-xl flex items-center gap-3">
-      <span class="text-2xl">${t[1]}</span>
-      <div class="flex-1"><p class="font-semibold">${t[0]}</p>
-        <div class="progress mt-1"><span style="width:${t[2]}%"></span></div></div>
-      <span class="text-sm text-gray-500">${t[2]}%</span></div>`).join('');
-  $('#topProps').innerHTML = DATA.properties.slice(0,6).map((p,i)=>`
-    <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-      <span class="w-6 text-center font-bold text-gray-400">${i+1}</span>
-      <span class="text-2xl">${p.img}</span>
-      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${p.title}</p><p class="text-xs text-gray-500">${p.city}</p></div>
-      <span class="font-semibold text-primary">${p.price}</span></div>`).join('');
+  notBuiltPlaceholder('revKpis', 'Revenue', 'Payments is a later phase of the build — there is no transactions table yet, so nothing real to show. This will connect once payments ships.');
+  $('#txTable').innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">No payments backend yet.</td></tr>';
 }
 
 function renderReports(){
-  $('#reportKpis').innerHTML = [
-    {l:'Open',v:7,c:'danger',i:'🚩'},{l:'In review',v:12,c:'warning',i:'🔍'},
-    {l:'Resolved (mo)',v:84,c:'success',i:'✅'},{l:'Avg response',v:'4.2h',c:'info',i:'⏱️'}
-  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
-    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
-    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  $('#reportTable').innerHTML = DATA.reports.map(r=>`<tr>
-    <td class="font-mono text-xs">${r[0]}</td><td>${badgeFor(r[1]==='Fraud'?'High':'Medium').replace(/High|Medium/,r[1])}</td>
-    <td>${r[2]}</td><td class="text-gray-500">${r[3]}</td><td>${badgeFor(r[4])}</td><td>${badgeFor(r[5])}</td>
-    <td><button class="text-primary hover:underline text-sm">Resolve</button></td></tr>`).join('');
+  notBuiltPlaceholder('reportKpis', 'Reports', 'There is no user-reports/flagging table in the database yet. Tell me if you want this built — it needs a real table plus review workflow.');
+  $('#reportTable').innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-10">No reports backend yet.</td></tr>';
 }
 
 function renderCMS(){
-  const cards=[
-    {t:'Homepage hero',d:'Edit hero copy, CTA & background.',i:'🎨'},
-    {t:'Testimonials',d:'Curate user testimonials.',i:'💬'},
-    {t:'FAQs',d:'Manage FAQ entries by category.',i:'❓'},
-    {t:'Announcements',d:'Site-wide announcement bar.',i:'📣'},
-    {t:'Newsletter',d:'Templates & subscriber list.',i:'📧'},
-    {t:'Community links',d:'Discord, Telegram, social.',i:'🌐'},
-    {t:'Footer editor',d:'Footer columns & links.',i:'📄'},
-    {t:'Blog posts',d:'Articles & SEO metadata.',i:'📝'},
-    {t:'Legal pages',d:'Terms, Privacy, Safety.',i:'⚖️'},
-  ];
-  $('#cmsGrid').innerHTML = cards.map(c=>`
-    <div class="bg-white rounded-2xl p-5 border card-hover">
-      <div class="kpi-icon ${colorBg('primary')} mb-3">${c.i}</div>
-      <p class="font-semibold">${c.t}</p>
-      <p class="text-sm text-gray-500 mt-1">${c.d}</p>
-      <button class="mt-4 text-primary text-sm font-semibold hover:underline">Edit →</button>
-    </div>`).join('');
+  notBuiltPlaceholder('cmsGrid', 'CMS', 'There is no content-management table yet (homepage copy, FAQs, legal pages, etc. aren\'t stored in the database). Tell me if you want this built.');
 }
 
 function renderBroadcasts(){
-  const rows=[['Welcome to ISHFADI','All users','Email','2 days ago','42%'],
-              ['New verification system','Agents','In-app','5 days ago','68%'],
-              ['Holiday promo','Buyers','Push','1 week ago','31%']];
-  $('#broadcastTable').innerHTML = rows.map(r=>`<tr>
-    <td class="font-medium">${r[0]}</td><td>${r[1]}</td><td>${badgeFor('Active').replace('Active',r[2])}</td>
-    <td class="text-gray-500">${r[3]}</td><td class="font-semibold text-success">${r[4]}</td></tr>`).join('');
-}
-
-function renderThreads(){
-  $('#threadList').innerHTML = DATA.threads.map((t,i)=>`
-    <button class="w-full text-left p-4 flex items-center gap-3 ${i===0?'bg-slate-50':''} hover:bg-slate-50">
-      <div class="avatar w-10 h-10">${t.init}</div>
-      <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${t.name}</p>
-        <p class="text-xs text-gray-500 truncate">${t.last}</p></div>
-      ${t.unread?`<span class="badge badge-danger">${t.unread}</span>`:''}
-    </button>`).join('');
-  $('#chatBody').innerHTML = `
-    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">Hi! I wanted to thank you for the quick approval on the Marina listing.</div></div>
-    <div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-md text-sm">Glad to help, Amani. Let us know if anything else comes up.</div></div>
-    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">Will do! 🚀</div></div>`;
+  notBuiltPlaceholder('broadcastTable', 'Broadcasts', 'There is no campaigns/broadcasts table yet — announcements aren\'t tracked anywhere in the database.');
+  $('#broadcastTable').innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-10">No broadcast backend yet.</td></tr>';
 }
 
 function renderExport(){
-  const items=[
-    {t:'Users export',d:'CSV · All users with status & country.',i:'👥'},
-    {t:'Properties',d:'CSV · Listings with status & price.',i:'🏡'},
-    {t:'Agents',d:'XLSX · Performance & commission.',i:'🤝'},
-    {t:'Revenue',d:'XLSX · Transactions for selected period.',i:'💰'},
-    {t:'Waiting list',d:'CSV · Pre-signup contacts.',i:'⏳'},
-    {t:'Audit log',d:'JSON · Admin activity & IPs.',i:'🔐'},
+  const items = [
+    {t:'Users export', d:'CSV · Real users, from the Users tab data.', i:'👥', fn:'exportUsers'},
+    {t:'Agents export', d:'CSV · Real agent directory, from the Agents tab.', i:'🤝', fn:'exportAgents'},
+    {t:'Waiting list export', d:'CSV · Real waiting-list entries.', i:'⏳', fn:'exportWaiting'},
+    {t:'Audit log export', d:'JSON · Real admin activity log.', i:'🔐', fn:'exportAudit'},
   ];
   $('#exportGrid').innerHTML = items.map(c=>`
     <div class="bg-white rounded-2xl p-5 border card-hover">
       <div class="kpi-icon ${colorBg('info')} mb-3">${c.i}</div>
       <p class="font-semibold">${c.t}</p><p class="text-sm text-gray-500 mt-1">${c.d}</p>
-      <button class="mt-4 px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="toast('Export queued','success')">⤓ Download</button>
-    </div>`).join('');
+      <button class="mt-4 px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="${c.fn}()">⤓ Download</button>
+    </div>`).join('') + `
+    <div class="col-span-full bg-white rounded-2xl border border-dashed p-6 text-center text-sm text-gray-500">
+      Revenue and CMS exports aren't listed here yet — those features have no real backend to export from.
+    </div>`;
 }
 
-const SETTINGS_TABS = [
-  ['General','Platform name, default language, timezone.'],
-  ['Brand','Logo, colors, OG image.'],
-  ['Theme','Light/dark default, accent.'],
-  ['Notifications','Default channels & throttle.'],
-  ['Email templates','Welcome, verify, payout.'],
-  ['Languages','Supported locales (EN, AR, FR…).'],
-  ['Currencies','USD, EUR, AED, SAR…'],
-  ['Countries','Active markets & taxes.'],
-  ['Maintenance','Toggle maintenance mode.'],
-];
-function renderSettings(active=0){
-  $('#settingsNav').innerHTML = SETTINGS_TABS.map((s,i)=>`
-    <li><button onclick="renderSettings(${i})" class="w-full text-left px-3 py-2 rounded-lg ${i===active?'bg-primary text-white':'hover:bg-slate-50'}">${s[0]}</button></li>`).join('');
-  const t = SETTINGS_TABS[active];
+function downloadCSV(filename, rows, headers){
+  const esc = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const csv = [headers.map(esc).join(',')].concat(rows.map(r => headers.map(h=>esc(r[h])).join(','))).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  URL.revokeObjectURL(a.href);
+}
+async function exportUsers(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_users_list', { p_limit: 5000 });
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  downloadCSV('ishfadi-users.csv', (data.rows||[]).map(r=>({...r, roles:(r.roles||[]).join('|')})), ['full_name','email','roles','country','status','created_at']);
+  toast('Export ready', 'success');
+}
+async function exportAgents(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_agents_overview');
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  downloadCSV('ishfadi-agents.csv', data.directory||[], ['full_name','email','rank_name','agent_code','sales','status']);
+  toast('Export ready', 'success');
+}
+async function exportWaiting(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_waiting_list', { p_limit: 5000 });
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  downloadCSV('ishfadi-waiting-list.csv', (data.entries||[]).map(r=>({...r, roles:(r.roles||[]).join('|')})), ['full_name','email','roles','country','source','joined_at']);
+  toast('Export ready', 'success');
+}
+async function exportAudit(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_audit_log', { p_limit: 5000 });
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ishfadi-audit-log.json'; a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Export ready', 'success');
+}
+window.exportUsers = exportUsers; window.exportAgents = exportAgents; window.exportWaiting = exportWaiting; window.exportAudit = exportAudit;
+
+const SETTINGS_TABS = [['General','Platform configuration']];
+function renderSettings(){
+  $('#settingsNav').innerHTML = `<li><button class="w-full text-left px-3 py-2 rounded-lg bg-primary text-white">General</button></li>`;
   $('#settingsPanel').innerHTML = `
-    <h3 class="font-semibold text-lg">${t[0]}</h3>
-    <p class="text-sm text-gray-500 mb-5">${t[1]}</p>
-    <div class="grid md:grid-cols-2 gap-4">
-      <div><label class="text-sm font-medium">Field A</label><input class="mt-1 w-full px-3 py-2 border rounded-lg text-sm" value="ISHFADI" /></div>
-      <div><label class="text-sm font-medium">Field B</label><input class="mt-1 w-full px-3 py-2 border rounded-lg text-sm" value="English" /></div>
-      <div><label class="text-sm font-medium">Field C</label><select class="mt-1 w-full px-3 py-2 border rounded-lg text-sm"><option>UTC</option><option>GMT+4</option></select></div>
-      <div class="flex items-center justify-between border rounded-lg px-3 py-2">
-        <div><p class="text-sm font-medium">Enable feature</p><p class="text-xs text-gray-500">Toggle behavior</p></div>
-        <label class="inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" checked>
-          <div class="w-10 h-6 bg-gray-200 peer-checked:bg-primary rounded-full relative transition">
-            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-4"></span></div></label>
-      </div>
-    </div>
-    <div class="mt-6 flex gap-2"><button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="toast('Settings saved','success')">Save changes</button>
-      <button class="px-4 py-2 border rounded-lg text-sm">Cancel</button></div>`;
+    <div class="bg-white rounded-2xl border border-dashed p-10 text-center">
+      <div class="text-4xl mb-3">🚧</div>
+      <p class="font-semibold text-gray-700">Settings isn't connected to real data yet</p>
+      <p class="text-sm text-gray-500 mt-1 max-w-md mx-auto">There is no platform-settings table in the database — nothing here would actually persist. Tell me if you want this built.</p>
+    </div>`;
 }
 
-function renderSecurity(){
+async function renderReferrals(){
+  $('#refKpis').innerHTML = '<p class="text-sm text-gray-400 col-span-4">Loading real data…</p>';
+  $('#refFunnel').innerHTML = '';
+  $('#topReferrers').innerHTML = '';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_referrals_overview');
+  if (error) { $('#refKpis').innerHTML = '<p class="text-sm text-red-500 col-span-4">Failed to load: '+error.message+'</p>'; return; }
+
+  const k = data.kpis;
+  $('#refKpis').innerHTML = [
+    {l:'Total referred',v:k.total_referred,c:'info',i:'🤝'},
+    {l:'Verified',v:k.verified_referred,c:'success',i:'✅'},
+    {l:'Organic signups',v:k.organic,c:'primary',i:'📝'},
+    {l:'Active referring agents',v:k.active_referring_agents,c:'gold',i:'🎯'}
+  ].map(x=>`<div class="bg-white rounded-2xl p-5 border card-hover">
+    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${x.l}</p><p class="text-2xl font-bold mt-1">${x.v}</p></div>
+    <div class="kpi-icon ${colorBg(x.c)}">${x.i}</div></div></div>`).join('');
+
+  const funnel = data.funnel || [];
+  const maxN = Math.max(1, ...funnel.map(f=>f.count));
+  $('#refFunnel').innerHTML = funnel.map(f=>`
+    <div><div class="flex justify-between text-sm mb-1"><span>${f.stage}</span><span class="text-gray-500">${fmt(f.count)}</span></div>
+    <div class="progress"><span style="width:${Math.round(100*f.count/maxN)}%"></span></div></div>`).join('');
+
+  const top = data.top_referrers || [];
+  $('#topReferrers').innerHTML = top.length ? top.map((a,i)=>`
+    <div class="flex items-center gap-3"><span class="w-6 text-center font-bold ${i<3?'text-amber-600':'text-gray-400'}">${i+1}</span>
+      <div class="avatar w-9 h-9">${initials(a.full_name)}</div>
+      <div class="flex-1"><p class="text-sm font-medium">${a.full_name}</p><p class="text-xs text-gray-500">${a.agent_code}</p></div>
+      <span class="text-sm font-semibold">${a.total_referrals}</span></div>`).join('') : '<p class="text-sm text-gray-400">No referrals yet.</p>';
+}
+
+async function renderCountries(){
+  $('#countriesTable').innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-6">Loading real data…</td></tr>';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_countries_overview');
+  if (error) { $('#countriesTable').innerHTML = '<tr><td colspan="4" class="text-center text-red-500 py-6">Failed to load: '+error.message+'</td></tr>'; return; }
+  $('#countriesTable').innerHTML = (data||[]).length ? data.map(r=>`<tr>
+    <td class="font-semibold">${r.name}</td><td>${fmt(r.users)}</td><td>${fmt(r.properties)}</td>
+    <td>${badgeFor(r.users > 0 ? 'Active' : 'Pilot')}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="text-center text-gray-400 py-6">No country data yet.</td></tr>';
+}
+
+async function renderRankings(){
+  $('#rankTiers').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
+  $('#topProps').innerHTML = '';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_rankings');
+  if (error) { $('#rankTiers').innerHTML = '<p class="text-sm text-red-500">Failed to load: '+error.message+'</p>'; return; }
+
+  const tiers = data.tiers || [];
+  const maxCount = Math.max(1, ...tiers.map(t=>t.count));
+  const tierIcons = {Platinum:'🏆', Gold:'🥇', Silver:'🥈', Bronze:'🥉'};
+  $('#rankTiers').innerHTML = tiers.length ? tiers.map(t=>`
+    <div class="p-3 border rounded-xl flex items-center gap-3">
+      <span class="text-2xl">${tierIcons[t.rank_name] || '🏅'}</span>
+      <div class="flex-1"><p class="font-semibold">${t.rank_name}</p>
+        <div class="progress mt-1"><span style="width:${Math.round(100*t.count/maxCount)}%"></span></div></div>
+      <span class="text-sm text-gray-500">${t.count}</span></div>`).join('') : '<p class="text-sm text-gray-400">No agents yet.</p>';
+
+  const props = data.newest_verified_properties || [];
+  $('#topProps').innerHTML = props.length ? props.map((p,i)=>`
+    <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+      <span class="w-6 text-center font-bold text-gray-400">${i+1}</span>
+      <span class="text-2xl">🏡</span>
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${p.title || '(untitled)'}</p><p class="text-xs text-gray-500">${p.city || ''}</p></div>
+      <span class="font-semibold text-primary">${p.pricing_amount != null ? '$'+Number(p.pricing_amount).toLocaleString() : '—'}</span></div>`).join('')
+    : '<p class="text-sm text-gray-400 p-2">No verified listings yet.</p>';
+}
+
+let _convCache = [];
+function threadListHTML(list){
+  return list.length ? list.map((t,i)=>`
+    <button onclick="openThread('${t.id}', this)" class="w-full text-left p-4 flex items-center gap-3 ${i===0?'bg-slate-50':''} hover:bg-slate-50">
+      <div class="avatar w-10 h-10">${initials(t.participant_one)}</div>
+      <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${t.participant_one} ↔ ${t.participant_two}</p>
+        <p class="text-xs text-gray-500 truncate">${t.last_message_preview || (t.property_title ? 'Re: '+t.property_title : 'No messages yet')}</p></div>
+    </button>`).join('') : '<p class="p-6 text-center text-sm text-gray-400">No conversations yet.</p>';
+}
+function filterThreads(q){
+  q = (q||'').toLowerCase();
+  const list = !q ? _convCache : _convCache.filter(t =>
+    (t.participant_one||'').toLowerCase().includes(q) || (t.participant_two||'').toLowerCase().includes(q) || (t.property_title||'').toLowerCase().includes(q));
+  $('#threadList').innerHTML = threadListHTML(list);
+}
+window.filterThreads = filterThreads;
+
+async function renderThreads(){
+  $('#threadList').innerHTML = '<p class="p-4 text-sm text-gray-400">Loading real data…</p>';
+  $('#chatBody').innerHTML = '';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_conversations', { p_limit: 50 });
+  if (error) { $('#threadList').innerHTML = '<p class="p-4 text-sm text-red-500">Failed to load: '+error.message+'</p>'; return; }
+  _convCache = data || [];
+  $('#threadList').innerHTML = threadListHTML(_convCache);
+  if (_convCache.length) openThread(_convCache[0].id);
+}
+
+async function openThread(conversationId, btnEl){
+  $$('#threadList button').forEach(b=>b.classList.remove('bg-slate-50'));
+  if (btnEl) btnEl.classList.add('bg-slate-50');
+  const conv = _convCache.find(c => c.id === conversationId);
+  if (conv) {
+    $('#chatHeader').innerHTML = `<div class="avatar w-9 h-9">${initials(conv.participant_one)}</div>
+      <div><p class="font-semibold text-sm">${conv.participant_one} ↔ ${conv.participant_two}</p><p class="text-xs text-gray-500">${conv.property_title ? 'Re: '+conv.property_title : 'Direct message'}</p></div>`;
+  }
+  $('#chatBody').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_conversation_messages', { p_conversation_id: conversationId });
+  if (error) { $('#chatBody').innerHTML = '<p class="text-sm text-red-500">Failed to load: '+error.message+'</p>'; return; }
+  const msgs = data || [];
+  $('#chatBody').innerHTML = msgs.length ? msgs.map(m=>`
+    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">
+      <p class="text-xs text-gray-400 mb-1">${m.sender_name}</p>${m.body || '<span class=\"text-gray-400\">[attachment]</span>'}
+    </div></div>`).join('') : '<p class="text-sm text-gray-400">No messages in this conversation yet.</p>';
+}
+window.openThread = openThread;
+
+async function renderSecurity(){
+  $('#secKpis').innerHTML = '<p class="text-sm text-gray-400 col-span-4">Loading real data…</p>';
+  $('#auditTable').innerHTML = '';
+  $('#permMatrix').innerHTML = '';
+  const client = initAdminSupabase();
+  const [auditRes, adminsRes] = await Promise.all([
+    client.rpc('get_admin_audit_log', { p_limit: 50 }),
+    client.rpc('get_admin_admins_list')
+  ]);
+  if (auditRes.error) { $('#secKpis').innerHTML = '<p class="text-sm text-red-500 col-span-4">Failed to load: '+auditRes.error.message+'</p>'; return; }
+
+  const audit = auditRes.data || [];
+  const admins = adminsRes.error ? [] : (adminsRes.data || []);
   $('#secKpis').innerHTML = [
-    {l:'Active sessions',v:42,c:'primary',i:'🖥️'},
-    {l:'Failed logins (24h)',v:18,c:'warning',i:'🚨'},
-    {l:'Suspicious IPs',v:3,c:'danger',i:'🌐'},
-    {l:'2FA enabled',v:'92%',c:'success',i:'🔐'}
+    {l:'Admin users',v:admins.length,c:'primary',i:'🔐'},
+    {l:'Active admins',v:admins.filter(a=>a.is_active).length,c:'success',i:'✅'},
+    {l:'Audit entries logged',v:audit.length,c:'info',i:'📋'},
   ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
     <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
     <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  $('#auditTable').innerHTML = DATA.audit.map(r=>`<tr>
-    <td class="text-gray-500">${r[0]}</td><td class="font-medium">${r[1]}</td>
-    <td>${r[2]}</td><td class="text-gray-500">${r[3]}</td><td class="font-mono text-xs">${r[4]}</td></tr>`).join('');
-  $('#permMatrix').innerHTML = DATA.perms.map(p=>`
+
+  $('#auditTable').innerHTML = audit.length ? audit.map(r=>`<tr>
+    <td class="text-gray-500">${timeAgo(r.created_at)}</td><td class="font-medium">${r.admin_name}</td>
+    <td>${(r.action||'').replace(/_/g,' ')}</td><td class="text-gray-500">${r.target_name || '—'}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="text-center text-gray-400 py-6">No audit entries yet.</td></tr>';
+
+  $('#permMatrix').innerHTML = admins.length ? admins.map(p=>`
     <div class="flex items-center justify-between p-2 rounded-lg border">
-      <span class="font-medium">${p[0]}</span><span class="text-xs text-gray-500">${p[1]}</span></div>`).join('');
+      <span class="font-medium">${p.full_name}</span>
+      ${badgeFor(p.is_active ? 'Active' : 'Suspended')}
+    </div>`).join('') : '<p class="text-gray-400 text-sm">No admin users found.</p>';
 }
 
-function renderNotifPanel(){
-  $('#notifList').innerHTML = DATA.notifs.map(n=>`
+async function renderNotifPanel(){
+  $('#notifList').innerHTML = '<p class="p-4 text-sm text-gray-400">Loading real data…</p>';
+  const d = _dashSummaryCache || await loadDashboardSummary();
+  if (!d) return;
+  const items = d.recent_activity || [];
+  $('#notifList').innerHTML = items.length ? items.slice(0,8).map(n=>`
     <div class="p-4 hover:bg-slate-50">
       <div class="flex justify-between items-start gap-2">
-        <p class="text-sm font-semibold">${n.t}</p><span class="text-xs text-gray-400">${n.when}</span>
+        <p class="text-sm font-semibold">${(n.action||'').replace(/_/g,' ')}</p><span class="text-xs text-gray-400">${timeAgo(n.time)}</span>
       </div>
-      <p class="text-xs text-gray-500 mt-1">${n.d}</p>
-    </div>`).join('');
+      <p class="text-xs text-gray-500 mt-1">${n.admin_name}${n.target_name ? ' · ' + n.target_name : ''}</p>
+    </div>`).join('') : '<p class="p-6 text-center text-sm text-gray-400">No recent activity.</p>';
 }
 
 /* ====== Charts ====== */
@@ -1522,51 +1525,47 @@ function mkDoughnut(id, labels, data, colors){
   });
 }
 
-function renderDashboardCharts(){
+function renderDashboardCharts(d){
+  d = d || _dashSummaryCache; if (!d) return;
   destroyCharts();
-  const months=['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
-  mkLine('growthChart', months, [
-    {label:'Users',     data:[820,940,1100,1320,1480,1620,1810,2010,2240,2480,2710,2980], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true},
-    {label:'Properties',data:[210,260,320,380,440,510,590,680,780,890,1010,1140], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.12)', tension:.35, fill:true},
-    {label:'Revenue ($k)', data:[42,55,68,82,96,114,138,162,190,221,254,284], borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)', tension:.35, fill:true},
-  ]);
-  const mix = [['Buyers',11250,'#1e3a5f'],['Sellers',4820,'#d4a574'],['Agents',942,'#22c55e'],['Waiting',312,'#f59e0b']];
+  const mix = [['Buyers', d.total_buyers, '#1e3a5f'],['Hosts', d.total_hosts, '#d4a574'],['Agents', d.total_agents, '#22c55e'],['Waiting', d.waiting_list, '#f59e0b']];
   mkDoughnut('userMixChart', mix.map(m=>m[0]), mix.map(m=>m[1]), mix.map(m=>m[2]));
   $('#userMixLegend').innerHTML = mix.map(m=>`
     <div class="flex items-center justify-between">
       <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:${m[2]}"></span>${m[0]}</span>
       <span class="font-semibold">${fmt(m[1])}</span></div>`).join('');
+  // The growth-over-time chart is intentionally not shown: there is no daily/monthly
+  // snapshots table yet, so a real historical trend line can't be produced honestly
+  // (see the placeholder note in the dashboard HTML instead).
 }
 
-function renderAnalyticsCharts(){
-  const months=['Jan','Feb','Mar','Apr','May','Jun'];
-  mkLine('revChart', months, [{label:'$k',data:[138,162,190,221,254,284],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.35,fill:true}]);
-  mkBar('acqChart', months, [820,1010,1180,1310,1480,1620], '#1e3a5f');
-  mkBar('countryChart', ['UAE','KSA','EGY','QAT','ESP','MAR','CHN'],[1820,1402,940,610,420,260,180],'#d4a574');
-  mkLine('agentChart', months, [{label:'Active', data:[420,460,510,560,590,618], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true}]);
-  mkBar('funnelChart', ['Clicks','Signups','Verified','Active','Paying'],[48290,5420,3180,2410,820], '#1e3a5f');
-}
-
-function renderWaitChart(){
-  mkLine('waitChart', ['W1','W2','W3','W4','W5','W6','W7','W8'], [{label:'Joins', data:[12,18,24,31,42,48,55,62], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.15)', tension:.35, fill:true}]);
-  mkDoughnut('waitRoleChart', ['Buyers','Sellers','Agents'],[180,90,42], ['#1e3a5f','#d4a574','#22c55e']);
-}
-function renderRevCharts(){
-  const months=['Jan','Feb','Mar','Apr','May','Jun'];
-  mkLine('revTrend', months,[{label:'Revenue',data:[138,162,190,221,254,284],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.12)',tension:.35,fill:true}]);
-  mkDoughnut('revMix', ['Subscriptions','Commission','Listing fees','Featured'],[120,98,42,24],['#1e3a5f','#d4a574','#22c55e','#f59e0b']);
+async function renderAnalyticsCharts(){
+  destroyCharts();
+  const client = initAdminSupabase();
+  const [countriesRes, refRes] = await Promise.all([
+    client.rpc('get_admin_countries_overview'),
+    client.rpc('get_admin_referrals_overview')
+  ]);
+  if (!countriesRes.error) {
+    const top = (countriesRes.data || []).slice(0, 8);
+    mkBar('countryChart', top.map(c=>c.name), top.map(c=>c.users), '#1e3a5f');
+  }
+  if (!refRes.error) {
+    const funnel = refRes.data.funnel || [];
+    mkBar('funnelChart', funnel.map(f=>f.stage), funnel.map(f=>f.count), '#d4a574');
+  }
 }
 
 /* ====== Section routing ====== */
 const RENDER_MAP = {
-  dashboard: ()=>{ renderKpis(); renderActivity(); renderPending(); renderDashboardCharts(); },
+  dashboard: renderDashboard,
   analytics: renderAnalyticsCharts,
   users: renderUsers,
   properties: ()=>renderProps(),
   agents: renderAgents,
   waiting: renderWaiting,
   verification: renderVerif,
-  revenue: ()=>{ renderRevenue(); renderRevCharts(); },
+  revenue: renderRevenue,
   referrals: renderReferrals,
   countries: renderCountries,
   rankings: renderRankings,
@@ -1575,7 +1574,7 @@ const RENDER_MAP = {
   notifications: renderBroadcasts,
   communication: renderThreads,
   export: renderExport,
-  settings: ()=>renderSettings(0),
+  settings: renderSettings,
   security: renderSecurity,
 };
 const TITLES = {
@@ -1613,21 +1612,23 @@ function toast(msg, kind=''){
 }
 function openModal(html){ $('#modalContent').innerHTML = html; $('#modalRoot').classList.add('active'); }
 function closeModal(){ $('#modalRoot').classList.remove('active'); }
-function openUser(name,email,role,country,status){
+function openUser(userId){
+  const u = _usersCache.find(r => r.user_id === userId);
+  if (!u) { toast('User not found in the current list', 'error'); return; }
   openModal(`
     <div class="flex items-center gap-4 mb-4">
-      <div class="avatar w-14 h-14 text-base">${initials(name)}</div>
-      <div><h3 class="text-lg font-bold">${name}</h3><p class="text-sm text-gray-500">${email}</p></div>
+      <div class="avatar w-14 h-14 text-base">${initials(u.full_name)}</div>
+      <div><h3 class="text-lg font-bold">${u.full_name}</h3><p class="text-sm text-gray-500">${u.email}</p></div>
     </div>
     <div class="grid grid-cols-2 gap-3 text-sm">
-      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Role</p><p class="font-semibold">${role}</p></div>
-      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Country</p><p class="font-semibold">${country}</p></div>
-      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Status</p>${badgeFor(status)}</div>
-      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Last active</p><p class="font-semibold">2h ago</p></div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Roles</p><p class="font-semibold">${(u.roles||[]).join(', ')}</p></div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Country</p><p class="font-semibold">${u.country || '—'}</p></div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Status</p>${badgeFor(statusLabel(u.status))}</div>
+      <div class="p-3 rounded-lg bg-slate-50"><p class="text-xs text-gray-500">Email verified</p><p class="font-semibold">${u.email_verified ? 'Yes' : 'No'}</p></div>
+      <div class="p-3 rounded-lg bg-slate-50 col-span-2"><p class="text-xs text-gray-500">Joined</p><p class="font-semibold">${new Date(u.created_at).toLocaleString()}</p></div>
     </div>
     <div class="mt-5 flex gap-2 justify-end">
       <button class="px-4 py-2 border rounded-lg text-sm" onclick="closeModal()">Close</button>
-      <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="closeModal();toast('Profile opened')">Open profile</button>
     </div>`);
 }
 function openQuickActions(){
@@ -1647,12 +1648,9 @@ function openQuickActions(){
   document.addEventListener('change', e=>{ if(e.target.id===id) renderUsers(); });
 });
 
-/* ====== Init ====== */
-function setDate(){
-  $('#todayDate').textContent = new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
-}
-// setDate(), renderNotifPanel(), and goto('dashboard') are now called
-// by unlockDashboard() above, only after the auth gate succeeds.
+// renderNotifPanel() and goto('dashboard') are called by unlockDashboard()
+// above, only after the auth gate succeeds. (setDate() now lives next to
+// unlockDashboard() itself, so it's never at the mercy of script-tag order.)
 </script>
 
 <!-- ==================== I18N ENGINE (same shape/storage key as index.html/agent.html/seller.html) ==================== -->
