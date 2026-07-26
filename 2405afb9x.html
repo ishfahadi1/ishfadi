@@ -406,17 +406,26 @@
   <!-- ANALYTICS -->
   <section data-pane="analytics" class="p-4 sm:p-6">
     <div class="grid lg:grid-cols-2 gap-6 mb-6">
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Monthly revenue</h3><canvas id="revChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold mb-3">Monthly revenue</h3>
+        <div id="revChartWrap">
+          <canvas id="revChart" height="160" class="hidden"></canvas>
+          <div id="revUnavailable" class="text-sm text-gray-400 py-10 text-center">
+            Not live yet — Phase 3 (payments) hasn't been built, so there's no real revenue to chart.
+          </div>
+        </div>
+      </div>
       <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">User acquisition</h3><canvas id="acqChart" height="160"></canvas></div>
       <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Properties by country</h3><canvas id="countryChart" height="160"></canvas></div>
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Agent performance</h3><canvas id="agentChart" height="160"></canvas></div>
-      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Referral funnel</h3><canvas id="funnelChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">Agent growth</h3><canvas id="agentChart" height="160"></canvas></div>
+      <div class="bg-white rounded-2xl p-6 border">
+        <h3 class="font-semibold mb-3">Signup funnel</h3>
+        <canvas id="funnelChart" height="160"></canvas>
+        <p class="text-xs text-gray-400 mt-2">Traffic/clicks and "paying" stages aren't tracked yet (no analytics or payments system built) — shown stages are real.</p>
+      </div>
       <div class="bg-white rounded-2xl p-6 border"><h3 class="font-semibold mb-3">System health</h3>
-        <div class="space-y-4">
-          <div><div class="flex justify-between text-sm mb-1"><span>API uptime</span><span class="font-semibold text-success">99.98%</span></div><div class="progress"><span style="width:99.98%"></span></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>Avg response</span><span class="font-semibold">142ms</span></div><div class="progress"><span style="width:72%"></span></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>Database load</span><span class="font-semibold text-warning">63%</span></div><div class="progress"><span style="width:63%"></span></div></div>
-          <div><div class="flex justify-between text-sm mb-1"><span>Storage used</span><span class="font-semibold">412 GB / 1 TB</span></div><div class="progress"><span style="width:41%"></span></div></div>
+        <div class="space-y-4" id="systemHealthBody">
+          <div class="skel h-16"></div>
         </div>
       </div>
     </div>
@@ -759,7 +768,7 @@ async function loadAndApplyAdminIdentity(client){
     const { data: { user } } = await client.auth.getUser();
     if (!user) return;
     const { data: profile, error } = await client.from('profiles')
-      .select('full_name, profile_photo_url')
+      .select('full_name')
       .eq('user_id', user.id)
       .single();
     if (error || !profile) return;
@@ -768,15 +777,8 @@ async function loadAndApplyAdminIdentity(client){
       const el = document.getElementById(id);
       if (el) el.textContent = name;
     });
-    if (profile.profile_photo_url){
-      ['sidebarAvatar','topbarAvatar'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = `<img src="${profile.profile_photo_url}" class="w-full h-full object-cover" alt="${name}">`;
-      });
-    }
-    // If there's no uploaded profile photo, the ISHFADI logo (already in the
-    // markup as the default avatar) stays in place -- it is never replaced
-    // with generated initials.
+    // Head profile photo is always the ISHFADI logo, by design -- it is never
+    // swapped for an uploaded personal photo, regardless of what's on the profile.
   } catch (e) { /* non-fatal -- fall back to defaults already in the markup */ }
 }
 
@@ -1656,13 +1658,53 @@ function renderDashboardCharts(){
       <span class="font-semibold">${fmt(m[1])}</span></div>`).join('');
 }
 
-function renderAnalyticsCharts(){
-  const months=['Jan','Feb','Mar','Apr','May','Jun'];
-  mkLine('revChart', months, [{label:'$k',data:[138,162,190,221,254,284],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.35,fill:true}]);
-  mkBar('acqChart', months, [820,1010,1180,1310,1480,1620], '#1e3a5f');
-  mkBar('countryChart', ['UAE','KSA','EGY','QAT','ESP','MAR','CHN'],[1820,1402,940,610,420,260,180],'#d4a574');
-  mkLine('agentChart', months, [{label:'Active', data:[420,460,510,560,590,618], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true}]);
-  mkBar('funnelChart', ['Clicks','Signups','Verified','Active','Paying'],[48290,5420,3180,2410,820], '#1e3a5f');
+async function renderAnalyticsCharts(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_analytics_summary');
+  if (error){ toast('Could not load analytics: ' + error.message, 'error'); return; }
+
+  // Revenue: no real data exists yet (Phase 3 not built) -- keep the canvas
+  // hidden and show the honest placeholder already in the markup.
+  $('#revChart').classList.add('hidden');
+  $('#revUnavailable').classList.remove('hidden');
+
+  const acq = data.acquisition || [];
+  mkBar('acqChart', acq.map(a=>a.month), acq.map(a=>a.signups), '#1e3a5f');
+
+  const byCountry = data.properties_by_country || [];
+  mkBar('countryChart', byCountry.map(c=>c.country), byCountry.map(c=>c.count), '#d4a574');
+
+  const agentTrend = data.agent_trend || [];
+  mkLine('agentChart', agentTrend.map(a=>a.month), [
+    {label:'Agents', data: agentTrend.map(a=>a.agents), borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true}
+  ]);
+
+  const f = data.funnel || {};
+  mkBar('funnelChart', ['Signups','Verified','Activated'], [f.signups||0, f.verified||0, f.activated||0], '#1e3a5f');
+
+  renderSystemHealth(data.system_health || {});
+}
+
+function renderSystemHealth(sh){
+  const connPct = sh.connection_load_pct ?? 0;
+  const connColor = connPct > 80 ? 'text-danger' : connPct > 50 ? 'text-warning' : 'text-success';
+  $('#systemHealthBody').innerHTML = `
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span>API uptime</span><span class="font-semibold text-gray-400">Not tracked yet</span></div>
+      <p class="text-xs text-gray-400">Needs a synthetic monitor (pg_cron + pg_net ping, or Supabase's own Reports page) -- ask to have this wired up.</p>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span>Avg response</span><span class="font-semibold text-gray-400">Not tracked yet</span></div>
+      <p class="text-xs text-gray-400">Same as above -- this is an edge/API metric, not something a Postgres query can see on its own.</p>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span>Database connections</span><span class="font-semibold ${connColor}">${sh.connections_active}/${sh.connections_max} (${connPct}%)</span></div>
+      <div class="progress"><span style="width:${connPct}%"></span></div>
+    </div>
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span>Database size</span><span class="font-semibold">${sh.db_size_pretty || '—'}</span></div>
+      <p class="text-xs text-gray-400">Real Postgres size via pg_database_size(). Uploaded photos/documents live on Cloudinary/Supabase Storage, not counted here.</p>
+    </div>`;
 }
 
 function renderWaitChart(){
