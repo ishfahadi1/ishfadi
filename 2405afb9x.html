@@ -266,9 +266,9 @@
 
   <div class="px-4 py-3 border-t border-white/10">
     <div class="flex items-center gap-3">
-      <div class="avatar w-10 h-10 bg-gradient-to-br from-secondary to-accent">RS</div>
+      <div id="sidebarAvatar" class="avatar w-10 h-10 bg-white/10 overflow-hidden p-1.5"><img src="/icons/logo.png" alt="ISHFADI" class="w-full h-full object-contain"></div>
       <div class="min-w-0">
-        <p class="text-sm font-semibold truncate">Rashid Saeed</p>
+        <p class="text-sm font-semibold truncate" id="sidebarAdminName">ISHIMWE Fahadi</p>
         <p class="text-xs text-white/60 truncate" data-i18n="sidebar.superAdmin">Super Admin</p>
       </div>
       <a href="#" onclick="adminSignOut(); return false;" class="ml-auto text-white/60 hover:text-white" data-i18n-attr="title" data-i18n="sidebar.signOut" title="Sign out">
@@ -330,9 +330,9 @@
 
         <div class="hidden sm:flex flex-col items-end leading-tight mr-2">
           <span class="text-xs text-gray-500" id="todayDate"></span>
-          <span class="text-xs font-semibold text-gray-700">Rashid Saeed</span>
+          <span class="text-xs font-semibold text-gray-700" id="topbarAdminName">ISHIMWE Fahadi</span>
         </div>
-        <div class="avatar w-10 h-10 bg-gradient-to-br from-secondary to-accent">RS</div>
+        <div id="topbarAvatar" class="avatar w-10 h-10 bg-white overflow-hidden p-1.5 border"><img src="/icons/logo.png" alt="ISHFADI" class="w-full h-full object-contain"></div>
       </div>
     </div>
 
@@ -355,8 +355,8 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <p class="text-white/70 text-sm">Welcome back,</p>
-          <h2 class="text-2xl md:text-3xl font-bold">Rashid Saeed</h2>
-          <p class="text-white/80 mt-1">Platform health is <span class="font-semibold">excellent</span>. 23 new signups in the last 24h.</p>
+          <h2 class="text-2xl md:text-3xl font-bold" id="welcomeAdminName">ISHIMWE Fahadi</h2>
+          <p class="text-white/80 mt-1" id="welcomeHealthMsg">Loading platform status…</p>
         </div>
         <div class="flex flex-wrap gap-3">
           <button onclick="openQuickActions()" class="px-5 py-2.5 bg-white text-primary rounded-xl font-semibold hover:bg-white/90 transition">Quick actions</button>
@@ -754,11 +754,38 @@ function authGateShowStep(step) {
   authGateEls.stepMfaEnroll.classList.toggle('hidden', step !== 'enroll');
 }
 
+async function loadAndApplyAdminIdentity(client){
+  try {
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    const { data: profile, error } = await client.from('profiles')
+      .select('full_name, profile_photo_url')
+      .eq('user_id', user.id)
+      .single();
+    if (error || !profile) return;
+    const name = profile.full_name || 'ISHIMWE Fahadi';
+    ['sidebarAdminName','topbarAdminName','welcomeAdminName'].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) el.textContent = name;
+    });
+    if (profile.profile_photo_url){
+      ['sidebarAvatar','topbarAvatar'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<img src="${profile.profile_photo_url}" class="w-full h-full object-cover" alt="${name}">`;
+      });
+    }
+    // If there's no uploaded profile photo, the ISHFADI logo (already in the
+    // markup as the default avatar) stays in place -- it is never replaced
+    // with generated initials.
+  } catch (e) { /* non-fatal -- fall back to defaults already in the markup */ }
+}
+
 async function unlockDashboard() {
   authGateEls.gate.style.display = 'none';
   document.querySelectorAll('.admin-app-shell').forEach(el => el.style.display = '');
   setDate();
   renderNotifPanel();
+  loadAndApplyAdminIdentity(adminClient);
   goto('dashboard');
 }
 
@@ -915,39 +942,13 @@ window.adminSignOut = adminSignOut;
    Supabase later is a one-line change per loader function.
    ============================================================ */
 const DATA = {
-  kpis: [
-    { label:'Total users',       value: 18432, delta:'+12.4%', color:'primary', icon:'👥' },
-    { label:'Buyers',            value: 11250, delta:'+8.1%',  color:'info',    icon:'🔎' },
-    { label:'Sellers',           value:  4820, delta:'+15.3%', color:'success', icon:'🏷️' },
-    { label:'Agents',            value:   942, delta:'+6.7%',  color:'gold',    icon:'🤝' },
-    { label:'Waiting list',      value:   312, delta:'+22%',   color:'warning', icon:'⏳' },
-    { label:'Verified users',    value: 14201, delta:'+9%',    color:'success', icon:'✅' },
-    { label:'Properties',        value:  7621, delta:'+11%',   color:'primary', icon:'🏡' },
-    { label:'Verified listings', value:  6480, delta:'+13%',   color:'info',    icon:'🛡️' },
-    { label:'Revenue (MTD)',     value: '$284k', delta:'+18%', color:'success', icon:'💰' },
-    { label:'Countries',         value:    27, delta:'+2',     color:'primary', icon:'🌍' },
-    { label:'Cities',            value:   312, delta:'+9',     color:'info',    icon:'📍' },
-    { label:'Growth rate',       value: '6.4%', delta:'+0.8',  color:'success', icon:'📈' },
-    { label:'Subscriptions',     value:  1820, delta:'+4.2%',  color:'primary', icon:'🎟️' },
-    { label:'Pending reviews',   value:    48, delta:'-12',    color:'warning', icon:'🕒' },
-    { label:'Open reports',      value:     7, delta:'+3',     color:'danger',  icon:'🚩' },
-    { label:'New today',         value:    23, delta:'+5',     color:'info',    icon:'🌟' },
-  ],
-  activity: [
-    { who:'Amani Khalid', action:'approved property', target:'Marina Heights #2104', t:'2m ago', tag:'approval' },
-    { who:'System',       action:'flagged user',      target:'jdoe@example.com',      t:'14m ago', tag:'security' },
-    { who:'Layla Hassan', action:'paid commission',   target:'$1,820 → Yusuf A.',     t:'1h ago',  tag:'revenue' },
-    { who:'Rashid Saeed', action:'updated CMS',       target:'Homepage hero',          t:'3h ago',  tag:'cms' },
-    { who:'Omar Idris',   action:'verified agent',    target:'Sara Lopez',             t:'5h ago',  tag:'verify' },
-    { who:'System',       action:'auto-rejected listing', target:'#9921 (low quality images)', t:'Yesterday', tag:'system' },
-  ],
-  pending: [
-    { label:'Verifications', n:24, to:'verification' },
-    { label:'Property listings', n:12, to:'properties' },
-    { label:'Agent applications', n:8, to:'agents' },
-    { label:'User reports', n:7, to:'reports' },
-    { label:'Refund requests', n:3, to:'revenue' },
-  ],
+  // kpis/activity/pending for the Dashboard pane are no longer mock data --
+  // they are populated at runtime by loadDashboardFromDB() from the live
+  // get_admin_dashboard_summary() Supabase RPC. These empty arrays are just
+  // the initial state before that first fetch resolves.
+  kpis: [],
+  activity: [],
+  pending: [],
   users: [
     ['Amani Khalid','amani@ishfadi.com','Agent','UAE','Active','2024-11-12'],
     ['John Doe','john.doe@example.com','Buyer','USA','Active','2025-02-04'],
@@ -1052,6 +1053,77 @@ const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 const fmt = n => typeof n==='number' ? n.toLocaleString() : n;
 
+function timeAgo(iso){
+  if (!iso) return '';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs/60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs/24);
+  if (days === 1) return 'Yesterday';
+  return `${days}d ago`;
+}
+
+/* ====== Live dashboard data (Supabase) ======
+   Everything on the Dashboard pane -- KPIs, charts, recent activity, and the
+   pending queue -- is fetched here from get_admin_dashboard_summary(), a
+   SECURITY DEFINER RPC that is only callable by verified admins (is_admin()).
+   Three KPIs (Revenue MTD, Subscriptions, Open reports) come back with
+   available:false because those systems (Phase 3 payments, reports table)
+   haven't been built yet -- they show "Not live yet" rather than a fake number. */
+let DASH = null;
+
+async function loadDashboardFromDB(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_dashboard_summary');
+  if (error){
+    toast('Could not load dashboard data: ' + error.message, 'error');
+    DASH = null;
+    DATA.kpis = []; DATA.activity = []; DATA.pending = [];
+    return;
+  }
+  DASH = data;
+  const k = data.kpis;
+
+  DATA.kpis = [
+    { label:'Total users',       value:k.total_users.value,       delta:k.total_users.delta_pct,       color:'primary', icon:'👥' },
+    { label:'Buyers',            value:k.buyers.value,            delta:k.buyers.delta_pct,            color:'info',    icon:'🔎' },
+    { label:'Sellers',           value:k.sellers.value,           delta:k.sellers.delta_pct,           color:'success', icon:'🏷️' },
+    { label:'Agents',            value:k.agents.value,            delta:k.agents.delta_pct,            color:'gold',    icon:'🤝' },
+    { label:'Waiting list',      value:k.waiting_list.value,      delta:k.waiting_list.delta_pct,      color:'warning', icon:'⏳' },
+    { label:'Verified users',    value:k.verified_users.value,    delta:k.verified_users.delta_pct,    color:'success', icon:'✅' },
+    { label:'Properties',        value:k.properties_total.value,  delta:k.properties_total.delta_pct,  color:'primary', icon:'🏡' },
+    { label:'Verified listings', value:k.verified_listings.value, delta:k.verified_listings.delta_pct, color:'info',    icon:'🛡️' },
+    { label:'Revenue (MTD)',     value:k.revenue_mtd.value,       delta:null, color:'success', icon:'💰', available:false, note:'Phase 3 (payments) not built yet' },
+    { label:'Countries',         value:k.countries_active.value,  delta:k.countries_active.delta_pct,  color:'primary', icon:'🌍' },
+    { label:'Cities',            value:k.cities_active.value,     delta:k.cities_active.delta_pct,     color:'info',    icon:'📍' },
+    { label:'Growth rate',       value:(k.growth_rate.value===null?'—':k.growth_rate.value+'%'), delta:null, color:'success', icon:'📈' },
+    { label:'Subscriptions',     value:k.subscriptions.value,     delta:null, color:'primary', icon:'🎟️', available:false, note:'Subscription billing not built yet' },
+    { label:'Pending reviews',   value:k.pending_reviews.value,   delta:null, color:'warning', icon:'🕒' },
+    { label:'Open reports',      value:k.open_reports.value,      delta:null, color:'danger',  icon:'🚩', available:false, note:'Reports table not built yet' },
+    { label:'New today',         value:k.new_today.value,         delta:k.new_today.delta_pct,         color:'info',    icon:'🌟' },
+  ];
+
+  DATA.activity = (data.recent_activity||[]).map(a=>({
+    who: a.admin_name || 'System',
+    photo: a.admin_photo || null,
+    action: (a.action||'').replaceAll('_',' '),
+    target: a.target_name || (a.details ? JSON.stringify(a.details) : ''),
+    t: timeAgo(a.time),
+    tag: 'admin'
+  }));
+
+  const pq = data.pending_queue || {};
+  DATA.pending = [
+    { label:'Verifications',        n: pq.verifications || 0,       to:'verification' },
+    { label:'Property listings',    n: pq.property_listings || 0,   to:'properties' },
+    { label:'Agent applications',   n: pq.agent_applications || 0,  to:'agents' },
+    { label:'Role requests',        n: pq.role_requests || 0,       to:'users' },
+  ];
+}
+
 function badgeFor(status){
   const map = {
     Active:'badge-success', Approved:'badge-success', Paid:'badge-success', Resolved:'badge-success', Verified:'badge-success',
@@ -1066,10 +1138,39 @@ function colorBg(c){
           warning:'bg-amber-50 text-amber-600',danger:'bg-red-50 text-red-600',gold:'bg-yellow-50 text-yellow-700'}[c]||'bg-slate-100 text-slate-700';
 }
 
+function renderWelcomeMessage(){
+  const el = $('#welcomeHealthMsg');
+  if (!el || !DASH) return;
+  const signups = DASH.signups_last_24h ?? 0;
+  const pending = (DASH.kpis && DASH.kpis.pending_reviews && DASH.kpis.pending_reviews.value) || 0;
+  let health = 'excellent';
+  if (pending > 20) health = 'busy'; else if (pending > 50) health = 'needs attention';
+  el.innerHTML = `Platform health is <span class="font-semibold">${health}</span>. ${signups} new signup${signups===1?'':'s'} in the last 24h.`;
+}
+
 /* ====== Renderers ====== */
 function renderKpis(){
-  $('#kpiGrid').innerHTML = DATA.kpis.map(k=>`
-    <div class="bg-white rounded-2xl p-5 border card-hover">
+  if (!DATA.kpis.length){
+    $('#kpiGrid').innerHTML = Array.from({length:16}).map(()=>`
+      <div class="bg-white rounded-2xl p-5 border"><div class="skel h-4 w-20 mb-3"></div><div class="skel h-7 w-16"></div></div>`).join('');
+    return;
+  }
+  $('#kpiGrid').innerHTML = DATA.kpis.map(k=>{
+    if (k.available === false){
+      return `<div class="bg-white rounded-2xl p-5 border card-hover">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs text-gray-500">${k.label}</p>
+            <p class="text-lg font-semibold mt-1 text-gray-400">Not live yet</p>
+          </div>
+          <div class="kpi-icon ${colorBg(k.color)}">${k.icon}</div>
+        </div>
+        <p class="text-xs mt-2 text-gray-400">${k.note||'Backend not built yet'}</p>
+      </div>`;
+    }
+    const hasDelta = k.delta !== null && k.delta !== undefined;
+    const isNeg = hasDelta && String(k.delta).startsWith('-');
+    return `<div class="bg-white rounded-2xl p-5 border card-hover">
       <div class="flex items-start justify-between">
         <div>
           <p class="text-xs text-gray-500">${k.label}</p>
@@ -1077,14 +1178,23 @@ function renderKpis(){
         </div>
         <div class="kpi-icon ${colorBg(k.color)}">${k.icon}</div>
       </div>
-      <p class="text-xs mt-2 ${k.delta.startsWith('-')?'text-danger':'text-success'}">${k.delta.startsWith('-')?'▼':'▲'} ${k.delta.replace(/^[-+]/,'')} vs last period</p>
-    </div>`).join('');
+      ${hasDelta
+        ? `<p class="text-xs mt-2 ${isNeg?'text-danger':'text-success'}">${isNeg?'▼':'▲'} ${String(k.delta).replace(/^[-+]/,'')}% vs 30 days ago</p>`
+        : `<p class="text-xs mt-2 text-gray-400">Current total</p>`}
+    </div>`;
+  }).join('');
 }
 
 function renderActivity(){
+  if (!DATA.activity.length){
+    $('#activityFeed').innerHTML = `<div class="p-6 text-sm text-gray-400 text-center">No admin activity logged yet.</div>`;
+    return;
+  }
   $('#activityFeed').innerHTML = DATA.activity.map(a=>`
     <div class="p-4 flex items-start gap-3">
-      <div class="avatar w-9 h-9">${initials(a.who)}</div>
+      ${a.photo
+        ? `<img src="${a.photo}" class="avatar w-9 h-9 object-cover" alt="${a.who}">`
+        : `<div class="avatar w-9 h-9">${initials(a.who)}</div>`}
       <div class="flex-1 min-w-0">
         <p class="text-sm"><span class="font-semibold">${a.who}</span> ${a.action} <span class="text-gray-500">${a.target}</span></p>
         <p class="text-xs text-gray-400 mt-0.5">${a.t} · <span class="badge badge-muted">${a.tag}</span></p>
@@ -1093,10 +1203,14 @@ function renderActivity(){
 }
 
 function renderPending(){
+  if (!DATA.pending.length){
+    $('#pendingQueue').innerHTML = `<div class="p-4 text-sm text-gray-400 text-center">Queue is empty 🎉</div>`;
+    return;
+  }
   $('#pendingQueue').innerHTML = DATA.pending.map(p=>`
     <button class="w-full flex items-center justify-between p-3 rounded-xl border hover:bg-slate-50" onclick="goto('${p.to}')">
       <span class="text-sm font-medium">${p.label}</span>
-      <span class="badge badge-warning">${p.n}</span>
+      <span class="badge ${p.n>0?'badge-warning':'badge-muted'}">${p.n}</span>
     </button>`).join('');
 }
 
@@ -1524,13 +1638,17 @@ function mkDoughnut(id, labels, data, colors){
 
 function renderDashboardCharts(){
   destroyCharts();
-  const months=['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  const series = (DASH && DASH.monthly_series) || [];
+  const months = series.length ? series.map(s=>s.month) : ['-'];
   mkLine('growthChart', months, [
-    {label:'Users',     data:[820,940,1100,1320,1480,1620,1810,2010,2240,2480,2710,2980], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true},
-    {label:'Properties',data:[210,260,320,380,440,510,590,680,780,890,1010,1140], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.12)', tension:.35, fill:true},
-    {label:'Revenue ($k)', data:[42,55,68,82,96,114,138,162,190,221,254,284], borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)', tension:.35, fill:true},
+    {label:'Users',     data: series.length ? series.map(s=>s.users) : [0], borderColor:'#1e3a5f', backgroundColor:'rgba(30,58,95,.08)', tension:.35, fill:true},
+    {label:'Properties',data: series.length ? series.map(s=>s.properties) : [0], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.12)', tension:.35, fill:true},
   ]);
-  const mix = [['Buyers',11250,'#1e3a5f'],['Sellers',4820,'#d4a574'],['Agents',942,'#22c55e'],['Waiting',312,'#f59e0b']];
+  // Note: revenue isn't plotted here yet -- Phase 3 (payments) hasn't been built,
+  // so there's no real revenue data to chart. Add it back once that lands.
+
+  const um = (DASH && DASH.user_mix) || {buyers:0,hosts:0,agents:0,waiting:0};
+  const mix = [['Buyers',um.buyers,'#1e3a5f'],['Sellers',um.hosts,'#d4a574'],['Agents',um.agents,'#22c55e'],['Waiting',um.waiting,'#f59e0b']];
   mkDoughnut('userMixChart', mix.map(m=>m[0]), mix.map(m=>m[1]), mix.map(m=>m[2]));
   $('#userMixLegend').innerHTML = mix.map(m=>`
     <div class="flex items-center justify-between">
@@ -1559,7 +1677,12 @@ function renderRevCharts(){
 
 /* ====== Section routing ====== */
 const RENDER_MAP = {
-  dashboard: ()=>{ renderKpis(); renderActivity(); renderPending(); renderDashboardCharts(); },
+  dashboard: async ()=>{
+    renderKpis(); renderActivity(); renderPending(); // skeleton/empty state first
+    await loadDashboardFromDB();
+    renderKpis(); renderActivity(); renderPending(); renderDashboardCharts();
+    renderWelcomeMessage();
+  },
   analytics: renderAnalyticsCharts,
   users: renderUsers,
   properties: ()=>renderProps(),
