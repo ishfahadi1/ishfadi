@@ -242,7 +242,7 @@
     <div class="nav-group-label" data-i18n="navGroup.people">People</div>
     <a class="nav-link" data-section="users"><span class="nav-emoji">👥</span><span data-i18n="nav.users">Users</span></a>
     <a class="nav-link" data-section="agents"><span class="nav-emoji">🤝</span><span data-i18n="nav.agents">Agents</span></a>
-    <a class="nav-link" data-section="waiting"><span class="nav-emoji">⏳</span><span data-i18n="nav.waiting">Waiting List</span> <span class="ml-auto badge badge-gold">312</span></a>
+    <a class="nav-link" data-section="waiting"><span class="nav-emoji">⏳</span><span data-i18n="nav.waiting">Waiting List</span> <span class="ml-auto badge badge-gold" id="navBadgeWaiting">…</span></a>
     <a class="nav-link" data-section="referrals"><span class="nav-emoji">🎯</span><span data-i18n="nav.referrals">Referral Center</span></a>
 
     <div class="nav-group-label" data-i18n="navGroup.inventory">Inventory</div>
@@ -253,7 +253,7 @@
 
     <div class="nav-group-label" data-i18n="navGroup.operations">Operations</div>
     <a class="nav-link" data-section="revenue"><span class="nav-emoji">💰</span><span data-i18n="nav.revenue">Revenue</span></a>
-    <a class="nav-link" data-section="reports"><span class="nav-emoji">📝</span><span data-i18n="nav.reports">Reports</span> <span class="ml-auto badge badge-danger">7</span></a>
+    <a class="nav-link" data-section="reports"><span class="nav-emoji">📝</span><span data-i18n="nav.reports">Reports</span> <span class="ml-auto badge badge-muted" id="navBadgeReports" title="Reports table not built yet">—</span></a>
     <a class="nav-link" data-section="communication"><span class="nav-emoji">💬</span><span data-i18n="nav.communication">Communication</span></a>
     <a class="nav-link" data-section="notifications"><span class="nav-emoji">📢</span><span data-i18n="nav.notifications">Notifications</span></a>
     <a class="nav-link" data-section="export"><span class="nav-emoji">📤</span><span data-i18n="nav.export">Export Center</span></a>
@@ -782,12 +782,22 @@ async function loadAndApplyAdminIdentity(client){
   } catch (e) { /* non-fatal -- fall back to defaults already in the markup */ }
 }
 
+async function loadNavBadgeCounts(client){
+  try {
+    const { data, error } = await client.rpc('get_admin_waiting_list', { p_limit: 1 });
+    if (error) return;
+    const el = document.getElementById('navBadgeWaiting');
+    if (el) el.textContent = fmt(data.kpis.total);
+  } catch (e) { /* non-fatal */ }
+}
+
 async function unlockDashboard() {
   authGateEls.gate.style.display = 'none';
   document.querySelectorAll('.admin-app-shell').forEach(el => el.style.display = '');
   setDate();
   renderNotifPanel();
   loadAndApplyAdminIdentity(adminClient);
+  loadNavBadgeCounts(adminClient);
   goto('dashboard');
 }
 
@@ -951,16 +961,9 @@ const DATA = {
   kpis: [],
   activity: [],
   pending: [],
-  users: [
-    ['Amani Khalid','amani@ishfadi.com','Agent','UAE','Active','2024-11-12'],
-    ['John Doe','john.doe@example.com','Buyer','USA','Active','2025-02-04'],
-    ['Layla Hassan','layla@ishfadi.com','Seller','Egypt','Pending','2025-03-21'],
-    ['Yusuf Ahmed','yusuf@property.io','Agent','Saudi Arabia','Active','2024-08-09'],
-    ['Sara Lopez','sara@latam.co','Buyer','Spain','Suspended','2025-01-17'],
-    ['Omar Idris','omar.id@host.com','Seller','Morocco','Active','2025-04-02'],
-    ['Maya Chen','maya@homes.cn','Buyer','China','Active','2025-05-11'],
-    ['Kareem N.','kareem@brokers.qa','Agent','Qatar','Active','2024-12-29'],
-  ],
+  // users: populated at runtime by renderUsers() from get_admin_users_list().
+  users: [],
+  usersLoaded: false,
   properties: [
     { title:'Marina Heights #2104', city:'Dubai', price:'$1.2M', status:'Pending',  img:'🏙️', owner:'Layla H.' },
     { title:'Palm Villa 14',         city:'Abu Dhabi', price:'$3.4M', status:'Approved', img:'🏝️', owner:'Yusuf A.' },
@@ -1053,6 +1056,11 @@ const $ = (s, r=document) => r.querySelector(s);
 function nz(v, fallback){ return (v === null || v === undefined) ? fallback : v; }
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+// Shared everywhere a person's avatar is shown in a table/list: real uploaded
+// photo when one exists on their profile, initials fallback otherwise.
+const avatarOrInitials = (photoUrl, name, sizeClass) => photoUrl
+  ? `<img src="${photoUrl}" class="avatar ${sizeClass} object-cover" alt="${name}">`
+  : `<div class="avatar ${sizeClass}">${initials(name)}</div>`;
 const fmt = n => typeof n==='number' ? n.toLocaleString() : n;
 
 function timeAgo(iso){
@@ -1216,34 +1224,55 @@ function renderPending(){
     </button>`).join('');
 }
 
-function renderUsers(){
+async function renderUsers(){
+  if (!DATA.usersLoaded){
+    $('#usersTable').innerHTML = `<tr><td colspan="6" class="text-center text-gray-400 py-6">Loading real users…</td></tr>`;
+    const client = initAdminSupabase();
+    const { data, error } = await client.rpc('get_admin_users_list');
+    if (error){ $('#usersTable').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-6">Failed to load: ${error.message}</td></tr>`; return; }
+    DATA.users = data.users || [];
+    DATA.usersLoaded = true;
+  }
+
   const q = (($('#userSearch') || {}).value||'').toLowerCase();
-  const role = ($('#userFilter') || {}).value||'';
-  const status = ($('#userStatus') || {}).value||'';
-  const rows = DATA.users.filter(r=>{
-    const [n,e,ro,c,st]=r;
-    return (!q||n.toLowerCase().includes(q)||e.toLowerCase().includes(q))
-      && (!role||ro===role) && (!status||st===status);
+  const roleFilter = ($('#userFilter') || {}).value||'';
+  const statusFilter = ($('#userStatus') || {}).value||'';
+  const roleMap = { Buyer:'buyer', Seller:'host', Agent:'agent' };
+  const statusMap = { Active:['activated'], Pending:['reserved'], Suspended:['cancelled'] };
+
+  const rows = DATA.users.filter(u=>{
+    const matchesQ = !q || (u.full_name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
+    const matchesRole = !roleFilter || (u.roles||[]).includes(roleMap[roleFilter]);
+    const matchesStatus = !statusFilter || (statusMap[statusFilter]||[]).includes(u.status);
+    return matchesQ && matchesRole && matchesStatus;
   });
-  $('#usersTable').innerHTML = rows.map(r=>`
+
+  $('#usersTable').innerHTML = rows.length ? rows.map(u=>{
+    const roleLabels = (u.roles||[]).map(r=> r==='host'?'Seller' : r.charAt(0).toUpperCase()+r.slice(1)).join(', ') || '—';
+    const statusLabel = u.status==='activated' ? 'Active' : u.status==='reserved' ? 'Pending' : u.status==='verified' ? 'Verified' : u.status;
+    const avatar = u.profile_photo_url
+      ? `<img src="${u.profile_photo_url}" class="avatar w-9 h-9 object-cover" alt="${u.full_name}">`
+      : `<div class="avatar w-9 h-9">${initials(u.full_name)}</div>`;
+    return `
     <tr>
       <td>
         <div class="flex items-center gap-3">
-          <div class="avatar w-9 h-9">${initials(r[0])}</div>
-          <div><p class="font-medium">${r[0]}</p><p class="text-xs text-gray-500">${r[1]}</p></div>
+          ${avatar}
+          <div><p class="font-medium">${u.full_name}</p><p class="text-xs text-gray-500">${u.email}</p></div>
         </div>
       </td>
-      <td>${badgeFor(r[2])}</td>
-      <td>${r[3]}</td>
-      <td>${badgeFor(r[4])}</td>
-      <td class="text-gray-500">${r[5]}</td>
+      <td>${badgeFor(roleLabels)}</td>
+      <td>${u.country||'—'}</td>
+      <td>${badgeFor(statusLabel)}</td>
+      <td class="text-gray-500">${new Date(u.joined_at).toLocaleDateString()}</td>
       <td>
         <div class="flex gap-2">
-          <button class="text-primary hover:underline text-sm" onclick="openUser('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}')">View</button>
+          <button class="text-primary hover:underline text-sm" onclick="openUser('${u.full_name}','${u.email}','${roleLabels}','${u.country||''}','${statusLabel}','${u.profile_photo_url||''}')">View</button>
           <button class="text-gray-500 hover:text-danger text-sm" onclick="toast('User suspended','success')">Suspend</button>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" class="text-center text-gray-400 py-6">No users match this filter.</td></tr>`;
   $('#usersCount').textContent = `Showing ${rows.length} of ${DATA.users.length}`;
 }
 
@@ -1317,7 +1346,7 @@ async function renderAgents(){
   const dir = data.directory || [];
   $('#agentsTable').innerHTML = dir.length ? dir.map(a=>`
     <tr>
-      <td><div class="flex items-center gap-3"><div class="avatar w-9 h-9">${initials(a.full_name)}</div>
+      <td><div class="flex items-center gap-3">${avatarOrInitials(a.profile_photo_url, a.full_name, 'w-9 h-9')}
         <div><p class="font-medium">${a.full_name}</p><p class="text-xs text-gray-500">${a.email}</p></div></div></td>
       <td><span class="badge badge-gold">${a.rank_name}</span></td>
       <td>${a.sales}</td>
@@ -1330,7 +1359,7 @@ async function renderAgents(){
   $('#leaderboard').innerHTML = lb.length ? lb.map((a,i)=>`
     <div class="flex items-center gap-3 p-2 rounded-lg ${i===0?'bg-gradient-to-r from-yellow-50 to-amber-50':''}">
       <span class="w-6 text-center font-bold ${i<3?'text-amber-600':'text-gray-400'}">${a.rank}</span>
-      <div class="avatar w-9 h-9">${initials(a.full_name)}</div>
+      ${avatarOrInitials(a.profile_photo_url, a.full_name, 'w-9 h-9')}
       <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${a.full_name}</p><p class="text-xs text-gray-500">${a.agent_code}</p></div>
       <span class="text-sm font-semibold">${a.weekly_verified_referrals}</span>
     </div>`).join('') : '<p class="text-sm text-gray-400">No referrals yet this week.</p>';
@@ -1344,6 +1373,8 @@ async function renderWaiting(){
   if (error) { $('#waitKpis').innerHTML = '<p class="text-sm text-red-500 col-span-4">Failed to load: '+error.message+'</p>'; return; }
 
   const k = data.kpis;
+  const navBadge = document.getElementById('navBadgeWaiting');
+  if (navBadge) navBadge.textContent = fmt(k.total);
   const topRole = (data.by_role || []).slice().sort((a,b)=>b.count-a.count)[0];
   $('#waitKpis').innerHTML = [
     {l:'Total joined',v:k.total,c:'primary',i:'⏳'},
@@ -1356,7 +1387,7 @@ async function renderWaiting(){
 
   const entries = data.entries || [];
   $('#waitTable').innerHTML = entries.length ? entries.map(r=>`<tr>
-    <td><div class="flex items-center gap-3"><div class="avatar w-9 h-9">${initials(r.full_name)}</div><p class="font-medium">${r.full_name}</p></div></td>
+    <td><div class="flex items-center gap-3">${avatarOrInitials(r.profile_photo_url, r.full_name, 'w-9 h-9')}<p class="font-medium">${r.full_name}</p></div></td>
     <td class="text-gray-500">${r.email}</td><td>${(r.roles||[]).join(', ')}</td><td>${r.country}</td>
     <td><span class="badge badge-info">${r.source==='Organic'?'Organic':r.source}</span></td>
     <td class="text-gray-500">${new Date(r.joined_at).toLocaleDateString()}</td></tr>`).join('')
@@ -1393,7 +1424,7 @@ async function renderVerif(){
   $('#verifList').innerHTML = queue.length ? queue.map(v=>`
     <div class="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
       <div class="flex items-center gap-3 flex-1 min-w-0">
-        <div class="avatar w-10 h-10">${initials(v.full_name)}</div>
+        ${avatarOrInitials(v.profile_photo_url, v.full_name, 'w-10 h-10')}
         <div><p class="font-semibold">${v.full_name}</p><p class="text-xs text-gray-500">${v.email} · ${v.country} · ${v.kind==='role_request'?'Additional role request ('+v.requested_role+')':v.kind==='host_application'?'Host application'+(v.host_type?' ('+v.host_type+')':''):'Agent application'} · ${new Date(v.submitted_at).toLocaleDateString()}</p></div>
       </div>
       <div class="flex gap-2">
@@ -1799,10 +1830,13 @@ function toast(msg, kind=''){
 }
 function openModal(html){ $('#modalContent').innerHTML = html; $('#modalRoot').classList.add('active'); }
 function closeModal(){ $('#modalRoot').classList.remove('active'); }
-function openUser(name,email,role,country,status){
+function openUser(name,email,role,country,status,photo){
+  const avatar = photo
+    ? `<img src="${photo}" class="avatar w-14 h-14 object-cover" alt="${name}">`
+    : `<div class="avatar w-14 h-14 text-base">${initials(name)}</div>`;
   openModal(`
     <div class="flex items-center gap-4 mb-4">
-      <div class="avatar w-14 h-14 text-base">${initials(name)}</div>
+      ${avatar}
       <div><h3 class="text-lg font-bold">${name}</h3><p class="text-sm text-gray-500">${email}</p></div>
     </div>
     <div class="grid grid-cols-2 gap-3 text-sm">
