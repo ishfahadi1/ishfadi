@@ -1660,7 +1660,10 @@ function renderDashboardCharts(){
 
 async function renderAnalyticsCharts(){
   const client = initAdminSupabase();
-  const { data, error } = await client.rpc('get_admin_analytics_summary');
+  const [{ data, error }, { data: health, error: healthErr }] = await Promise.all([
+    client.rpc('get_admin_analytics_summary'),
+    client.rpc('get_admin_system_health_stats')
+  ]);
   if (error){ toast('Could not load analytics: ' + error.message, 'error'); return; }
 
   // Revenue: no real data exists yet (Phase 3 not built) -- keep the canvas
@@ -1682,21 +1685,39 @@ async function renderAnalyticsCharts(){
   const f = data.funnel || {};
   mkBar('funnelChart', ['Signups','Verified','Activated'], [f.signups||0, f.verified||0, f.activated||0], '#1e3a5f');
 
-  renderSystemHealth(data.system_health || {});
+  if (healthErr){ toast('Could not load system health: ' + healthErr.message, 'error'); return; }
+  renderSystemHealth(health || {});
 }
 
 function renderSystemHealth(sh){
   const connPct = sh.connection_load_pct ?? 0;
   const connColor = connPct > 80 ? 'text-danger' : connPct > 50 ? 'text-warning' : 'text-success';
+
+  const hasUptime = sh.uptime_pct_24h !== null && sh.uptime_pct_24h !== undefined;
+  const uptimeHtml = hasUptime
+    ? `<div>
+        <div class="flex justify-between text-sm mb-1"><span>API uptime (24h)</span><span class="font-semibold ${sh.uptime_pct_24h>=99?'text-success':sh.uptime_pct_24h>=95?'text-warning':'text-danger'}">${sh.uptime_pct_24h}%</span></div>
+        <div class="progress"><span style="width:${sh.uptime_pct_24h}%"></span></div>
+        <p class="text-xs text-gray-400 mt-1">From ${sh.uptime_samples_24h} real pings against ishfadi.com, every 5 minutes.</p>
+      </div>`
+    : `<div>
+        <div class="flex justify-between text-sm mb-1"><span>API uptime</span><span class="font-semibold text-gray-400">Warming up…</span></div>
+        <p class="text-xs text-gray-400">The health-check cron just started -- give it a few cycles to build 24h of samples.</p>
+      </div>`;
+
+  const hasResp = sh.avg_response_ms_24h !== null && sh.avg_response_ms_24h !== undefined;
+  const respHtml = hasResp
+    ? `<div>
+        <div class="flex justify-between text-sm mb-1"><span>Avg response (24h)</span><span class="font-semibold">${sh.avg_response_ms_24h}ms</span></div>
+        <p class="text-xs text-gray-400">Real round-trip time to ishfadi.com, averaged over successful checks.</p>
+      </div>`
+    : `<div>
+        <div class="flex justify-between text-sm mb-1"><span>Avg response</span><span class="font-semibold text-gray-400">Warming up…</span></div>
+      </div>`;
+
   $('#systemHealthBody').innerHTML = `
-    <div>
-      <div class="flex justify-between text-sm mb-1"><span>API uptime</span><span class="font-semibold text-gray-400">Not tracked yet</span></div>
-      <p class="text-xs text-gray-400">Needs a synthetic monitor (pg_cron + pg_net ping, or Supabase's own Reports page) -- ask to have this wired up.</p>
-    </div>
-    <div>
-      <div class="flex justify-between text-sm mb-1"><span>Avg response</span><span class="font-semibold text-gray-400">Not tracked yet</span></div>
-      <p class="text-xs text-gray-400">Same as above -- this is an edge/API metric, not something a Postgres query can see on its own.</p>
-    </div>
+    ${uptimeHtml}
+    ${respHtml}
     <div>
       <div class="flex justify-between text-sm mb-1"><span>Database connections</span><span class="font-semibold ${connColor}">${sh.connections_active}/${sh.connections_max} (${connPct}%)</span></div>
       <div class="progress"><span style="width:${connPct}%"></span></div>
