@@ -1523,6 +1523,7 @@ function renderReports(){
 
 function renderCMS(){
   const cards=[
+    {t:'Platform previews',d:'Screenshots shown on the public "A Glimpse" gallery.',i:'📸',action:'openPreviewsManager()'},
     {t:'Homepage hero',d:'Edit hero copy, CTA & background.',i:'🎨'},
     {t:'Testimonials',d:'Curate user testimonials.',i:'💬'},
     {t:'FAQs',d:'Manage FAQ entries by category.',i:'❓'},
@@ -1538,7 +1539,7 @@ function renderCMS(){
       <div class="kpi-icon ${colorBg('primary')} mb-3">${c.i}</div>
       <p class="font-semibold">${c.t}</p>
       <p class="text-sm text-gray-500 mt-1">${c.d}</p>
-      <button class="mt-4 text-primary text-sm font-semibold hover:underline">Edit →</button>
+      <button class="mt-4 text-primary text-sm font-semibold hover:underline" ${c.action ? `onclick="${c.action}"` : ''}>${c.action ? 'Manage →' : 'Edit →'}</button>
     </div>`).join('');
 }
 
@@ -1857,6 +1858,121 @@ function openQuickActions(){
         <button class="p-3 border rounded-xl text-sm hover:bg-slate-50 text-left" onclick="closeModal();goto('${s}')">${l}</button>`).join('')}
     </div>`);
 }
+
+/* ====== Platform Previews (public "A Glimpse" gallery) ======
+   These uploads go straight to Cloudinary (same account agents use for
+   profile photos) and the resulting rows in platform_previews are what the
+   public index.html landing page reads for real -- no more static
+   /assets/previews/index.json file. */
+const CMS_CLOUDINARY_CLOUD_NAME = 'u2amysf2';
+const CMS_CLOUDINARY_UPLOAD_PRESET = 'ishfadi';
+const CMS_CLOUDINARY_ENDPOINT = 'https://api.cloudinary.com/v1_1/' + CMS_CLOUDINARY_CLOUD_NAME + '/image/upload';
+const CMS_ALLOWED_IMAGE_TYPES = ['image/jpeg','image/jpg','image/png','image/webp'];
+const CMS_MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8MB, screenshots run bigger than profile photos
+
+async function uploadPreviewToCloudinary(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CMS_CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch(CMS_CLOUDINARY_ENDPOINT, { method:'POST', body: fd });
+  if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+  const json = await res.json();
+  if (!json || !json.secure_url) throw new Error('Upload response missing secure_url');
+  return { url: json.secure_url, publicId: json.public_id };
+}
+
+async function openPreviewsManager(){
+  openModal(`
+    <h3 class="text-lg font-bold mb-1">📸 Platform previews</h3>
+    <p class="text-sm text-gray-500 mb-4">These are the exact screenshots shown on ishfadi.com under "A Glimpse". Uploads here go live on the public site immediately.</p>
+    <div class="border-2 border-dashed rounded-xl p-4 mb-4">
+      <label class="text-sm font-medium">Label <span class="text-gray-400 font-normal">(e.g. "Agent dashboard")</span></label>
+      <input id="previewLabelInput" class="mt-1 w-full px-3 py-2 border rounded-lg text-sm mb-3" placeholder="Preview label" />
+      <input id="previewFileInput" type="file" accept="image/png,image/jpeg,image/webp" class="text-sm" />
+      <button class="mt-3 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="submitPreviewUpload()">Upload</button>
+      <p id="previewUploadStatus" class="text-xs text-gray-400 mt-2"></p>
+    </div>
+    <div id="previewsList" class="space-y-2 max-h-80 overflow-y-auto">
+      <p class="text-sm text-gray-400">Loading…</p>
+    </div>
+  `);
+  await loadPreviewsList();
+}
+
+async function loadPreviewsList(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.from('platform_previews')
+    .select('id, image_url, label, sort_order, is_published, created_at')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true });
+  const el = document.getElementById('previewsList');
+  if (!el) return; // modal was closed before this resolved
+  if (error){ el.innerHTML = `<p class="text-sm text-danger">Failed to load: ${error.message}</p>`; return; }
+  if (!data || !data.length){ el.innerHTML = `<p class="text-sm text-gray-400">No previews uploaded yet -- the public gallery shows its empty state until you add one.</p>`; return; }
+  el.innerHTML = data.map(p=>`
+    <div class="flex items-center gap-3 p-2 border rounded-lg">
+      <img src="${p.image_url}" class="w-16 h-10 object-cover rounded" alt="${p.label}">
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium truncate">${p.label}</p>
+        <p class="text-xs text-gray-400">${p.is_published ? 'Published' : 'Hidden'} · order ${p.sort_order}</p>
+      </div>
+      <button class="text-xs text-gray-500 hover:text-primary" onclick="togglePreviewPublish('${p.id}', ${!p.is_published})">${p.is_published ? 'Hide' : 'Publish'}</button>
+      <button class="text-xs text-danger hover:underline" onclick="deletePreview('${p.id}')">Delete</button>
+    </div>`).join('');
+}
+
+async function submitPreviewUpload(){
+  const fileInput = document.getElementById('previewFileInput');
+  const labelInput = document.getElementById('previewLabelInput');
+  const status = document.getElementById('previewUploadStatus');
+  const file = fileInput && fileInput.files && fileInput.files[0];
+  if (!file){ toast('Choose an image first', 'error'); return; }
+  if (!CMS_ALLOWED_IMAGE_TYPES.includes(file.type)){ toast('Use a JPG, PNG or WebP image', 'error'); return; }
+  if (file.size > CMS_MAX_IMAGE_BYTES){ toast('Image must be 8MB or smaller', 'error'); return; }
+
+  status.textContent = 'Uploading to Cloudinary…';
+  try {
+    const { url, publicId } = await uploadPreviewToCloudinary(file);
+    status.textContent = 'Saving…';
+    const client = initAdminSupabase();
+    const { data: { user } } = await client.auth.getUser();
+    const { data: existing } = await client.from('platform_previews').select('sort_order').order('sort_order', { ascending:false }).limit(1);
+    const nextOrder = (existing && existing[0] ? existing[0].sort_order : 0) + 1;
+    const { error } = await client.from('platform_previews').insert({
+      image_url: url,
+      cloudinary_public_id: publicId,
+      label: (labelInput.value || 'Preview').trim(),
+      sort_order: nextOrder,
+      uploaded_by: user ? user.id : null
+    });
+    if (error) throw error;
+    status.textContent = '';
+    fileInput.value = '';
+    labelInput.value = '';
+    toast('Preview uploaded and live on ishfadi.com', 'success');
+    await loadPreviewsList();
+  } catch (e) {
+    status.textContent = '';
+    toast('Upload failed: ' + e.message, 'error');
+  }
+}
+
+async function togglePreviewPublish(id, publish){
+  const client = initAdminSupabase();
+  const { error } = await client.from('platform_previews').update({ is_published: publish }).eq('id', id);
+  if (error){ toast('Failed: ' + error.message, 'error'); return; }
+  toast(publish ? 'Preview published' : 'Preview hidden', 'success');
+  await loadPreviewsList();
+}
+
+async function deletePreview(id){
+  const client = initAdminSupabase();
+  const { error } = await client.from('platform_previews').delete().eq('id', id);
+  if (error){ toast('Failed: ' + error.message, 'error'); return; }
+  toast('Preview removed', 'success');
+  await loadPreviewsList();
+}
+
 
 /* ====== User table filters ====== */
 ['userSearch','userFilter','userStatus'].forEach(id=>{

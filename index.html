@@ -800,7 +800,7 @@
       SUPABASE_URL:        'https://kialcvnywshkklzsecok.supabase.co',
       SUPABASE_ANON_KEY:   'sb_publishable_u2hfeDzlslgK5ZJq-zHYRQ_G1nuhl_9',
       TURNSTILE_SITE_KEY:  '0x4AAAAAADucVlyj1x8eOYu6',                                       // TODO — set once you have your Cloudflare Turnstile site key
-      LAUNCH_DATE_ISO:     '2026-09-01T09:00:00Z',                   // TODO — set your launch date
+      LAUNCH_DATE_ISO:     '2027-01-01T00:00:00Z',                   // Official ISHFADI launch date
       SITE_URL:            'https://www.ishfadi.com'
     };
   </script>
@@ -1482,17 +1482,19 @@
       if (!grid) return;
       let items = [];
       try {
-        const res = await fetch('/assets/previews/index.json', { cache: 'no-cache' });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            items = data.map((entry, i) => {
-              if (typeof entry === 'string') return { src: '/assets/previews/' + entry, label: entry.replace(/\.[a-z]+$/i,'').replace(/[-_]/g,' ') };
-              return { src: entry.src || ('/assets/previews/' + entry.file), label: entry.label || ('Preview ' + (i+1)) };
-            });
+        const client = initSupabase();
+        if (client) {
+          const { data, error } = await client
+            .from('platform_previews')
+            .select('image_url, label')
+            .eq('is_published', true)
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: true });
+          if (!error && Array.isArray(data)) {
+            items = data.map(row => ({ src: row.image_url, label: row.label || 'Preview' }));
           }
         }
-      } catch (e) { /* silent */ }
+      } catch (e) { /* silent -- falls back to empty state */ }
 
       galleryItems = items;
       if (!items.length) return; // keep empty-state placeholder
@@ -2017,26 +2019,35 @@
 
         let roles = [];
         let pending = {};
+        let email = '';
         try {
           const [{ data: prof }, { data: reqs }] = await Promise.all([
-            client.from('profiles').select('roles').eq('user_id', userId).single(),
+            client.from('profiles').select('roles, email').eq('user_id', userId).single(),
             client.from('role_requests').select('requested_role, status').eq('user_id', userId).eq('status', 'pending')
           ]);
           roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
+          email = (prof && prof.email) ? prof.email.toLowerCase() : '';
           (reqs || []).forEach(r => { if (r && r.requested_role) pending[r.requested_role] = true; });
         } catch (_) { /* RLS or missing rows — treat as no data */ }
 
-        renderRoleScreen(client, userId, roles, pending);
+        // The founder account keeps full access to every role dashboard even
+        // pre-launch. Everyone else sees "Coming Soon" for Host/Buyer until
+        // those dashboards open platform-wide -- only Agent is live for
+        // regular users right now.
+        const isFounder = email === 'official@ishfadi.com';
+
+        renderRoleScreen(client, userId, roles, pending, isFounder);
       }
 
-      function stateFor(role, roles, pending) {
+      function stateFor(role, roles, pending, isFounder) {
+        if (isFounder) return 'have';
         if (roles.indexOf(role) !== -1) return 'have';
         if (pending[role]) return 'pending';
         return 'apply';
       }
 
-      function renderRoleScreen(client, userId, roles, pending) {
-        const cards = ['agent', 'host', 'buyer'].map(role => cardHtml(role, stateFor(role, roles, pending)));
+      function renderRoleScreen(client, userId, roles, pending, isFounder) {
+        const cards = ['agent', 'host', 'buyer'].map(role => cardHtml(role, stateFor(role, roles, pending, isFounder), isFounder));
         roleView.innerHTML =
           '<div class="mb-5 md:mb-6">' +
             '<h3 class="text-2xl md:text-3xl font-bold text-primary mb-1">' + escapeHtml(window.t('roleScreen.title')) + '</h3>' +
@@ -2046,13 +2057,17 @@
         wireCardActions(client, userId, roles, pending);
       }
 
-      function cardHtml(role, state) {
+      function cardHtml(role, state, isFounder) {
         const icon = ROLE_ICONS[role];
         const title = window.t('roleScreen.' + role + '.title');
         const tagline = window.t('roleScreen.' + role + '.tagline');
         let footer = '';
+        // Pre-launch: only Agent (and the founder account, for every role)
+        // gets a working "Continue" button. Everyone else sees Coming Soon
+        // for Host/Buyer regardless of whether they hold that role yet.
+        const dashboardLive = role === 'agent' || isFounder;
         if (state === 'have') {
-          if (role === 'agent' || role === 'host') {
+          if (dashboardLive) {
             footer =
               '<button type="button" class="btn-primary w-full mt-4" data-role-continue="' + role + '">' +
                 escapeHtml(window.t('roleScreen.continue')) +
@@ -2101,6 +2116,12 @@
         });
         roleView.querySelectorAll('[data-role-continue="host"]').forEach(btn => {
           btn.addEventListener('click', () => { window.location.href = '/seller.html'; });
+        });
+        roleView.querySelectorAll('[data-role-continue="buyer"]').forEach(btn => {
+          // NOTE: buyer.html doesn't exist in the codebase yet -- this only
+          // ever renders for the founder account right now, ahead of that
+          // dashboard being built. Update this path once it's real.
+          btn.addEventListener('click', () => { window.location.href = '/buyer.html'; });
         });
         roleView.querySelectorAll('[data-role-apply]').forEach(btn => {
           btn.addEventListener('click', () => {
