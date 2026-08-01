@@ -877,7 +877,7 @@
           copy:'Copy Reservation ID', download:'Download Reservation Card', resend:'Resend Verification Email',
           copied:'Reservation ID copied.', resent:'Verification email sent again.', downloadFail:'Could not generate image. Please try again.',
           mustVerify:'Please verify your email first. Open the confirmation link we sent to your inbox, then return here to save your reservation card.' },
-        rescard:{ tag:'Pre-launch Reservation', launchingSoon:'Launching Soon', scan:'Scan to visit www.ishfadi.com and follow launch updates.', keep:'Keep your credentials safe.' },
+        rescard:{ tag:'Pre-launch Reservation', launchingSoon:'Launching Soon', scan:'Scan to visit www.ishfadi.com and follow launch updates.', keep:'Keep your credentials safe.', storyHeadline:'I just reserved my spot on ISHFADI', storyCta:'Join the waitlist → ishfadi.com' },
         timeline:{ title:'Your reservation timeline',
           s1t:'Account Reserved', s1d:'Your reservation is confirmed with a unique ID.',
           s2t:'Email Verified', s2d:'Confirm your email to lock in your account.',
@@ -966,7 +966,7 @@
           copy:"Copier l'ID de réservation", download:'Télécharger la carte de réservation', resend:"Renvoyer l'e-mail de vérification",
           copied:'ID copié.', resent:'E-mail de vérification renvoyé.', downloadFail:"Impossible de générer l'image. Réessayez.",
           mustVerify:"Veuillez d'abord vérifier votre e-mail. Ouvrez le lien de confirmation que nous vous avons envoyé, puis revenez ici pour enregistrer votre carte." },
-        rescard:{ tag:'Réservation pré-lancement', launchingSoon:'Bientôt disponible', scan:'Scannez pour visiter www.ishfadi.com et suivre les actualités.', keep:'Conservez vos identifiants en lieu sûr.' },
+        rescard:{ tag:'Réservation pré-lancement', launchingSoon:'Bientôt disponible', scan:'Scannez pour visiter www.ishfadi.com et suivre les actualités.', keep:'Conservez vos identifiants en lieu sûr.', storyHeadline:"Je viens de réserver ma place sur ISHFADI", storyCta:"Rejoignez la liste d'attente → ishfadi.com" },
         timeline:{ title:'Chronologie de votre réservation',
           s1t:'Compte réservé', s1d:'Votre réservation est confirmée avec un ID unique.',
           s2t:'E-mail vérifié', s2d:'Confirmez votre e-mail pour valider votre compte.',
@@ -1052,7 +1052,7 @@
           copy:'نسخ رقم الحجز', download:'تنزيل بطاقة الحجز', resend:'إعادة إرسال رسالة التحقق',
           copied:'تم نسخ رقم الحجز.', resent:'تم إعادة إرسال رسالة التحقق.', downloadFail:'تعذّر إنشاء الصورة. حاول مرة أخرى.',
           mustVerify:'يرجى تأكيد بريدك الإلكتروني أولاً. افتح رابط التأكيد الذي أرسلناه إلى بريدك، ثم عد إلى هنا لحفظ بطاقة الحجز.' },
-        rescard:{ tag:'حجز ما قبل الإطلاق', launchingSoon:'قريبًا', scan:'امسح للانتقال إلى www.ishfadi.com ومتابعة أخبار الإطلاق.', keep:'احتفظ بيانات دخولك بأمان.' },
+        rescard:{ tag:'حجز ما قبل الإطلاق', launchingSoon:'قريبًا', scan:'امسح للانتقال إلى www.ishfadi.com ومتابعة أخبار الإطلاق.', keep:'احتفظ بيانات دخولك بأمان.', storyHeadline:'لقد حجزت للتو مكاني في ISHFADI', storyCta:'انضم إلى قائمة الانتظار ← ishfadi.com' },
         timeline:{ title:'المخطط الزمني لحجزك',
           s1t:'تم حجز الحساب', s1d:'تم تأكيد حجزك برقم فريد.',
           s2t:'تم التحقق من البريد', s2d:'أكّد بريدك لتثبيت الحساب.',
@@ -1891,10 +1891,68 @@
 
       btn.disabled = true;
       try {
-        const canvas = await window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        // 1. Capture the on-screen card exactly as it looks (landscape ID-card shape).
+        const cardCanvas = await window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+
+        // 2. Compose it into a real 9:16 portrait "story" frame (1080x1920) —
+        //    the raw card alone is landscape, so a plain screenshot would not
+        //    actually be portrait. This builds a proper shareable story image.
+        const W = 1080, H = 1920;
+        const out = document.createElement('canvas');
+        out.width = W; out.height = H;
+        const ctx = out.getContext('2d');
+
+        const grad = ctx.createLinearGradient(0, 0, W, H);
+        grad.addColorStop(0, '#1e3a5f');
+        grad.addColorStop(0.55, '#254772');
+        grad.addColorStop(1, '#0f1f36');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Wordmark
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 64px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText('ISHFADI', W / 2, 190);
+        ctx.fillStyle = 'rgba(255,255,255,.72)';
+        ctx.font = '600 30px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText(window.t('rescard.tag') || 'Pre-launch Reservation', W / 2, 236);
+
+        // The captured card, scaled to fit width with rounded-corner clipping + shadow
+        const cardTargetW = 900;
+        const scale = cardTargetW / cardCanvas.width;
+        const cardTargetH = cardCanvas.height * scale;
+        const cardX = (W - cardTargetW) / 2;
+        const cardY = 320;
+        const radius = 28;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,.35)';
+        ctx.shadowBlur = 60;
+        ctx.shadowOffsetY = 24;
+        ctx.beginPath();
+        ctx.moveTo(cardX + radius, cardY);
+        ctx.arcTo(cardX + cardTargetW, cardY, cardX + cardTargetW, cardY + cardTargetH, radius);
+        ctx.arcTo(cardX + cardTargetW, cardY + cardTargetH, cardX, cardY + cardTargetH, radius);
+        ctx.arcTo(cardX, cardY + cardTargetH, cardX, cardY, radius);
+        ctx.arcTo(cardX, cardY, cardX + cardTargetW, cardY, radius);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(cardCanvas, cardX, cardY, cardTargetW, cardTargetH);
+        ctx.restore();
+
+        // Caption below the card
+        const captionY = cardY + cardTargetH + 90;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 42px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText('🎉 ' + (window.t('rescard.storyHeadline') || "I just reserved my spot on ISHFADI"), W / 2, captionY, W - 140);
+        ctx.fillStyle = 'rgba(255,255,255,.75)';
+        ctx.font = '500 32px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText(window.t('rescard.storyCta') || 'Join the waitlist → ishfadi.com', W / 2, captionY + 56);
+
         const link = document.createElement('a');
-        link.download = 'ISHFADI-' + (lastInfo && lastInfo.reservationId || 'reservation') + '.png';
-        link.href = canvas.toDataURL('image/png');
+        link.download = 'ISHFADI-story-' + (lastInfo && lastInfo.reservationId || 'reservation') + '.png';
+        link.href = out.toDataURL('image/png');
         document.body.appendChild(link); link.click(); link.remove();
       } catch(e) {
         window.showToast(window.t('success.downloadFail'), 'error');
@@ -2020,23 +2078,27 @@
         let roles = [];
         let pending = {};
         let email = '';
+        let flags = {};
         try {
-          const [{ data: prof }, { data: reqs }] = await Promise.all([
+          const [{ data: prof }, { data: reqs }, { data: flagRows }] = await Promise.all([
             client.from('profiles').select('roles, email').eq('user_id', userId).single(),
-            client.from('role_requests').select('requested_role, status').eq('user_id', userId).eq('status', 'pending')
+            client.from('role_requests').select('requested_role, status').eq('user_id', userId).eq('status', 'pending'),
+            client.from('feature_flags').select('key, enabled')
           ]);
           roles = (prof && Array.isArray(prof.roles)) ? prof.roles : [];
           email = (prof && prof.email) ? prof.email.toLowerCase() : '';
           (reqs || []).forEach(r => { if (r && r.requested_role) pending[r.requested_role] = true; });
+          (flagRows || []).forEach(f => { flags[f.key] = f.enabled; });
         } catch (_) { /* RLS or missing rows — treat as no data */ }
 
-        // The founder account keeps full access to every role dashboard even
-        // pre-launch. Everyone else sees "Coming Soon" for Host/Buyer until
-        // those dashboards open platform-wide -- only Agent is live for
-        // regular users right now.
+        // The founder account keeps full access to every role dashboard
+        // regardless of flags. Everyone else follows the real, admin-
+        // controlled feature_flags table (host_dashboard / buyer_dashboard) —
+        // both default OFF ("Coming Soon") until the admin flips them on for
+        // early-feedback testing, ahead of the Jan 1, 2027 real launch.
         const isFounder = email === 'official@ishfadi.com';
 
-        renderRoleScreen(client, userId, roles, pending, isFounder);
+        renderRoleScreen(client, userId, roles, pending, isFounder, flags);
       }
 
       function stateFor(role, roles, pending, isFounder) {
@@ -2046,8 +2108,8 @@
         return 'apply';
       }
 
-      function renderRoleScreen(client, userId, roles, pending, isFounder) {
-        const cards = ['agent', 'host', 'buyer'].map(role => cardHtml(role, stateFor(role, roles, pending, isFounder), isFounder));
+      function renderRoleScreen(client, userId, roles, pending, isFounder, flags) {
+        const cards = ['agent', 'host', 'buyer'].map(role => cardHtml(role, stateFor(role, roles, pending, isFounder), isFounder, flags));
         roleView.innerHTML =
           '<div class="mb-5 md:mb-6">' +
             '<h3 class="text-2xl md:text-3xl font-bold text-primary mb-1">' + escapeHtml(window.t('roleScreen.title')) + '</h3>' +
@@ -2057,15 +2119,17 @@
         wireCardActions(client, userId, roles, pending);
       }
 
-      function cardHtml(role, state, isFounder) {
+      function cardHtml(role, state, isFounder, flags) {
         const icon = ROLE_ICONS[role];
         const title = window.t('roleScreen.' + role + '.title');
         const tagline = window.t('roleScreen.' + role + '.tagline');
         let footer = '';
-        // Pre-launch: only Agent (and the founder account, for every role)
-        // gets a working "Continue" button. Everyone else sees Coming Soon
-        // for Host/Buyer regardless of whether they hold that role yet.
-        const dashboardLive = role === 'agent' || isFounder;
+        // Pre-launch: Agent is always live. Host/Buyer follow the real
+        // feature_flags table (host_dashboard / buyer_dashboard) so the
+        // admin can open them for early feedback whenever ready — the
+        // founder account always has access regardless of the flags.
+        const flagKey = role + '_dashboard';
+        const dashboardLive = role === 'agent' || isFounder || !!(flags && flags[flagKey]);
         if (state === 'have') {
           if (dashboardLive) {
             footer =
