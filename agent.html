@@ -338,10 +338,10 @@
   <nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50" aria-label="Primary">
     <div class="container mx-auto px-4 h-20 flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 md:gap-3">
-        <button id="sideToggle" class="lg:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="sideDrawer">
+        <button id="sideToggle" class="lg:hidden p-2 rounded-lg text-primary hover:bg-primary/5" data-i18n="a11y.openMenu" data-i18n-attr="aria-label" aria-label="Open menu" aria-expanded="false" aria-controls="sideDrawer">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-        <a href="/index.html" class="flex items-center gap-2.5 shrink-0" aria-label="ISHFADI home">
+        <a href="/index.html" class="flex items-center gap-2.5 shrink-0" data-i18n="a11y.home" data-i18n-attr="aria-label" aria-label="ISHFADI home">
           <span class="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-xl bg-white ring-1 ring-primary/15 shadow-sm p-1 shrink-0">
             <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
           </span>
@@ -358,12 +358,12 @@
 
       <div class="flex items-center gap-2 md:gap-3">
         <div class="lang-switcher" id="langSwitcherDesktop">
-          <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+          <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" data-i18n="a11y.selectLanguage" data-i18n-attr="aria-label" aria-label="Select language">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
             <span class="lang-current-label">English</span>
             <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
-          <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+          <div class="lang-menu" role="listbox" data-i18n="a11y.languages" data-i18n-attr="aria-label" aria-label="Languages"></div>
         </div>
 
         <div class="hidden sm:flex items-center gap-2 pl-2 border-s border-gray-200 ps-3">
@@ -374,7 +374,7 @@
           </div>
         </div>
 
-        <button type="button" id="logoutBtn" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors" aria-label="Sign out">
+        <button type="button" id="logoutBtn" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors" data-i18n="a11y.signOut" data-i18n-attr="aria-label" aria-label="Sign out">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
           <span data-i18n="nav.logout">Sign out</span>
         </button>
@@ -469,19 +469,19 @@
     <div class="container mx-auto px-4 lg:px-6 py-6 lg:py-8">
       <div class="lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
         <!-- Sidebar -->
-        <aside id="sideDrawer" class="bg-white lg:bg-transparent lg:border-0 border-e w-72 lg:w-auto lg:sticky lg:top-24 self-start lg:h-[calc(100dvh-7rem)] overflow-y-auto" aria-label="Dashboard navigation">
+        <aside id="sideDrawer" class="bg-white lg:bg-transparent lg:border-0 border-e w-72 lg:w-auto lg:sticky lg:top-24 self-start lg:h-[calc(100dvh-7rem)] overflow-y-auto" data-i18n="a11y.dashboardNav" data-i18n-attr="aria-label" aria-label="Dashboard navigation">
           <div class="p-4 lg:p-0">
             <div class="lg:hidden flex items-center justify-between mb-4">
               <span class="text-lg font-bold text-primary" data-i18n="nav.dashboard">Dashboard</span>
-              <button id="sideClose" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Close menu">
+              <button id="sideClose" class="p-2 rounded-lg hover:bg-gray-100" data-i18n="a11y.closeMenu" data-i18n-attr="aria-label" aria-label="Close menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
-            <nav class="flex flex-col gap-1" aria-label="Dashboard sections">
+            <nav class="flex flex-col gap-1" data-i18n="a11y.dashboardSections" data-i18n-attr="aria-label" aria-label="Dashboard sections">
               <button type="button" class="side-item active" data-section="dashboard">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"/></svg>
                 <span data-i18n="nav.dashboard">Dashboard</span>
-                <span class="nav-dot" aria-label="Verification incomplete" title="Verification incomplete"></span>
+                <span class="nav-dot" data-i18n="a11y.verificationIncomplete" data-i18n-attr="aria-label" aria-label="Verification incomplete" title="Verification incomplete"></span>
               </button>
               <button type="button" class="side-item" data-section="referrals">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
@@ -643,11 +643,11 @@
                 <div class="flex flex-col sm:flex-row gap-2">
                   <input id="refLink" class="input-field font-mono text-sm" readonly value="">
                   <div class="flex gap-2">
-                    <button type="button" class="btn-secondary" data-copy-target="refLink" aria-label="Copy referral link">
+                    <button type="button" class="btn-secondary" data-copy-target="refLink" data-i18n="a11y.copyReferralLink" data-i18n-attr="aria-label" aria-label="Copy referral link">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                       <span data-i18n="referral.copy">Copy</span>
                     </button>
-                    <button type="button" class="btn-primary" id="shareBtn" aria-label="Share referral link">
+                    <button type="button" class="btn-primary" id="shareBtn" data-i18n="a11y.shareReferralLink" data-i18n-attr="aria-label" aria-label="Share referral link">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                       <span data-i18n="referral.share">Share</span>
                     </button>
@@ -739,8 +739,8 @@
               <div class="flex flex-wrap items-center justify-between gap-3 p-4 border-t bg-gray-50/60">
                 <p class="text-xs text-gray-500" id="pageInfo">—</p>
                 <div class="flex gap-2">
-                  <button type="button" class="btn-secondary" id="prevPage" aria-label="Previous page">‹</button>
-                  <button type="button" class="btn-secondary" id="nextPage" aria-label="Next page">›</button>
+                  <button type="button" class="btn-secondary" id="prevPage" data-i18n="a11y.prevPage" data-i18n-attr="aria-label" aria-label="Previous page">‹</button>
+                  <button type="button" class="btn-secondary" id="nextPage" data-i18n="a11y.nextPage" data-i18n-attr="aria-label" aria-label="Next page">›</button>
                 </div>
               </div>
             </div>
@@ -798,6 +798,21 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v8m0 0l-3-3m3 3l3-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                   <span>Withdraw funds</span>
                 </button>
+              </div>
+            </div>
+
+            <div class="feature-card" style="border-inline-start: 4px solid #b45309; background: rgba(245,158,11,.06);">
+              <div class="flex items-start gap-3">
+                <div class="feature-icon shrink-0" aria-hidden="true">ℹ</div>
+                <div>
+                  <h3 class="font-bold text-primary" data-i18n="payments.noticeTitle">We're still building — here's how payouts will work</h3>
+                  <p class="text-sm text-gray-600 mt-1" data-i18n="payments.noticeBody">
+                    Right now, focus on inviting people — every referral you bring in is being tracked and counted. Your earnings and progress will be reviewed and verified once ISHFADI fully launches, and payouts will start from there.
+                  </p>
+                  <p class="text-sm text-gray-600 mt-2" data-i18n="payments.noticeVerification">
+                    Automated identity/earnings verification is temporarily paused while we're pre-launch, since each check has a real cost. It will be switched back on after launch — nothing you've earned so far is lost, it just gets verified and paid out once that's active again.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -971,12 +986,12 @@
                 <div>
                   <p class="field-label" data-i18n="settings.language">Language</p>
                   <div class="lang-switcher inline-block" id="langSwitcherSettings">
-                    <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language">
+                    <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false" data-i18n="a11y.selectLanguage" data-i18n-attr="aria-label" aria-label="Select language">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
                       <span class="lang-current-label">English</span>
                       <svg class="w-3.5 h-3.5 chev" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+                    <div class="lang-menu" role="listbox" data-i18n="a11y.languages" data-i18n-attr="aria-label" aria-label="Languages"></div>
                   </div>
                 </div>
 
@@ -1064,7 +1079,7 @@
     const T = {
       en: {
         meta: { title:'ISHFADI Agent Dashboard', description:'Manage your ISHFADI agent profile, referrals and rank.' },
-        a11y: { skip:'Skip to content' },
+        a11y: { skip:'Skip to content', openMenu:'Open menu', closeMenu:'Close menu', home:'ISHFADI home', selectLanguage:'Select language', languages:'Languages', signOut:'Sign out', dashboardNav:'Dashboard navigation', dashboardSections:'Dashboard sections', verificationIncomplete:'Verification incomplete', copyReferralLink:'Copy referral link', shareReferralLink:'Share referral link', prevPage:'Previous page', nextPage:'Next page' },
         boot: { loading:'Loading your dashboard…', error:'We could not load your dashboard. Please check your connection and try again.', errorTitle:"We couldn't load your dashboard", retry:'Retry' },
         nav: { home:'Home', dashboard:'Dashboard', referrals:'Referrals', rank:'Rank', payments:'Payments', profile:'Profile', settings:'Settings', logout:'Sign out', roleAgent:'Agent',
                masterSection:'Master agent', assignments:'Assignments', inspections:'Inspections', reports:'Reports' },
@@ -1086,6 +1101,9 @@
         table: { photo:'Photo', name:'Full name', country:'Country', city:'City', status:'Status', date:'Registered' },
         rank: { title:'Your rank', subtitle:'Ranks are awarded by ISHFADI based on your verified performance.', progressTo:'Progress to', requirement:'Rank progress is determined by the ISHFADI team.' },
         payments: { title:'Payments', awaiting:'Awaiting backend',
+          noticeTitle:"We're still building — here's how payouts will work",
+          noticeBody:'Right now, focus on inviting people — every referral you bring in is being tracked and counted. Your earnings and progress will be reviewed and verified once ISHFADI fully launches, and payouts will start from there.',
+          noticeVerification:"Automated identity/earnings verification is temporarily paused while we're pre-launch, since each check has a real cost. It will be switched back on after launch — nothing you've earned so far is lost, it just gets verified and paid out once that's active again.",
           subtitle:'Balances, payout preferences and history will appear here once payouts are enabled for your account.',
           available:'Available balance', pending:'Pending balance', lifetime:'Lifetime earnings',
           methodTitle:'Preferred payout method', methodSub:'Choose how you want to receive your payouts. Saved once the backend is live.',
@@ -1130,11 +1148,11 @@
           follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
           privacy:'Privacy Policy', terms:'Terms of Service', help:'Help Center', safety:'Safety Tips',
           tagline:'Building the future of global accommodation.' },
-        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.' }
+        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.', comingSoon:'Coming soon — this step will be available shortly.', badPhotoType:'Please choose a JPG, PNG or WebP image.', photoTooLarge:'Image must be 5 MB or smaller.', photoSaved:'Profile photo updated.', photoSaveFail:"Photo uploaded, but we couldn't save it to your profile.", photoUploadFail:'Could not upload photo. Please try again.', prefsSaveFail:'Could not save preferences.' }
       },
       fr: {
         meta: { title:'Tableau de bord Agent ISHFADI', description:'Gérez votre profil agent ISHFADI, vos parrainages et votre rang.' },
-        a11y: { skip:'Aller au contenu' },
+        a11y: { skip:'Aller au contenu', openMenu:'Ouvrir le menu', closeMenu:'Fermer le menu', home:'Accueil ISHFADI', selectLanguage:'Choisir la langue', languages:'Langues', signOut:'Se déconnecter', dashboardNav:'Navigation du tableau de bord', dashboardSections:'Sections du tableau de bord', verificationIncomplete:'Vérification incomplète', copyReferralLink:'Copier le lien de parrainage', shareReferralLink:'Partager le lien de parrainage', prevPage:'Page précédente', nextPage:'Page suivante' },
         boot: { loading:'Chargement de votre tableau de bord…', error:'Impossible de charger votre tableau de bord. Vérifiez votre connexion et réessayez.', errorTitle:'Impossible de charger votre tableau de bord', retry:'Réessayer' },
         nav: { home:'Accueil', dashboard:'Tableau de bord', referrals:'Parrainages', rank:'Rang', payments:'Paiements', profile:'Profil', settings:'Paramètres', logout:'Se déconnecter', roleAgent:'Agent',
                masterSection:'Agent master', assignments:'Missions', inspections:'Inspections', reports:'Rapports' },
@@ -1156,6 +1174,9 @@
         table: { photo:'Photo', name:'Nom complet', country:'Pays', city:'Ville', status:'Statut', date:'Inscrit le' },
         rank: { title:'Votre rang', subtitle:'Les rangs sont attribués par ISHFADI selon vos performances vérifiées.', progressTo:'Progression vers', requirement:"La progression est décidée par l'équipe ISHFADI." },
         payments: { title:'Paiements', awaiting:'En attente du backend',
+          noticeTitle:'Nous construisons encore — voici comment les paiements fonctionneront',
+          noticeBody:"Pour l'instant, concentrez-vous sur les invitations — chaque filleul que vous apportez est suivi et comptabilisé. Vos gains et votre progression seront examinés et vérifiés une fois qu'ISHFADI sera pleinement lancé, et les paiements commenceront à partir de là.",
+          noticeVerification:"La vérification automatique d'identité/des gains est temporairement suspendue durant la période avant lancement, car chaque vérification a un coût réel. Elle sera réactivée après le lancement — rien de ce que vous avez déjà gagné n'est perdu, cela sera simplement vérifié et payé une fois cette fonction réactivée.",
           subtitle:'Les soldes, préférences et historique de paiement apparaîtront ici une fois les paiements activés.',
           available:'Solde disponible', pending:'Solde en attente', lifetime:'Gains cumulés',
           methodTitle:'Méthode de paiement préférée', methodSub:'Choisissez comment recevoir vos paiements. Enregistré une fois le backend en ligne.',
@@ -1200,11 +1221,11 @@
           follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
           privacy:'Politique de confidentialité', terms:"Conditions d'utilisation", help:"Centre d'aide", safety:'Conseils de sécurité',
           tagline:"Construire l'avenir de l'hébergement mondial." },
-        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent." }
+        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent.", comingSoon:'Bientôt disponible — cette étape sera activée prochainement.', badPhotoType:'Veuillez choisir une image JPG, PNG ou WebP.', photoTooLarge:"L'image doit faire 5 Mo maximum.", photoSaved:'Photo de profil mise à jour.', photoSaveFail:"Photo importée, mais impossible de l'enregistrer sur votre profil.", photoUploadFail:'Impossible de téléverser la photo. Veuillez réessayer.', prefsSaveFail:'Impossible d\'enregistrer les préférences.' }
       },
       ar: {
         meta: { title:'لوحة تحكم وكيل ISHFADI', description:'إدارة ملف الوكيل والإحالات والرتبة على ISHFADI.' },
-        a11y: { skip:'الانتقال إلى المحتوى' },
+        a11y: { skip:'الانتقال إلى المحتوى', openMenu:'فتح القائمة', closeMenu:'إغلاق القائمة', home:'الصفحة الرئيسية لإشفادي', selectLanguage:'اختيار اللغة', languages:'اللغات', signOut:'تسجيل الخروج', dashboardNav:'التنقل في لوحة التحكم', dashboardSections:'أقسام لوحة التحكم', verificationIncomplete:'التحقق غير مكتمل', copyReferralLink:'نسخ رابط الإحالة', shareReferralLink:'مشاركة رابط الإحالة', prevPage:'الصفحة السابقة', nextPage:'الصفحة التالية' },
         boot: { loading:'جارٍ تحميل لوحة التحكم…', error:'تعذّر تحميل لوحة التحكم. تحقّق من الاتصال ثم أعد المحاولة.', errorTitle:'تعذّر تحميل لوحة التحكم', retry:'إعادة المحاولة' },
         nav: { home:'الرئيسية', dashboard:'لوحة التحكم', referrals:'الإحالات', rank:'الرتبة', payments:'المدفوعات', profile:'الملف الشخصي', settings:'الإعدادات', logout:'تسجيل الخروج', roleAgent:'وكيل',
                masterSection:'الوكيل الرئيسي', assignments:'المهام', inspections:'التفتيش', reports:'التقارير' },
@@ -1226,6 +1247,9 @@
         table: { photo:'الصورة', name:'الاسم الكامل', country:'الدولة', city:'المدينة', status:'الحالة', date:'تاريخ التسجيل' },
         rank: { title:'رتبتك', subtitle:'تُمنح الرتب من ISHFADI بناءً على أدائك الموثّق.', progressTo:'التقدم إلى', requirement:'يتم تحديد التقدم من قِبَل فريق ISHFADI.' },
         payments: { title:'المدفوعات', awaiting:'في انتظار الخادم',
+          noticeTitle:'ما زلنا في مرحلة البناء — إليك كيف ستعمل المدفوعات',
+          noticeBody:'ركّز الآن على دعوة الأشخاص — كل إحالة تجلبها يتم تتبعها واحتسابها. ستتم مراجعة أرباحك وتقدّمك والتحقق منها بمجرد إطلاق إشفادي بالكامل، وستبدأ المدفوعات من هناك.',
+          noticeVerification:'التحقق التلقائي من الهوية/الأرباح متوقف مؤقتًا خلال فترة ما قبل الإطلاق، لأن كل عملية تحقق لها تكلفة فعلية. سيتم إعادة تفعيله بعد الإطلاق — لن تخسر ما ربحته حتى الآن، بل سيتم التحقق منه ودفعه بمجرد إعادة تفعيل هذه الميزة.',
           subtitle:'ستظهر الأرصدة والتفضيلات وسجل المدفوعات هنا عند تفعيل المدفوعات لحسابك.',
           available:'الرصيد المتاح', pending:'الرصيد المعلّق', lifetime:'إجمالي الأرباح',
           methodTitle:'طريقة الدفع المفضّلة', methodSub:'اختر كيفية استلام مدفوعاتك. تُحفظ عند تفعيل الخادم.',
@@ -1270,7 +1294,7 @@
           follow:'تابع ISHFADI', quickLinks:'روابط سريعة', contact:'اتصل بنا',
           privacy:'سياسة الخصوصية', terms:'شروط الخدمة', help:'مركز المساعدة', safety:'نصائح الأمان',
           tagline:'نبني مستقبل السكن العالمي.' },
-        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.' }
+        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.', comingSoon:'قريبًا — ستتوفر هذه الخطوة عما قريب.', badPhotoType:'يرجى اختيار صورة بصيغة JPG أو PNG أو WebP.', photoTooLarge:'يجب ألا يتجاوز حجم الصورة 5 ميغابايت.', photoSaved:'تم تحديث صورة الملف الشخصي.', photoSaveFail:'تم رفع الصورة، لكن تعذّر حفظها في ملفك الشخصي.', photoUploadFail:'تعذّر رفع الصورة. يرجى المحاولة مرة أخرى.', prefsSaveFail:'تعذّر حفظ التفضيلات.' }
       }
     };
 
@@ -1687,7 +1711,7 @@
           wrap.classList.add('actionable');
           wrap.setAttribute('role','button');
           wrap.setAttribute('tabindex','0');
-          const showSoon = () => window.showToast('Coming soon — this step will be available shortly.', '');
+          const showSoon = () => window.showToast(window.t('toast.comingSoon'), '');
           wrap.addEventListener('click', showSoon);
           wrap.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showSoon(); } });
         }
@@ -1999,12 +2023,12 @@
 
         // Client-side guards
         if (!ALLOWED_IMAGE_TYPES.includes(f.type)){
-          window.showToast('Please choose a JPG, PNG or WebP image.', 'error');
+          window.showToast(window.t('toast.badPhotoType'), 'error');
           els.photoInput.value = '';
           return;
         }
         if (f.size > MAX_IMAGE_BYTES){
-          window.showToast('Image must be 5 MB or smaller.', 'error');
+          window.showToast(window.t('toast.photoTooLarge'), 'error');
           els.photoInput.value = '';
           return;
         }
@@ -2044,9 +2068,9 @@
           setAvatar(els.navAvatar,     secureUrl, name);
           if (currentData && currentData.profile) currentData.profile.profile_photo_url = secureUrl;
 
-          window.showToast(ok ? 'Profile photo updated.' : 'Photo uploaded, but we couldn\'t save it to your profile.', ok ? 'success' : 'error');
+          window.showToast(ok ? window.t('toast.photoSaved') : window.t('toast.photoSaveFail'), ok ? 'success' : 'error');
         } catch(err){
-          window.showToast('Could not upload photo. Please try again.', 'error');
+          window.showToast(window.t('toast.photoUploadFail'), 'error');
           // Revert to whatever the backend last knew
           const url = (currentData && currentData.profile && currentData.profile.profile_photo_url) || null;
           setAvatar(els.profileAvatar, url, name);
@@ -2158,7 +2182,7 @@
           window.showToast(window.t('settings.saved'), 'success');
         } catch (e) {
           console.error('save preferences failed', e);
-          window.showToast((e && e.message) || 'Could not save preferences.', 'error');
+          window.showToast((e && e.message) || window.t('toast.prefsSaveFail'), 'error');
         } finally {
           btn.disabled = prevDisabled;
         }
