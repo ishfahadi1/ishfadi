@@ -1228,9 +1228,9 @@ async function renderUsers(){
   if (!DATA.usersLoaded){
     $('#usersTable').innerHTML = `<tr><td colspan="6" class="text-center text-gray-400 py-6">Loading real users…</td></tr>`;
     const client = initAdminSupabase();
-    const { data, error } = await client.rpc('get_admin_users_list');
+    const { data, error } = await client.rpc('get_admin_users_list', { p_search:'', p_role:'', p_status:'', p_limit:500, p_offset:0 });
     if (error){ $('#usersTable').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-6">Failed to load: ${error.message}</td></tr>`; return; }
-    DATA.users = data.users || [];
+    DATA.users = data.rows || [];
     DATA.usersLoaded = true;
   }
 
@@ -1250,21 +1250,18 @@ async function renderUsers(){
   $('#usersTable').innerHTML = rows.length ? rows.map(u=>{
     const roleLabels = (u.roles||[]).map(r=> r==='host'?'Seller' : r.charAt(0).toUpperCase()+r.slice(1)).join(', ') || '—';
     const statusLabel = u.status==='activated' ? 'Active' : u.status==='reserved' ? 'Pending' : u.status==='verified' ? 'Verified' : u.status;
-    const avatar = u.profile_photo_url
-      ? `<img src="${u.profile_photo_url}" class="avatar w-9 h-9 object-cover" alt="${u.full_name}">`
-      : `<div class="avatar w-9 h-9">${initials(u.full_name)}</div>`;
     return `
     <tr>
       <td>
         <div class="flex items-center gap-3">
-          ${avatar}
+          ${avatarOrInitials(u.profile_photo_url, u.full_name, 'w-9 h-9')}
           <div><p class="font-medium">${u.full_name}</p><p class="text-xs text-gray-500">${u.email}</p></div>
         </div>
       </td>
       <td>${badgeFor(roleLabels)}</td>
       <td>${u.country||'—'}</td>
       <td>${badgeFor(statusLabel)}</td>
-      <td class="text-gray-500">${new Date(u.joined_at).toLocaleDateString()}</td>
+      <td class="text-gray-500">${new Date(u.created_at).toLocaleDateString()}</td>
       <td>
         <div class="flex gap-2">
           <button class="text-primary hover:underline text-sm" onclick="openUser('${u.full_name}','${u.email}','${roleLabels}','${u.country||''}','${statusLabel}','${u.profile_photo_url||''}')">View</button>
