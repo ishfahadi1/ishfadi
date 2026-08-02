@@ -366,6 +366,22 @@
           <div class="lang-menu" role="listbox" data-i18n="a11y.languages" data-i18n-attr="aria-label" aria-label="Languages"></div>
         </div>
 
+        <div class="relative">
+          <button type="button" id="notifBellBtn" class="p-2 rounded-lg text-primary hover:bg-primary/5 relative" data-i18n="a11y.notifications" data-i18n-attr="aria-label" aria-label="Messages from admin" aria-haspopup="true" aria-expanded="false">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span id="notifBadge" class="hidden absolute -top-0.5 -end-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+          </button>
+          <div id="notifPanel" class="hidden absolute end-0 mt-2 w-80 max-w-[90vw] bg-white border rounded-2xl shadow-xl z-[80] overflow-hidden">
+            <div class="p-3 border-b flex items-center justify-between">
+              <p class="font-semibold text-sm text-primary" data-i18n="notif.panelTitle">Messages from ISHFADI Admin</p>
+            </div>
+            <div id="notifMessages" class="max-h-64 overflow-y-auto p-3 space-y-2 bg-slate-50"></div>
+            <div class="p-2 border-t flex gap-2">
+              <input id="notifReplyInput" type="text" data-i18n-placeholder="notif.replyPlaceholder" placeholder="Reply…" class="flex-1 px-3 py-2 border rounded-lg text-sm" />
+              <button type="button" id="notifSendBtn" class="btn-primary px-3 py-2 text-sm" data-i18n="notif.send">Send</button>
+            </div>          </div>
+        </div>
+
         <div class="hidden sm:flex items-center gap-2 pl-2 border-s border-gray-200 ps-3">
           <span class="avatar-dot-wrap"><span class="avatar-sm" id="navAvatar" aria-hidden="true"></span><span class="nav-dot" aria-hidden="true"></span></span>
           <div class="hidden md:block leading-tight">
@@ -1079,7 +1095,7 @@
     const T = {
       en: {
         meta: { title:'ISHFADI Agent Dashboard', description:'Manage your ISHFADI agent profile, referrals and rank.' },
-        a11y: { skip:'Skip to content', openMenu:'Open menu', closeMenu:'Close menu', home:'ISHFADI home', selectLanguage:'Select language', languages:'Languages', signOut:'Sign out', dashboardNav:'Dashboard navigation', dashboardSections:'Dashboard sections', verificationIncomplete:'Verification incomplete', copyReferralLink:'Copy referral link', shareReferralLink:'Share referral link', prevPage:'Previous page', nextPage:'Next page' },
+        a11y: { skip:'Skip to content', openMenu:'Open menu', closeMenu:'Close menu', home:'ISHFADI home', selectLanguage:'Select language', languages:'Languages', signOut:'Sign out', dashboardNav:'Dashboard navigation', dashboardSections:'Dashboard sections', verificationIncomplete:'Verification incomplete', copyReferralLink:'Copy referral link', shareReferralLink:'Share referral link', prevPage:'Previous page', nextPage:'Next page', notifications:'Messages from admin' },
         boot: { loading:'Loading your dashboard…', error:'We could not load your dashboard. Please check your connection and try again.', errorTitle:"We couldn't load your dashboard", retry:'Retry' },
         nav: { home:'Home', dashboard:'Dashboard', referrals:'Referrals', rank:'Rank', payments:'Payments', profile:'Profile', settings:'Settings', logout:'Sign out', roleAgent:'Agent',
                masterSection:'Master agent', assignments:'Assignments', inspections:'Inspections', reports:'Reports' },
@@ -1148,11 +1164,12 @@
           follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
           privacy:'Privacy Policy', terms:'Terms of Service', help:'Help Center', safety:'Safety Tips',
           tagline:'Building the future of global accommodation.' },
-        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.', comingSoon:'Coming soon — this step will be available shortly.', badPhotoType:'Please choose a JPG, PNG or WebP image.', photoTooLarge:'Image must be 5 MB or smaller.', photoSaved:'Profile photo updated.', photoSaveFail:"Photo uploaded, but we couldn't save it to your profile.", photoUploadFail:'Could not upload photo. Please try again.', prefsSaveFail:'Could not save preferences.' }
+        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.', comingSoon:'Coming soon — this step will be available shortly.', badPhotoType:'Please choose a JPG, PNG or WebP image.', photoTooLarge:'Image must be 5 MB or smaller.', photoSaved:'Profile photo updated.', photoSaveFail:"Photo uploaded, but we couldn't save it to your profile.", photoUploadFail:'Could not upload photo. Please try again.', prefsSaveFail:'Could not save preferences.' },
+        notif: { panelTitle:'Messages from ISHFADI Admin', empty:'No messages yet.', replyPlaceholder:'Reply…', send:'Send', sendFail:'Could not send. Please try again.' },
       },
       fr: {
         meta: { title:'Tableau de bord Agent ISHFADI', description:'Gérez votre profil agent ISHFADI, vos parrainages et votre rang.' },
-        a11y: { skip:'Aller au contenu', openMenu:'Ouvrir le menu', closeMenu:'Fermer le menu', home:'Accueil ISHFADI', selectLanguage:'Choisir la langue', languages:'Langues', signOut:'Se déconnecter', dashboardNav:'Navigation du tableau de bord', dashboardSections:'Sections du tableau de bord', verificationIncomplete:'Vérification incomplète', copyReferralLink:'Copier le lien de parrainage', shareReferralLink:'Partager le lien de parrainage', prevPage:'Page précédente', nextPage:'Page suivante' },
+        a11y: { skip:'Aller au contenu', openMenu:'Ouvrir le menu', closeMenu:'Fermer le menu', home:'Accueil ISHFADI', selectLanguage:'Choisir la langue', languages:'Langues', signOut:'Se déconnecter', dashboardNav:'Navigation du tableau de bord', dashboardSections:'Sections du tableau de bord', verificationIncomplete:'Vérification incomplète', copyReferralLink:'Copier le lien de parrainage', shareReferralLink:'Partager le lien de parrainage', prevPage:'Page précédente', nextPage:'Page suivante', notifications:"Messages de l'administrateur" },
         boot: { loading:'Chargement de votre tableau de bord…', error:'Impossible de charger votre tableau de bord. Vérifiez votre connexion et réessayez.', errorTitle:'Impossible de charger votre tableau de bord', retry:'Réessayer' },
         nav: { home:'Accueil', dashboard:'Tableau de bord', referrals:'Parrainages', rank:'Rang', payments:'Paiements', profile:'Profil', settings:'Paramètres', logout:'Se déconnecter', roleAgent:'Agent',
                masterSection:'Agent master', assignments:'Missions', inspections:'Inspections', reports:'Rapports' },
@@ -1221,11 +1238,12 @@
           follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
           privacy:'Politique de confidentialité', terms:"Conditions d'utilisation", help:"Centre d'aide", safety:'Conseils de sécurité',
           tagline:"Construire l'avenir de l'hébergement mondial." },
-        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent.", comingSoon:'Bientôt disponible — cette étape sera activée prochainement.', badPhotoType:'Veuillez choisir une image JPG, PNG ou WebP.', photoTooLarge:"L'image doit faire 5 Mo maximum.", photoSaved:'Photo de profil mise à jour.', photoSaveFail:"Photo importée, mais impossible de l'enregistrer sur votre profil.", photoUploadFail:'Impossible de téléverser la photo. Veuillez réessayer.', prefsSaveFail:'Impossible d\'enregistrer les préférences.' }
+        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent.", comingSoon:'Bientôt disponible — cette étape sera activée prochainement.', badPhotoType:'Veuillez choisir une image JPG, PNG ou WebP.', photoTooLarge:"L'image doit faire 5 Mo maximum.", photoSaved:'Photo de profil mise à jour.', photoSaveFail:"Photo importée, mais impossible de l'enregistrer sur votre profil.", photoUploadFail:'Impossible de téléverser la photo. Veuillez réessayer.', prefsSaveFail:'Impossible d\'enregistrer les préférences.' },
+        notif: { panelTitle:"Messages de l'administrateur ISHFADI", empty:'Aucun message pour le moment.', replyPlaceholder:'Répondre…', send:'Envoyer', sendFail:"Impossible d'envoyer. Veuillez réessayer." },
       },
       ar: {
         meta: { title:'لوحة تحكم وكيل ISHFADI', description:'إدارة ملف الوكيل والإحالات والرتبة على ISHFADI.' },
-        a11y: { skip:'الانتقال إلى المحتوى', openMenu:'فتح القائمة', closeMenu:'إغلاق القائمة', home:'الصفحة الرئيسية لإشفادي', selectLanguage:'اختيار اللغة', languages:'اللغات', signOut:'تسجيل الخروج', dashboardNav:'التنقل في لوحة التحكم', dashboardSections:'أقسام لوحة التحكم', verificationIncomplete:'التحقق غير مكتمل', copyReferralLink:'نسخ رابط الإحالة', shareReferralLink:'مشاركة رابط الإحالة', prevPage:'الصفحة السابقة', nextPage:'الصفحة التالية' },
+        a11y: { skip:'الانتقال إلى المحتوى', openMenu:'فتح القائمة', closeMenu:'إغلاق القائمة', home:'الصفحة الرئيسية لإشفادي', selectLanguage:'اختيار اللغة', languages:'اللغات', signOut:'تسجيل الخروج', dashboardNav:'التنقل في لوحة التحكم', dashboardSections:'أقسام لوحة التحكم', verificationIncomplete:'التحقق غير مكتمل', copyReferralLink:'نسخ رابط الإحالة', shareReferralLink:'مشاركة رابط الإحالة', prevPage:'الصفحة السابقة', nextPage:'الصفحة التالية', notifications:'رسائل من الإدارة' },
         boot: { loading:'جارٍ تحميل لوحة التحكم…', error:'تعذّر تحميل لوحة التحكم. تحقّق من الاتصال ثم أعد المحاولة.', errorTitle:'تعذّر تحميل لوحة التحكم', retry:'إعادة المحاولة' },
         nav: { home:'الرئيسية', dashboard:'لوحة التحكم', referrals:'الإحالات', rank:'الرتبة', payments:'المدفوعات', profile:'الملف الشخصي', settings:'الإعدادات', logout:'تسجيل الخروج', roleAgent:'وكيل',
                masterSection:'الوكيل الرئيسي', assignments:'المهام', inspections:'التفتيش', reports:'التقارير' },
@@ -1294,7 +1312,8 @@
           follow:'تابع ISHFADI', quickLinks:'روابط سريعة', contact:'اتصل بنا',
           privacy:'سياسة الخصوصية', terms:'شروط الخدمة', help:'مركز المساعدة', safety:'نصائح الأمان',
           tagline:'نبني مستقبل السكن العالمي.' },
-        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.', comingSoon:'قريبًا — ستتوفر هذه الخطوة عما قريب.', badPhotoType:'يرجى اختيار صورة بصيغة JPG أو PNG أو WebP.', photoTooLarge:'يجب ألا يتجاوز حجم الصورة 5 ميغابايت.', photoSaved:'تم تحديث صورة الملف الشخصي.', photoSaveFail:'تم رفع الصورة، لكن تعذّر حفظها في ملفك الشخصي.', photoUploadFail:'تعذّر رفع الصورة. يرجى المحاولة مرة أخرى.', prefsSaveFail:'تعذّر حفظ التفضيلات.' }
+        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.', comingSoon:'قريبًا — ستتوفر هذه الخطوة عما قريب.', badPhotoType:'يرجى اختيار صورة بصيغة JPG أو PNG أو WebP.', photoTooLarge:'يجب ألا يتجاوز حجم الصورة 5 ميغابايت.', photoSaved:'تم تحديث صورة الملف الشخصي.', photoSaveFail:'تم رفع الصورة، لكن تعذّر حفظها في ملفك الشخصي.', photoUploadFail:'تعذّر رفع الصورة. يرجى المحاولة مرة أخرى.', prefsSaveFail:'تعذّر حفظ التفضيلات.' },
+        notif: { panelTitle:'رسائل من إدارة إشفادي', empty:'لا توجد رسائل بعد.', replyPlaceholder:'الرد…', send:'إرسال', sendFail:'تعذّر الإرسال. يرجى المحاولة مرة أخرى.' },
       }
     };
 
@@ -1374,6 +1393,14 @@
         if (typeof window.renderPendingChecklist === 'function') window.renderPendingChecklist();
         fadeTargets.forEach(n => n.classList.remove('switch-fade'));
         document.body.classList.remove('lang-switching');
+        // Best-effort sync to the real profile record so Settings/Profile stay
+        // consistent with each other and with any future server-side use
+        // (e.g. emails). Silent — a logged-out visitor or network hiccup
+        // should never block the instant local language switch above.
+        try {
+          const client = (typeof initSupabase === 'function') ? initSupabase() : null;
+          if (client) client.rpc('update_agent_profile', { p_patch: { preferred_language: lang } }).catch(()=>{});
+        } catch(e){}
       }, 120);
     }
     window.setLanguage = setLanguage;
@@ -1986,7 +2013,12 @@
         if (!ok){
           const { data: u } = await client.auth.getUser();
           if (u && u.user){
-            const r = await client.from('profiles').update(patch).eq('id', u.user.id);
+            const r = await client.from('profiles').update({
+              phone: patch.phone,
+              preferred_lang: patch.preferred_language,
+              country_name: patch.country,
+              city: patch.city
+            }).eq('user_id', u.user.id);
             ok = !r.error;
           }
         }
@@ -2127,6 +2159,107 @@
     }
 
     // --- Boot ---
+    // --- Admin messages notification bell ---
+    let notifThreadLoaded = false;
+
+    function escapeHtmlN(s){
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function refreshNotifBadge(){
+      const client = initSupabase();
+      if (!client) return;
+      try {
+        const { data: { user } } = await client.auth.getUser();
+        if (!user) return;
+        const { count } = await client.from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('is_read', false).eq('type', 'admin_message');
+        const badge = document.getElementById('notifBadge');
+        if (badge){
+          if (count && count > 0){ badge.textContent = count > 9 ? '9+' : String(count); badge.classList.remove('hidden'); }
+          else { badge.classList.add('hidden'); }
+        }
+      } catch(e){ /* non-critical */ }
+    }
+
+    function renderNotifMessages(messages){
+      const el = document.getElementById('notifMessages');
+      if (!el) return;
+      if (!messages || !messages.length){
+        el.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">${window.t('notif.empty')}</p>`;
+        return;
+      }
+      el.innerHTML = messages.map(m => `
+        <div class="flex ${m.is_mine ? 'justify-end' : 'justify-start'}">
+          <div class="${m.is_mine ? 'bg-primary text-white rounded-tr-sm' : 'bg-white border rounded-tl-sm'} rounded-2xl px-3 py-1.5 max-w-[85%] text-sm">${escapeHtmlN(m.body)}</div>
+        </div>`).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    async function loadNotifThread(){
+      const client = initSupabase();
+      if (!client) return;
+      try {
+        const { data, error } = await client.rpc('get_my_admin_thread');
+        if (error) throw error;
+        renderNotifMessages((data && data.messages) || []);
+        notifThreadLoaded = true;
+        await refreshNotifBadge();
+      } catch(e){
+        const el = document.getElementById('notifMessages');
+        if (el) el.innerHTML = `<p class="text-sm text-danger text-center py-4">${escapeHtmlN(e.message)}</p>`;
+      }
+    }
+
+    async function sendNotifReply(){
+      const input = document.getElementById('notifReplyInput');
+      const body = (input.value || '').trim();
+      if (!body) return;
+      const btn = document.getElementById('notifSendBtn');
+      const client = initSupabase();
+      if (btn) btn.disabled = true;
+      try {
+        const { error } = await client.rpc('agent_send_message_to_admin', { p_body: body });
+        if (error) throw error;
+        input.value = '';
+        await loadNotifThread();
+      } catch(e){
+        window.showToast(window.t('notif.sendFail'), 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function wireNotifBell(){
+      const bellBtn = document.getElementById('notifBellBtn');
+      const panel = document.getElementById('notifPanel');
+      const sendBtn = document.getElementById('notifSendBtn');
+      const replyInput = document.getElementById('notifReplyInput');
+      if (!bellBtn || !panel) return;
+
+      bellBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const isOpen = !panel.classList.contains('hidden');
+        if (isOpen){
+          panel.classList.add('hidden');
+          bellBtn.setAttribute('aria-expanded', 'false');
+        } else {
+          panel.classList.remove('hidden');
+          bellBtn.setAttribute('aria-expanded', 'true');
+          await loadNotifThread();
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!panel.classList.contains('hidden') && !panel.contains(e.target) && e.target !== bellBtn){
+          panel.classList.add('hidden');
+          bellBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (sendBtn) sendBtn.addEventListener('click', sendNotifReply);
+      if (replyInput) replyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); sendNotifReply(); } });
+    }
+
     async function boot(){
       showSkeletonStats();
       showSkeletonTable();
@@ -2151,11 +2284,13 @@
       // Payments exists). renderDashboard still receives
       // verification_steps so progress can be surfaced within it.
       renderDashboard(data);
+      refreshNotifBadge();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       cacheEls();
       wireSidebar();
+      wireNotifBell();
       wireTableControls();
       wirePhotoInput();
       if (els.profileForm)       els.profileForm.addEventListener('submit', saveProfile);
@@ -2208,5 +2343,321 @@
     }
   })();
   </script>
+  <!-- ============ ISHFADI TALK — floating feedback widget ============ -->
+  <style>
+    #ishfadiTalkBtn {
+      position: fixed; z-index: 90; width: 56px; height: 56px; border: none; cursor: grab;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #6fb6ff 0%, #1e3a5f 55%, #12233a 100%);
+      box-shadow: 0 8px 24px rgba(30,58,95,.35), inset 0 -4px 8px rgba(0,0,0,.15), inset 0 3px 6px rgba(255,255,255,.35);
+      display: flex; align-items: center; justify-content: center; padding: 0;
+      touch-action: none; user-select: none; -webkit-user-select: none;
+      transition: box-shadow .2s ease, transform .15s ease;
+      top: auto; bottom: 22px; inset-inline-end: 18px;
+    }
+    #ishfadiTalkBtn:active { cursor: grabbing; transform: scale(.94); }
+    #ishfadiTalkBtn.dragging { transition: none; box-shadow: 0 14px 32px rgba(30,58,95,.5); }
+    #ishfadiTalkBtn img { width: 60%; height: 60%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+    #ishfadiTalkBtn::after {
+      content:''; position:absolute; top:8px; left:14px; width:14px; height:9px; border-radius:50%;
+      background: rgba(255,255,255,.55); filter: blur(2px); pointer-events:none;
+    }
+    #ishfadiTalkPanel {
+      position: fixed; z-index: 91; width: min(340px, calc(100vw - 32px)); max-height: min(480px, calc(100vh - 32px));
+      background: #fff; border-radius: 1.25rem; box-shadow: 0 20px 50px rgba(0,0,0,.25); overflow: hidden;
+      display: none; flex-direction: column;
+    }
+    #ishfadiTalkPanel.open { display: flex; }
+    #ishfadiTalkPanel .itk-head { padding: 1rem 1.1rem; background: linear-gradient(135deg,#1e3a5f,#254772); color: #fff; display:flex; align-items:center; gap:.6rem; }
+    #ishfadiTalkPanel .itk-head img { width: 26px; height: 26px; object-fit: contain; }
+    #ishfadiTalkPanel .itk-body { padding: 1rem 1.1rem; overflow-y: auto; }
+    #ishfadiTalkPanel .itk-tabs { display: flex; gap: .5rem; margin-bottom: .85rem; }
+    #ishfadiTalkPanel .itk-tab {
+      flex: 1; padding: .55rem .5rem; border: 1.5px solid #e5e7eb; border-radius: .75rem; background: #fff;
+      font-size: .82rem; font-weight: 600; color: #64748b; cursor: pointer; text-align: center; transition: all .15s;
+    }
+    #ishfadiTalkPanel .itk-tab.active { border-color: #1e3a5f; color: #1e3a5f; background: rgba(30,58,95,.06); }
+    #ishfadiTalkPanel textarea {
+      width: 100%; min-height: 96px; border: 1.5px solid #e5e7eb; border-radius: .75rem; padding: .65rem .8rem;
+      font-size: .88rem; font-family: inherit; resize: vertical;
+    }
+    #ishfadiTalkPanel textarea:focus, #ishfadiTalkPanel input:focus { outline: none; border-color: #1e3a5f; }
+    #ishfadiTalkPanel input[type="email"] {
+      width: 100%; margin-top: .6rem; border: 1.5px solid #e5e7eb; border-radius: .75rem; padding: .55rem .8rem; font-size: .85rem;
+    }
+    #ishfadiTalkPanel .itk-foot { padding: .8rem 1.1rem; border-top: 1px solid #eef0f2; display:flex; justify-content:flex-end; gap:.5rem; }
+    #ishfadiTalkPanel .itk-cancel { padding:.55rem 1rem; border-radius:.65rem; font-size:.85rem; font-weight:600; color:#64748b; background:#f1f5f9; border:none; cursor:pointer; }
+    #ishfadiTalkPanel .itk-submit { padding:.55rem 1.1rem; border-radius:.65rem; font-size:.85rem; font-weight:700; color:#fff; background:#1e3a5f; border:none; cursor:pointer; }
+    #ishfadiTalkPanel .itk-submit:disabled { opacity:.5; cursor:not-allowed; }
+    #ishfadiTalkPanel .itk-close { margin-inline-start:auto; background:none; border:none; color:#fff; opacity:.8; cursor:pointer; font-size:1.1rem; line-height:1; }
+    #ishfadiTalkPanel .itk-success { text-align:center; padding: 1.5rem .5rem; }
+  </style>
+
+  <button type="button" id="ishfadiTalkBtn" aria-label="ISHFADI Talk — report a bug or request a feature" aria-haspopup="dialog">
+    <img src="/icons/logo.png" alt="" aria-hidden="true">
+  </button>
+
+  <div id="ishfadiTalkPanel" role="dialog" aria-modal="false" aria-label="ISHFADI Talk">
+    <div class="itk-head">
+      <img src="/icons/logo.png" alt="">
+      <strong style="font-size:.95rem;" id="itkPanelTitle">ISHFADI Talk</strong>
+      <button type="button" class="itk-close" id="itkCloseBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="itk-body" id="itkBody">
+      <div id="itkFormWrap">
+        <div class="itk-tabs">
+          <button type="button" class="itk-tab active" id="itkTabBug" data-type="bug">🐞 Report a bug</button>
+          <button type="button" class="itk-tab" id="itkTabFeature" data-type="feature">💡 Request a feature</button>
+        </div>
+        <textarea id="itkMessage" placeholder="Tell us what's wrong or what you'd like to see…" maxlength="2000"></textarea>
+        <input type="email" id="itkEmail" placeholder="Your email (optional, so we can follow up)">
+      </div>
+      <div id="itkSuccessWrap" class="itk-success" style="display:none;">
+        <div style="font-size:2rem;">💧✅</div>
+        <p style="font-weight:700;color:#1e3a5f;margin-top:.5rem;" id="itkSuccessTitle">Thank you!</p>
+        <p style="font-size:.85rem;color:#64748b;margin-top:.25rem;" id="itkSuccessBody">Your report has been sent to the ISHFADI team.</p>
+      </div>
+    </div>
+    <div class="itk-foot" id="itkFoot">
+      <button type="button" class="itk-cancel" id="itkCancelBtn">Cancel</button>
+      <button type="button" class="itk-submit" id="itkSubmitBtn">Send</button>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var POS_KEY = 'ishfadi.talk.pos';
+    var btn = document.getElementById('ishfadiTalkBtn');
+    var panel = document.getElementById('ishfadiTalkPanel');
+    var formWrap = document.getElementById('itkFormWrap');
+    var successWrap = document.getElementById('itkSuccessWrap');
+    var successTitle = document.getElementById('itkSuccessTitle');
+    var successBody = document.getElementById('itkSuccessBody');
+    var foot = document.getElementById('itkFoot');
+    var msgEl = document.getElementById('itkMessage');
+    var emailEl = document.getElementById('itkEmail');
+    var tabBug = document.getElementById('itkTabBug');
+    var tabFeature = document.getElementById('itkTabFeature');
+    var submitBtn = document.getElementById('itkSubmitBtn');
+    var cancelBtn = document.getElementById('itkCancelBtn');
+    var closeBtn = document.getElementById('itkCloseBtn');
+    var activeType = 'bug';
+    var itkClient = null;
+
+    var WIDGET_I18N = {
+      en: { label:'ISHFADI Talk — report a bug or request a feature', title:'ISHFADI Talk',
+        bug:'🐞 Report a bug', feature:'💡 Request a feature',
+        placeholderBug:"Tell us what went wrong — what did you expect vs. what happened?",
+        placeholderFeature:"What would you like ISHFADI to do that it doesn't yet?",
+        email:'Your email (optional, so we can follow up)', cancel:'Cancel', send:'Send', sending:'Sending…',
+        unavailable:'Unavailable — try again later', thanks:'Thank you!',
+        sentBug:'Your bug report has been sent to the ISHFADI team.', sentFeature:'Your feature request has been sent to the ISHFADI team.',
+        errPrefix:'Could not send: ', errGeneric:'please try again.' },
+      fr: { label:"ISHFADI Talk — signaler un bug ou proposer une fonctionnalité", title:'ISHFADI Talk',
+        bug:'🐞 Signaler un bug', feature:'💡 Proposer une fonctionnalité',
+        placeholderBug:"Dites-nous ce qui n'a pas fonctionné — à quoi vous attendiez-vous ?",
+        placeholderFeature:"Que souhaiteriez-vous qu'ISHFADI propose de plus ?",
+        email:'Votre email (facultatif, pour vous répondre)', cancel:'Annuler', send:'Envoyer', sending:'Envoi…',
+        unavailable:'Indisponible — réessayez plus tard', thanks:'Merci !',
+        sentBug:"Votre signalement a été envoyé à l'équipe ISHFADI.", sentFeature:"Votre suggestion a été envoyée à l'équipe ISHFADI.",
+        errPrefix:"Impossible d'envoyer : ", errGeneric:'veuillez réessayer.' },
+      ar: { label:'إشفادي توك — الإبلاغ عن خطأ أو اقتراح ميزة', title:'إشفادي توك',
+        bug:'🐞 الإبلاغ عن خطأ', feature:'💡 اقتراح ميزة',
+        placeholderBug:'أخبرنا ما الذي حدث بشكل خاطئ — وما الذي كنت تتوقعه؟',
+        placeholderFeature:'ما الذي تودّ أن يقدّمه إشفادي ولا يقدّمه بعد؟',
+        email:'بريدك الإلكتروني (اختياري، للمتابعة معك)', cancel:'إلغاء', send:'إرسال', sending:'جارٍ الإرسال…',
+        unavailable:'غير متاح حاليًا — يرجى المحاولة لاحقًا', thanks:'شكرًا لك!',
+        sentBug:'تم إرسال بلاغك إلى فريق إشفادي.', sentFeature:'تم إرسال اقتراحك إلى فريق إشفادي.',
+        errPrefix:'تعذّر الإرسال: ', errGeneric:'يرجى المحاولة مرة أخرى.' }
+    };
+    function wt(key){
+      var lang = (document.documentElement.getAttribute('lang') || 'en').toLowerCase();
+      var dict = WIDGET_I18N[lang] || WIDGET_I18N.en;
+      return dict[key] != null ? dict[key] : WIDGET_I18N.en[key];
+    }
+    function applyWidgetI18n(){
+      btn.setAttribute('aria-label', wt('label'));
+      document.getElementById('itkPanelTitle').textContent = wt('title');
+      tabBug.textContent = wt('bug');
+      tabFeature.textContent = wt('feature');
+      emailEl.placeholder = wt('email');
+      cancelBtn.textContent = wt('cancel');
+      if (!submitBtn.disabled) submitBtn.textContent = wt('send');
+      msgEl.placeholder = activeType === 'bug' ? wt('placeholderBug') : wt('placeholderFeature');
+    }
+
+    function getClient(){
+      if (itkClient) return itkClient;
+      var c = window.ISHFADI_CONFIG;
+      if (!c || !c.SUPABASE_URL || !c.SUPABASE_ANON_KEY || !window.supabase) return null;
+      itkClient = window.supabase.createClient(c.SUPABASE_URL, c.SUPABASE_ANON_KEY, { auth: { persistSession: true, storageKey: 'ishfadi.auth' } });
+      return itkClient;
+    }
+
+    // --- restore saved position (bottom/end offsets, so it stays sane on resize) ---
+    function applyPos(pos){
+      if (!pos) return;
+      btn.style.bottom = pos.bottom + 'px';
+      btn.style.insetInlineEnd = pos.end + 'px';
+      btn.style.top = 'auto';
+    }
+    try {
+      var saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
+      applyPos(saved);
+    } catch(e){}
+
+    function positionPanel(){
+      var r = btn.getBoundingClientRect();
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var panelW = panel.offsetWidth || 340, panelH = panel.offsetHeight || 420;
+      var top = r.top - panelH - 12;
+      if (top < 12) top = Math.min(r.bottom + 12, vh - panelH - 12);
+      if (top < 12) top = 12;
+      var left = r.left + r.width/2 - panelW/2;
+      left = Math.max(12, Math.min(left, vw - panelW - 12));
+      panel.style.top = top + 'px';
+      panel.style.left = left + 'px';
+    }
+
+    // --- drag handling (pointer events unify mouse + touch) ---
+    var dragging = false, moved = false, startX, startY, startRect;
+    btn.addEventListener('pointerdown', function(e){
+      dragging = true; moved = false;
+      startX = e.clientX; startY = e.clientY;
+      startRect = btn.getBoundingClientRect();
+      btn.classList.add('dragging');
+      btn.setPointerCapture(e.pointerId);
+    });
+    btn.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+      if (!moved) return;
+      var vw = window.innerWidth, vh = window.innerHeight;
+      var newLeft = Math.max(4, Math.min(startRect.left + dx, vw - btn.offsetWidth - 4));
+      var newTop = Math.max(4, Math.min(startRect.top + dy, vh - btn.offsetHeight - 4));
+      btn.style.left = newLeft + 'px';
+      btn.style.top = newTop + 'px';
+      btn.style.bottom = 'auto';
+      btn.style.insetInlineEnd = 'auto';
+      btn.style.right = 'auto';
+    });
+    function endDrag(e){
+      if (!dragging) return;
+      dragging = false;
+      btn.classList.remove('dragging');
+      if (moved){
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var r = btn.getBoundingClientRect();
+        var bottom = Math.max(4, vh - r.bottom);
+        var end = Math.max(4, vw - r.right);
+        try { localStorage.setItem(POS_KEY, JSON.stringify({ bottom: bottom, end: end })); } catch(err){}
+      } else {
+        togglePanel();
+      }
+    }
+    btn.addEventListener('pointerup', endDrag);
+    btn.addEventListener('pointercancel', endDrag);
+
+    function setTab(type){
+      activeType = type;
+      tabBug.classList.toggle('active', type === 'bug');
+      tabFeature.classList.toggle('active', type === 'feature');
+      msgEl.placeholder = type === 'bug' ? wt('placeholderBug') : wt('placeholderFeature');
+    }
+    tabBug.addEventListener('click', function(){ setTab('bug'); });
+    tabFeature.addEventListener('click', function(){ setTab('feature'); });
+
+    function showForm(){
+      formWrap.style.display = '';
+      successWrap.style.display = 'none';
+      foot.style.display = '';
+    }
+    function resetForm(){
+      msgEl.value = '';
+      emailEl.value = '';
+      setTab('bug');
+      submitBtn.disabled = false;
+      submitBtn.textContent = wt('send');
+      showForm();
+    }
+
+    function openPanel(){
+      applyWidgetI18n();
+      resetForm();
+      panel.classList.add('open');
+      positionPanel();
+      setTimeout(function(){ msgEl.focus(); }, 50);
+      document.addEventListener('pointerdown', outsideClick, true);
+      window.addEventListener('resize', positionPanel);
+    }
+    function closePanel(){
+      panel.classList.remove('open');
+      document.removeEventListener('pointerdown', outsideClick, true);
+      window.removeEventListener('resize', positionPanel);
+    }
+    function togglePanel(){
+      if (panel.classList.contains('open')) closePanel(); else openPanel();
+    }
+    function outsideClick(e){
+      if (!panel.contains(e.target) && e.target !== btn) closePanel();
+    }
+    cancelBtn.addEventListener('click', closePanel);
+    closeBtn.addEventListener('click', closePanel);
+
+    // Keep the widget's own text in sync if the host page's language changes
+    // while the widget is already loaded (e.g. user switches language, then
+    // opens ISHFADI Talk without a page reload).
+    applyWidgetI18n();
+    try {
+      new MutationObserver(applyWidgetI18n).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    } catch(e){}
+
+    async function submitFeedback(){
+      var message = (msgEl.value || '').trim();
+      if (message.length < 3){
+        msgEl.focus();
+        msgEl.style.borderColor = '#dc2626';
+        setTimeout(function(){ msgEl.style.borderColor = ''; }, 1200);
+        return;
+      }
+      var client = getClient();
+      if (!client){
+        submitBtn.textContent = 'Unavailable — try again later';
+        return;
+      }
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending…';
+      try {
+        var userId = null;
+        try {
+          var got = await client.auth.getUser();
+          if (got && got.data && got.data.user) userId = got.data.user.id;
+        } catch(e){}
+        var payload = {
+          type: activeType,
+          message: message,
+          page_url: location.pathname,
+          user_id: userId,
+          guest_email: (!userId && emailEl.value.trim()) ? emailEl.value.trim() : null
+        };
+        var res = await client.from('feedback_submissions').insert(payload);
+        if (res.error) throw res.error;
+        successTitle.textContent = 'Thank you!';
+        successBody.textContent = 'Your ' + (activeType === 'bug' ? 'bug report' : 'feature request') + ' has been sent to the ISHFADI team.';
+        formWrap.style.display = 'none';
+        foot.style.display = 'none';
+        successWrap.style.display = '';
+        setTimeout(closePanel, 2200);
+      } catch(e){
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send';
+        alert('Could not send: ' + (e && e.message ? e.message : 'please try again.'));
+      }
+    }
+    submitBtn.addEventListener('click', submitFeedback);
+  })();
+  </script>
+
 </body>
 </html>

@@ -255,6 +255,7 @@
     <a class="nav-link" data-section="revenue"><span class="nav-emoji">💰</span><span data-i18n="nav.revenue">Revenue</span></a>
     <a class="nav-link" data-section="reports"><span class="nav-emoji">📝</span><span data-i18n="nav.reports">Reports</span> <span class="ml-auto badge badge-muted" id="navBadgeReports" title="Reports table not built yet">—</span></a>
     <a class="nav-link" data-section="communication"><span class="nav-emoji">💬</span><span data-i18n="nav.communication">Communication</span></a>
+    <a class="nav-link" data-section="feedback"><span class="nav-emoji">💧</span><span data-i18n="nav.feedback">ISHFADI Talk</span> <span class="ml-auto badge badge-gold hidden" id="navBadgeFeedback">0</span></a>
     <a class="nav-link" data-section="notifications"><span class="nav-emoji">📢</span><span data-i18n="nav.notifications">Notifications</span></a>
     <a class="nav-link" data-section="export"><span class="nav-emoji">📤</span><span data-i18n="nav.export">Export Center</span></a>
 
@@ -649,21 +650,44 @@
   <!-- COMMUNICATION -->
   <section data-pane="communication" class="p-4 sm:p-6">
     <div class="bg-white rounded-2xl border grid md:grid-cols-3 min-h-[480px] overflow-hidden">
-      <div class="border-r">
-        <div class="p-4 border-b"><input placeholder="Search threads" class="w-full px-3 py-2 border rounded-lg text-sm" /></div>
-        <div id="threadList" class="divide-y max-h-[460px] overflow-auto"></div>
+      <div class="border-r flex flex-col">
+        <div class="p-4 border-b space-y-2">
+          <select id="newMsgAgentSelect" class="w-full px-3 py-2 border rounded-lg text-sm" onchange="handleAgentPick(this)">
+            <option value="">+ Message an agent…</option>
+          </select>
+        </div>
+        <div id="threadList" class="divide-y max-h-[400px] overflow-auto flex-1"></div>
       </div>
       <div class="md:col-span-2 flex flex-col">
-        <div class="p-4 border-b flex items-center gap-3">
-          <div class="avatar w-9 h-9">AM</div>
-          <div><p class="font-semibold text-sm">Amani Khalid</p><p class="text-xs text-gray-500">Agent · UAE</p></div>
+        <div class="p-4 border-b flex items-center gap-3" id="chatHeader">
+          <p class="text-sm text-gray-400">Select an agent to start messaging</p>
         </div>
         <div id="chatBody" class="flex-1 p-5 space-y-3 overflow-auto bg-slate-50"></div>
         <div class="p-3 border-t flex gap-2">
-          <input placeholder="Reply…" class="flex-1 px-3 py-2 border rounded-lg text-sm" />
-          <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold">Send</button>
+          <input id="chatReplyInput" placeholder="Reply…" class="flex-1 px-3 py-2 border rounded-lg text-sm" disabled />
+          <button id="chatSendBtn" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-40" disabled onclick="sendAdminMessage()">Send</button>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- FEEDBACK ("ISHFADI Talk" inbox) -->
+  <section data-pane="feedback" class="p-4 sm:p-6">
+    <div class="bg-white rounded-2xl border overflow-hidden">
+      <div class="p-4 border-b flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="font-semibold" data-i18n="feedback.title">ISHFADI Talk — feature requests &amp; bug reports</h3>
+          <p class="text-xs text-gray-500" data-i18n="feedback.subtitle">Submitted by users and guests from the floating widget on every page.</p>
+        </div>
+        <select id="feedbackFilter" class="px-3 py-1.5 border rounded-lg text-sm" onchange="renderFeedbackInbox()">
+          <option value="" data-i18n="feedback.filterAll">All statuses</option>
+          <option value="new" data-i18n="feedback.filterNew">New</option>
+          <option value="in_review" data-i18n="feedback.filterReview">In review</option>
+          <option value="resolved" data-i18n="feedback.filterResolved">Resolved</option>
+          <option value="dismissed" data-i18n="feedback.filterDismissed">Dismissed</option>
+        </select>
+      </div>
+      <div id="feedbackList" class="divide-y max-h-[600px] overflow-y-auto"></div>
     </div>
   </section>
 
@@ -1552,18 +1576,223 @@ function renderBroadcasts(){
     <td class="text-gray-500">${r[3]}</td><td class="font-semibold text-success">${r[4]}</td></tr>`).join('');
 }
 
-function renderThreads(){
-  $('#threadList').innerHTML = DATA.threads.map((t,i)=>`
-    <button class="w-full text-left p-4 flex items-center gap-3 ${i===0?'bg-slate-50':''} hover:bg-slate-50">
-      <div class="avatar w-10 h-10">${t.init}</div>
-      <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${t.name}</p>
-        <p class="text-xs text-gray-500 truncate">${t.last}</p></div>
-      ${t.unread?`<span class="badge badge-danger">${t.unread}</span>`:''}
-    </button>`).join('');
-  $('#chatBody').innerHTML = `
-    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">Hi! I wanted to thank you for the quick approval on the Marina listing.</div></div>
-    <div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-md text-sm">Glad to help, Amani. Let us know if anything else comes up.</div></div>
-    <div class="flex justify-start"><div class="bg-white border rounded-2xl rounded-tl-sm px-4 py-2 max-w-md text-sm">Will do! 🚀</div></div>`;
+let COMM_STATE = { conversations: [], activeConversationId: null, activeAgent: null };
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function initialsOf(name){
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]||'')[0] || '').toUpperCase() + ((parts[1]||'')[0] || '').toUpperCase();
+}
+
+async function renderThreads(){
+  const client = initAdminSupabase();
+  await Promise.all([loadCommThreads(client), loadNewMessageAgentOptions(client)]);
+}
+
+async function loadCommThreads(client){
+  const listEl = $('#threadList');
+  listEl.innerHTML = `<p class="p-4 text-sm text-gray-400">Loading conversations…</p>`;
+  try {
+    const { data, error } = await client.rpc('admin_list_agent_conversations');
+    if (error) throw error;
+    COMM_STATE.conversations = data || [];
+    if (!COMM_STATE.conversations.length){
+      listEl.innerHTML = `<p class="p-4 text-sm text-gray-400">No conversations yet. Use "+ Message an agent" above to start one.</p>`;
+      return;
+    }
+    listEl.innerHTML = COMM_STATE.conversations.map(c => `
+      <button class="w-full text-left p-4 flex items-center gap-3 hover:bg-slate-50 ${c.conversation_id===COMM_STATE.activeConversationId?'bg-slate-50':''}" onclick="openAgentThread('${c.conversation_id}','${c.agent_user_id}',${JSON.stringify(c.agent_name||c.agent_email).replace(/"/g,'&quot;')})">
+        <div class="avatar w-10 h-10">${escapeHtml(initialsOf(c.agent_name) || 'AG')}</div>
+        <div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">${escapeHtml(c.agent_name || c.agent_email)}</p>
+          <p class="text-xs text-gray-500 truncate">${escapeHtml(c.last_message || '')}</p></div>
+        ${c.unread_count ? `<span class="badge badge-danger">${c.unread_count}</span>` : ''}
+      </button>`).join('');
+    if (COMM_STATE.activeConversationId){
+      const still = COMM_STATE.conversations.find(c => c.conversation_id === COMM_STATE.activeConversationId);
+      if (still) await openAgentThread(still.conversation_id, still.agent_user_id, still.agent_name || still.agent_email);
+    }
+  } catch (e){
+    listEl.innerHTML = `<p class="p-4 text-sm text-danger">Failed to load: ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+async function loadNewMessageAgentOptions(client){
+  const sel = $('#newMsgAgentSelect');
+  try {
+    const { data, error } = await client.rpc('get_admin_agents_overview');
+    if (error) throw error;
+    const directory = (data && data.directory) || [];
+    sel.innerHTML = '<option value="">+ Message an agent…</option>' + directory.map(a =>
+      `<option value="${a.user_id}" data-name="${escapeHtml(a.full_name || a.email)}">${escapeHtml(a.full_name || a.email)}</option>`
+    ).join('');
+  } catch(e){
+    // Leave the placeholder option in place; agent picker just won't populate.
+  }
+}
+
+function handleAgentPick(sel){
+  if (!sel.value) return;
+  const opt = sel.options[sel.selectedIndex];
+  const existing = COMM_STATE.conversations.find(c => c.agent_user_id === sel.value);
+  if (existing){
+    openAgentThread(existing.conversation_id, existing.agent_user_id, existing.agent_name || existing.agent_email);
+  } else {
+    // Fresh thread: no conversation_id yet -- first send will create it.
+    COMM_STATE.activeConversationId = null;
+    COMM_STATE.activeAgent = { user_id: sel.value, name: opt.getAttribute('data-name') };
+    $('#chatHeader').innerHTML = `<div class="avatar w-9 h-9">${escapeHtml(initialsOf(opt.getAttribute('data-name')))}</div>
+      <div><p class="font-semibold text-sm">${escapeHtml(opt.getAttribute('data-name'))}</p><p class="text-xs text-gray-500">Agent</p></div>`;
+    $('#chatBody').innerHTML = `<p class="text-sm text-gray-400 text-center mt-6">No messages yet — say hello 👋</p>`;
+    $('#chatReplyInput').disabled = false;
+    $('#chatSendBtn').disabled = false;
+  }
+  sel.value = '';
+}
+
+async function openAgentThread(conversationId, agentUserId, agentName){
+  COMM_STATE.activeConversationId = conversationId;
+  COMM_STATE.activeAgent = { user_id: agentUserId, name: agentName };
+  $('#chatHeader').innerHTML = `<div class="avatar w-9 h-9">${escapeHtml(initialsOf(agentName))}</div>
+    <div><p class="font-semibold text-sm">${escapeHtml(agentName)}</p><p class="text-xs text-gray-500">Agent</p></div>`;
+  $('#chatReplyInput').disabled = false;
+  $('#chatSendBtn').disabled = false;
+  const client = initAdminSupabase();
+  const chatBody = $('#chatBody');
+  chatBody.innerHTML = `<p class="text-sm text-gray-400">Loading…</p>`;
+  try {
+    const { data, error } = await client.rpc('admin_get_agent_thread', { p_conversation_id: conversationId });
+    if (error) throw error;
+    renderChatMessages((data && data.messages) || []);
+    // Refresh the thread list quietly so unread badges clear without a full reload flicker.
+    const btns = document.querySelectorAll('#threadList button');
+    btns.forEach(b => b.classList.remove('bg-slate-50'));
+  } catch(e){
+    chatBody.innerHTML = `<p class="text-sm text-danger">Failed to load messages: ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+function renderChatMessages(messages){
+  const chatBody = $('#chatBody');
+  if (!messages.length){
+    chatBody.innerHTML = `<p class="text-sm text-gray-400 text-center mt-6">No messages yet — say hello 👋</p>`;
+    return;
+  }
+  chatBody.innerHTML = messages.map(m => `
+    <div class="flex ${m.is_mine ? 'justify-end' : 'justify-start'}">
+      <div class="${m.is_mine ? 'bg-primary text-white rounded-tr-sm' : 'bg-white border rounded-tl-sm'} rounded-2xl px-4 py-2 max-w-md text-sm">${escapeHtml(m.body)}</div>
+    </div>`).join('');
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+async function sendAdminMessage(){
+  const input = $('#chatReplyInput');
+  const body = (input.value || '').trim();
+  if (!body || !COMM_STATE.activeAgent) return;
+  const btn = $('#chatSendBtn');
+  btn.disabled = true;
+  const client = initAdminSupabase();
+  try {
+    const { data, error } = await client.rpc('admin_send_message', { p_agent_user_id: COMM_STATE.activeAgent.user_id, p_body: body });
+    if (error) throw error;
+    input.value = '';
+    COMM_STATE.activeConversationId = data.conversation_id;
+    await openAgentThread(data.conversation_id, COMM_STATE.activeAgent.user_id, COMM_STATE.activeAgent.name);
+    await loadCommThreads(client);
+  } catch(e){
+    toast('Failed to send: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.target && e.target.id === 'chatReplyInput' && e.key === 'Enter'){
+    e.preventDefault();
+    sendAdminMessage();
+  }
+});
+
+/* ====== ISHFADI Talk — feedback inbox ====== */
+let FEEDBACK_ITEMS = [];
+
+function fmtFeedbackDate(iso){
+  try {
+    return new Date(iso).toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  } catch(e){ return iso || ''; }
+}
+
+async function renderFeedbackInbox(){
+  const client = initAdminSupabase();
+  const listEl = $('#feedbackList');
+  const filter = $('#feedbackFilter') ? $('#feedbackFilter').value : '';
+  listEl.innerHTML = `<p class="p-4 text-sm text-gray-400">Loading…</p>`;
+  try {
+    const { data, error } = await client.rpc('admin_list_feedback', { p_status: filter || null });
+    if (error) throw error;
+    FEEDBACK_ITEMS = data || [];
+    if (!FEEDBACK_ITEMS.length){
+      listEl.innerHTML = `<p class="p-6 text-sm text-gray-400 text-center">No submissions${filter ? ' with this status' : ''} yet.</p>`;
+    } else {
+      const statusBadge = { new:'badge-danger', in_review:'badge-warning', resolved:'badge-success', dismissed:'badge-muted' };
+      const typeIcon = { bug:'🐞', feature:'💡' };
+      listEl.innerHTML = FEEDBACK_ITEMS.map(f => `
+        <div class="p-4 flex flex-col sm:flex-row sm:items-start gap-3">
+          <div class="text-xl shrink-0">${typeIcon[f.type] || '💬'}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="font-semibold text-sm">${f.type === 'bug' ? 'Bug report' : 'Feature request'}</span>
+              <span class="badge ${statusBadge[f.status] || 'badge-muted'}">${f.status.replace('_',' ')}</span>
+              <span class="text-xs text-gray-400">${fmtFeedbackDate(f.created_at)}</span>
+            </div>
+            <p class="text-sm text-gray-700 whitespace-pre-wrap">${escapeHtml(f.message)}</p>
+            <p class="text-xs text-gray-500 mt-1">${f.submitter_name ? '👤 ' + escapeHtml(f.submitter_name) + (f.submitter_email ? ' · ' + escapeHtml(f.submitter_email) : '') : (f.guest_email ? '👤 Guest · ' + escapeHtml(f.guest_email) : '👤 Anonymous guest')}${f.page_url ? ' · ' + escapeHtml(f.page_url) : ''}</p>
+          </div>
+          <div class="flex sm:flex-col gap-1.5 shrink-0">
+            <select class="px-2 py-1 border rounded-lg text-xs" onchange="updateFeedbackStatus('${f.id}', this.value)">
+              <option value="new" ${f.status==='new'?'selected':''}>New</option>
+              <option value="in_review" ${f.status==='in_review'?'selected':''}>In review</option>
+              <option value="resolved" ${f.status==='resolved'?'selected':''}>Resolved</option>
+              <option value="dismissed" ${f.status==='dismissed'?'selected':''}>Dismissed</option>
+            </select>
+          </div>
+        </div>`).join('');
+    }
+    const count = FEEDBACK_ITEMS.filter(f => f.status === 'new').length;
+    const badge = $('#navBadgeFeedback');
+    if (badge){
+      if (count > 0){ badge.textContent = fmt(count); badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    }
+  } catch(e){
+    listEl.innerHTML = `<p class="p-4 text-sm text-danger">Failed to load: ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+async function updateFeedbackStatus(id, status){
+  const client = initAdminSupabase();
+  try {
+    const { error } = await client.rpc('admin_update_feedback', { p_id: id, p_status: status });
+    if (error) throw error;
+    toast('Status updated', 'success');
+    await renderFeedbackInbox();
+  } catch(e){
+    toast('Failed to update: ' + e.message, 'error');
+  }
+}
+
+async function refreshFeedbackBadge(){
+  const client = initAdminSupabase();
+  try {
+    const { data, error } = await client.rpc('admin_count_new_feedback');
+    if (error) throw error;
+    const badge = $('#navBadgeFeedback');
+    if (badge){
+      if (data > 0){ badge.textContent = fmt(data); badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    }
+  } catch(e){ /* non-critical */ }
 }
 
 function renderExport(){
@@ -1774,6 +2003,7 @@ const RENDER_MAP = {
     await loadDashboardFromDB();
     renderKpis(); renderActivity(); renderPending(); renderDashboardCharts();
     renderWelcomeMessage();
+    refreshFeedbackBadge();
   },
   analytics: renderAnalyticsCharts,
   users: renderUsers,
@@ -1789,6 +2019,7 @@ const RENDER_MAP = {
   cms: renderCMS,
   notifications: renderBroadcasts,
   communication: renderThreads,
+  feedback: renderFeedbackInbox,
   export: renderExport,
   settings: ()=>renderSettings(0),
   security: renderSecurity,
@@ -1797,8 +2028,8 @@ const TITLES = {
   dashboard:'Dashboard', analytics:'Analytics', users:'Users', properties:'Properties',
   agents:'Agents', waiting:'Waiting List', verification:'Verification Center', revenue:'Revenue',
   referrals:'Referral Center', countries:'Countries', rankings:'Rankings', reports:'Reports',
-  cms:'CMS', notifications:'Notifications', communication:'Communication', export:'Export Center',
-  settings:'Settings', security:'Security'
+  cms:'CMS', notifications:'Notifications', communication:'Communication', feedback:'ISHFADI Talk',
+  export:'Export Center', settings:'Settings', security:'Security'
 };
 function goto(section){
   $$('.nav-link').forEach(l=>l.classList.toggle('active', l.dataset.section===section));
@@ -2007,9 +2238,10 @@ function setDate(){
       meta:{ title:'ISHFADI Admin' },
       topbar:{ adminRoot:'Admin', searchPlaceholder:'Search users, properties, agents, reports…' },
       navGroup:{ overview:'Overview', people:'People', inventory:'Inventory', operations:'Operations', system:'System' },
-      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', verification:'Verification', countries:'Countries', rankings:'Rankings', revenue:'Revenue', reports:'Reports', communication:'Communication', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
+      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', verification:'Verification', countries:'Countries', rankings:'Rankings', revenue:'Revenue', reports:'Reports', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
       sidebar:{ superAdmin:'Super Admin', signOut:'Sign out' },
-      notif:{ title:'Notifications', markAll:'Mark all read', viewAll:'View all' }
+      notif:{ title:'Notifications', markAll:'Mark all read', viewAll:'View all' },
+      feedback:{ title:'ISHFADI Talk — feature requests & bug reports', subtitle:'Submitted by users and guests from the floating widget on every page.', filterAll:'All statuses', filterNew:'New', filterReview:'In review', filterResolved:'Resolved', filterDismissed:'Dismissed' }
     },
     fr: { meta:{ title:"Admin ISHFADI" } },
     ar: { meta:{ title:"إدارة ISHFADI" } }
