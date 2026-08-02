@@ -618,12 +618,12 @@
             <!-- Verification checklist (permanent home) -->
             <div class="feature-card" id="dashboardChecklistCard">
               <div class="flex flex-wrap items-center gap-3 mb-1">
-                <h2 class="text-xl font-bold text-primary">Verification checklist</h2>
+                <h2 class="text-xl font-bold text-primary" data-i18n="dashboard.checklistTitle">Verification checklist</h2>
                 <span class="verify-badge pending" id="checklistBadge" role="status">
-                  <span id="checklistBadgeText">In progress</span>
+                  <span id="checklistBadgeText" data-i18n="dashboard.checklistInProgress">In progress</span>
                 </span>
               </div>
-              <p class="text-sm text-gray-500 mb-4">Finish these steps to unlock withdrawals and higher ranks.</p>
+              <p class="text-sm text-gray-500 mb-4" data-i18n="dashboard.checklistSubtitle">Finish these steps to unlock withdrawals and higher ranks.</p>
               <div id="dashboardChecklist" aria-live="polite"></div>
             </div>
 
@@ -632,12 +632,12 @@
               <div class="p-5 border-b flex flex-wrap items-center gap-3">
                 <div class="feature-icon" style="margin-bottom:0" aria-hidden="true">🏆</div>
                 <div class="flex-1 min-w-0">
-                  <h2 class="text-lg font-bold text-primary">Weekly leaderboard</h2>
-                  <p class="text-sm text-gray-500">Top agents this week by verified referrals.</p>
+                  <h2 class="text-lg font-bold text-primary" data-i18n="dashboard.leaderboardTitle">Weekly leaderboard</h2>
+                  <p class="text-sm text-gray-500" data-i18n="dashboard.leaderboardSubtitle">Top agents this week by verified referrals.</p>
                 </div>
               </div>
               <div id="leaderboardBody" aria-live="polite">
-                <div class="p-6 text-center text-sm text-gray-500">Loading…</div>
+                <div class="p-6 text-center text-sm text-gray-500" data-i18n="dashboard.loading">Loading…</div>
               </div>
             </div>
           </section>
@@ -1101,6 +1101,13 @@
         nav: { home:'Home', dashboard:'Dashboard', referrals:'Referrals', rank:'Rank', payments:'Payments', profile:'Profile', settings:'Settings', logout:'Sign out', roleAgent:'Agent',
                masterSection:'Master agent', assignments:'Assignments', inspections:'Inspections', reports:'Reports' },
         welcome: { hello:'Welcome back,', verified:'Verified agent', joined:'Joined', resId:'Reservation ID:', rank:'Rank:', shareLink:'Share my referral link' },
+        dashboard: {
+          checklistTitle:'Verification checklist', checklistSubtitle:'Finish these steps to unlock withdrawals and higher ranks.',
+          checklistInProgress:'In progress', checklistComplete:'Complete', checklistProgress:'{done}/{total} done',
+          leaderboardTitle:'Weekly leaderboard', leaderboardSubtitle:'Top agents this week by verified referrals.',
+          loading:'Loading…', leaderboardUnavailable:'Leaderboard unavailable.', leaderboardLoadError:"Couldn't load the leaderboard right now.",
+          leaderboardEmpty:'No referrals yet this week — be the first!', agentFallback:'Agent', verifiedShort:'verified'
+        },
         stats: { total:'Total referrals', verified:'Verified', pending:'Pending', rejected:'Rejected' },
         referral: {
           quickTitle:'Your permanent referral link', quickSub:'Share it anywhere. Every reservation using it is tied to you.',
@@ -1175,6 +1182,13 @@
         nav: { home:'Accueil', dashboard:'Tableau de bord', referrals:'Parrainages', rank:'Rang', payments:'Paiements', profile:'Profil', settings:'Paramètres', logout:'Se déconnecter', roleAgent:'Agent',
                masterSection:'Agent master', assignments:'Missions', inspections:'Inspections', reports:'Rapports' },
         welcome: { hello:'Bon retour,', verified:'Agent vérifié', joined:'Inscrit', resId:'ID de réservation :', rank:'Rang :', shareLink:'Partager mon lien de parrainage' },
+        dashboard: {
+          checklistTitle:'Liste de vérification', checklistSubtitle:'Terminez ces étapes pour débloquer les retraits et les rangs supérieurs.',
+          checklistInProgress:'En cours', checklistComplete:'Terminé', checklistProgress:'{done}/{total} terminé(s)',
+          leaderboardTitle:'Classement hebdomadaire', leaderboardSubtitle:'Meilleurs agents de la semaine par parrainages vérifiés.',
+          loading:'Chargement…', leaderboardUnavailable:'Classement indisponible.', leaderboardLoadError:'Impossible de charger le classement pour le moment.',
+          leaderboardEmpty:'Aucun parrainage cette semaine — soyez le premier !', agentFallback:'Agent', verifiedShort:'vérifié(s)'
+        },
         stats: { total:'Parrainages', verified:'Vérifiés', pending:'En attente', rejected:'Rejetés' },
         referral: {
           quickTitle:'Votre lien de parrainage permanent', quickSub:'Partagez-le partout. Chaque réservation via ce lien vous est attribuée.',
@@ -1249,6 +1263,13 @@
         nav: { home:'الرئيسية', dashboard:'لوحة التحكم', referrals:'الإحالات', rank:'الرتبة', payments:'المدفوعات', profile:'الملف الشخصي', settings:'الإعدادات', logout:'تسجيل الخروج', roleAgent:'وكيل',
                masterSection:'الوكيل الرئيسي', assignments:'المهام', inspections:'التفتيش', reports:'التقارير' },
         welcome: { hello:'مرحباً بعودتك،', verified:'وكيل موثّق', joined:'انضم في', resId:'رقم الحجز:', rank:'الرتبة:', shareLink:'شارك رابط الإحالة' },
+        dashboard: {
+          checklistTitle:'قائمة التحقق', checklistSubtitle:'أكمل هذه الخطوات لفتح السحوبات والرتب الأعلى.',
+          checklistInProgress:'قيد التنفيذ', checklistComplete:'مكتمل', checklistProgress:'{done}/{total} مكتمل',
+          leaderboardTitle:'المتصدرون هذا الأسبوع', leaderboardSubtitle:'أفضل الوكلاء هذا الأسبوع حسب الإحالات الموثّقة.',
+          loading:'جارٍ التحميل…', leaderboardUnavailable:'المتصدرون غير متاحين حاليًا.', leaderboardLoadError:'تعذّر تحميل قائمة المتصدرين الآن.',
+          leaderboardEmpty:'لا توجد إحالات هذا الأسبوع بعد — كن الأول!', agentFallback:'وكيل', verifiedShort:'موثّقة'
+        },
         stats: { total:'إجمالي الإحالات', verified:'موثّقة', pending:'قيد المراجعة', rejected:'مرفوضة' },
         referral: {
           quickTitle:'رابط الإحالة الدائم الخاص بك', quickSub:'شاركه في أي مكان. كل حجز عبر هذا الرابط مرتبط بك.',
@@ -1804,7 +1825,9 @@
 
       // Dashboard checklist badge summary
       if (els.checklistBadge && els.checklistBadgeText){
-        els.checklistBadgeText.textContent = allDone ? 'Complete' : (doneCount + '/' + total + ' done');
+        els.checklistBadgeText.textContent = allDone
+          ? window.t('dashboard.checklistComplete')
+          : window.t('dashboard.checklistProgress', { done: doneCount, total: total });
         els.checklistBadge.classList.toggle('verified', allDone);
         els.checklistBadge.classList.toggle('pending', !allDone);
       }
@@ -1839,19 +1862,19 @@
     async function loadLeaderboard(){
       if (!els.leaderboardBody) return;
       const client = initSupabase();
-      if (!client){ els.leaderboardBody.innerHTML = '<div class="p-6 text-center text-sm text-gray-500">Leaderboard unavailable.</div>'; return; }
+      if (!client){ els.leaderboardBody.innerHTML = `<div class="p-6 text-center text-sm text-gray-500">${window.t('dashboard.leaderboardUnavailable')}</div>`; return; }
       try {
         const { data, error } = await client.rpc('get_agent_leaderboard', { p_limit: 10 });
         if (error) throw error;
         renderLeaderboard(Array.isArray(data) ? data : []);
       } catch(e){
-        els.leaderboardBody.innerHTML = '<div class="p-6 text-center text-sm text-gray-500">Couldn\'t load the leaderboard right now.</div>';
+        els.leaderboardBody.innerHTML = `<div class="p-6 text-center text-sm text-gray-500">${window.t('dashboard.leaderboardLoadError')}</div>`;
       }
     }
     function renderLeaderboard(rows){
       if (!els.leaderboardBody) return;
       if (!rows.length){
-        els.leaderboardBody.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">No referrals yet this week — be the first!</div>';
+        els.leaderboardBody.innerHTML = `<div class="p-8 text-center text-sm text-gray-500">${window.t('dashboard.leaderboardEmpty')}</div>`;
         return;
       }
       const frag = document.createDocumentFragment();
@@ -1865,13 +1888,13 @@
         rank.textContent = '#' + (rk || '—');
 
         const mid = document.createElement('div');
-        const name = document.createElement('div'); name.className = 'lb-name'; name.textContent = r.full_name || 'Agent';
+        const name = document.createElement('div'); name.className = 'lb-name'; name.textContent = r.full_name || window.t('dashboard.agentFallback');
         const code = document.createElement('div'); code.className = 'lb-code'; code.textContent = r.agent_code || '';
         mid.append(name, code);
 
         const count = document.createElement('span'); count.className = 'lb-count';
         const n = Number(r.weekly_verified_referrals) || 0;
-        count.innerHTML = n + '<small>verified</small>';
+        count.innerHTML = n + '<small>' + window.t('dashboard.verifiedShort') + '</small>';
 
         row.append(rank, mid, count);
         frag.appendChild(row);
