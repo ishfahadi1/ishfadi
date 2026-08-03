@@ -1890,9 +1890,32 @@
       }
 
       btn.disabled = true;
+
+      // Force the card to its real 720px design width for the capture,
+      // regardless of how narrow the actual screen is. An inline style
+      // always overrides the responsive `width:100%` rule (that's basic
+      // CSS specificity, not dependent on any html2canvas option), so
+      // this is guaranteed to work rather than hoped to work. Positioned
+      // off-screen during the brief resize so nothing visibly jumps on
+      // the page while this happens.
+      const origStyle = {
+        position: node.style.position, top: node.style.top, left: node.style.left,
+        width: node.style.width, maxWidth: node.style.maxWidth
+      };
+      node.style.position = 'fixed';
+      node.style.top = '-10000px';
+      node.style.left = '0px';
+      node.style.width = '720px';
+      node.style.maxWidth = '720px';
+
       try {
-        // 1. Capture the on-screen card exactly as it looks (landscape ID-card shape).
-        const cardCanvas = await window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        // 1. Capture the card at its true, forced 720px width — no longer
+        //    dependent on whatever width it happened to be on-screen.
+        //    That mismatch (mobile capturing at ~350px, cramped/wrapped,
+        //    then getting scaled up) is what caused the cutoff/overlap.
+        const cardCanvas = await window.html2canvas(node, {
+          scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
+        });
 
         // 2. Compose it into a real 9:16 portrait "story" frame (1080x1920) —
         //    the raw card alone is landscape, so a plain screenshot would not
@@ -1918,13 +1941,21 @@
         ctx.font = '600 30px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
         ctx.fillText(window.t('rescard.tag') || 'Pre-launch Reservation', W / 2, 236);
 
-        // The captured card, scaled to fit width with rounded-corner clipping + shadow
-        const cardTargetW = 900;
-        const scale = cardTargetW / cardCanvas.width;
-        const cardTargetH = cardCanvas.height * scale;
+        // The captured card, scaled to fit width with rounded-corner clipping + shadow.
+        // Defensive clamp: even a well-formed card should never be allowed to
+        // push into the caption area — if it would, shrink to fit instead.
+        const cardY = 320, radius = 28;
+        const captionReserve = 200; // space needed below the card for the caption
+        const maxCardH = H - cardY - captionReserve;
+        let cardTargetW = 900;
+        let scale = cardTargetW / cardCanvas.width;
+        let cardTargetH = cardCanvas.height * scale;
+        if (cardTargetH > maxCardH) {
+          scale = maxCardH / cardCanvas.height;
+          cardTargetH = maxCardH;
+          cardTargetW = cardCanvas.width * scale;
+        }
         const cardX = (W - cardTargetW) / 2;
-        const cardY = 320;
-        const radius = 28;
 
         ctx.save();
         ctx.shadowColor = 'rgba(0,0,0,.35)';
@@ -1956,7 +1987,14 @@
         document.body.appendChild(link); link.click(); link.remove();
       } catch(e) {
         window.showToast(window.t('success.downloadFail'), 'error');
-      } finally { btn.disabled = false; }
+      } finally {
+        node.style.position = origStyle.position;
+        node.style.top = origStyle.top;
+        node.style.left = origStyle.left;
+        node.style.width = origStyle.width;
+        node.style.maxWidth = origStyle.maxWidth;
+        btn.disabled = false;
+      }
     }
 
     async function resendVerification() {

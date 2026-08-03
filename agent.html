@@ -290,7 +290,7 @@
     /* Mobile sidebar */
     #sideDrawer { transition: transform .28s ease; }
     @media (max-width: 1023px) {
-      #sideDrawer { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); }
+      #sideDrawer { position: fixed; inset: 0 auto 0 0; width: 18rem; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); }
       html[dir="rtl"] #sideDrawer { inset: 0 0 0 auto; transform: translateX(100%); }
       #sideDrawer.open { transform: translateX(0); }
       html[dir="rtl"] #sideDrawer.open { transform: translateX(0); }
@@ -1668,13 +1668,38 @@
     }
     async function downloadRefCard(){
       if (!els.referralCard || !window.html2canvas){ window.showToast(window.t('toast.downloadFail'),'error'); return; }
+      const node = els.referralCard;
+      // The card is width:100%; max-width:720px — on a phone it renders
+      // narrow and cramped (QR + CTA wrap awkwardly, text crowds). Force it
+      // to its true 720px design width via inline style right before
+      // capture — inline style always overrides width:100% regardless of
+      // screen size, so this is guaranteed rather than hoped-for. Moved
+      // off-screen during the brief resize so nothing visibly jumps.
+      const origStyle = {
+        position: node.style.position, top: node.style.top, left: node.style.left,
+        width: node.style.width, maxWidth: node.style.maxWidth
+      };
+      node.style.position = 'fixed';
+      node.style.top = '-10000px';
+      node.style.left = '0px';
+      node.style.width = '720px';
+      node.style.maxWidth = '720px';
       try {
-        const canvas = await window.html2canvas(els.referralCard, { scale: 2, backgroundColor:'#ffffff', useCORS: true, logging: false });
+        const canvas = await window.html2canvas(node, {
+          scale: 2, backgroundColor:'#ffffff', useCORS: true, logging: false
+        });
         const a = document.createElement('a');
         a.download = 'ISHFADI-agent-card-' + ((currentData && currentData.agent_code) || 'card') + '.png';
         a.href = canvas.toDataURL('image/png');
         document.body.appendChild(a); a.click(); a.remove();
       } catch(e){ window.showToast(window.t('toast.downloadFail'),'error'); }
+      finally {
+        node.style.position = origStyle.position;
+        node.style.top = origStyle.top;
+        node.style.left = origStyle.left;
+        node.style.width = origStyle.width;
+        node.style.maxWidth = origStyle.maxWidth;
+      }
     }
 
     // --- Referrals table (safe: no innerHTML from data) ---
