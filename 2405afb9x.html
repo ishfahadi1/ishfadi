@@ -9,8 +9,10 @@
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
 <meta name="description" content="ISHFADI enterprise admin control center.">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Chart.js is lazy-loaded on demand (see ensureChartJs()) -- only needed
+     when the Dashboard or Analytics pane is actually opened, not on every
+     admin page load (e.g. visiting Users or Verification never needs it). -->
 <script>
   tailwind.config = { theme: { extend: { colors: {
     primary: '#1e3a5f', 'primary-light': '#2a4a7f',
@@ -526,6 +528,7 @@
 
   <!-- VERIFICATION -->
   <section data-pane="verification" class="p-4 sm:p-6">
+    <div id="verifPausedBanner"></div>
     <div class="grid sm:grid-cols-3 gap-4 mb-6" id="verifKpis"></div>
     <div class="bg-white rounded-2xl border">
       <div class="p-5 border-b"><h3 class="font-semibold">Verification queue</h3></div>
@@ -1083,7 +1086,7 @@ const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(
 // Shared everywhere a person's avatar is shown in a table/list: real uploaded
 // photo when one exists on their profile, initials fallback otherwise.
 const avatarOrInitials = (photoUrl, name, sizeClass) => photoUrl
-  ? `<img src="${photoUrl}" class="avatar ${sizeClass} object-cover" alt="${name}">`
+  ? `<img src="${photoUrl}" class="avatar ${sizeClass} object-cover" alt="${name}" loading="lazy" decoding="async">`
   : `<div class="avatar ${sizeClass}">${initials(name)}</div>`;
 const fmt = n => typeof n==='number' ? n.toLocaleString() : n;
 
@@ -1227,7 +1230,7 @@ function renderActivity(){
   $('#activityFeed').innerHTML = DATA.activity.map(a=>`
     <div class="p-4 flex items-start gap-3">
       ${a.photo
-        ? `<img src="${a.photo}" class="avatar w-9 h-9 object-cover" alt="${a.who}">`
+        ? `<img src="${a.photo}" class="avatar w-9 h-9 object-cover" alt="${a.who}" loading="lazy" decoding="async">`
         : `<div class="avatar w-9 h-9">${initials(a.who)}</div>`}
       <div class="flex-1 min-w-0">
         <p class="text-sm"><span class="font-semibold">${a.who}</span> ${a.action} <span class="text-gray-500">${a.target}</span></p>
@@ -1429,7 +1432,33 @@ async function renderVerif(){
   $('#verifKpis').innerHTML = '<p class="text-sm text-gray-400 col-span-3">Loading real data…</p>';
   $('#verifList').innerHTML = '';
   const client = initAdminSupabase();
-  const { data, error } = await client.rpc('get_admin_verification_queue');
+  const [{ data, error }, { data: flag }] = await Promise.all([
+    client.rpc('get_admin_verification_queue'),
+    client.from('feature_flags').select('enabled').eq('key', 'verification_required').single()
+  ]);
+
+  const banner = document.getElementById('verifPausedBanner');
+  if (banner){
+    if (flag && flag.enabled === false){
+      banner.innerHTML = `
+        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p class="font-semibold text-amber-900">⏸️ Verification is paused for launch</p>
+            <p class="text-sm text-amber-800 mt-1">Per-document ID/criminal-record checks are costly, so this is switched off until funded. Agents and hosts can still operate without completing it -- items below just won't auto-clear until it's back on.</p>
+          </div>
+          <button class="px-3 py-1.5 text-sm bg-amber-600 text-white rounded-lg flex-shrink-0" onclick="toggleFeatureFlag('verification_required', true).then(()=>renderVerif())">Turn back on</button>
+        </div>`;
+    } else if (flag) {
+      banner.innerHTML = `
+        <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 flex items-start justify-between gap-4 flex-wrap">
+          <p class="text-sm text-green-800 font-medium">✅ Verification is active -- new applications are being processed normally.</p>
+          <button class="px-3 py-1.5 text-sm border border-green-600 text-green-700 rounded-lg flex-shrink-0" onclick="toggleFeatureFlag('verification_required', false).then(()=>renderVerif())">Pause it</button>
+        </div>`;
+    } else {
+      banner.innerHTML = '';
+    }
+  }
+
   if (error) { $('#verifKpis').innerHTML = '<p class="text-sm text-red-500 col-span-3">Failed to load: '+error.message+'</p>'; return; }
 
   const k = data.kpis;
@@ -1813,6 +1842,7 @@ function renderExport(){
 }
 
 const SETTINGS_TABS = [
+  ['Launch controls','Feature flags that control pre-launch access -- real, live toggles.'],
   ['General','Platform name, default language, timezone.'],
   ['Brand','Logo, colors, OG image.'],
   ['Theme','Light/dark default, accent.'],
@@ -1823,10 +1853,17 @@ const SETTINGS_TABS = [
   ['Countries','Active markets & taxes.'],
   ['Maintenance','Toggle maintenance mode.'],
 ];
-function renderSettings(active=0){
+async function renderSettings(active=0){
   $('#settingsNav').innerHTML = SETTINGS_TABS.map((s,i)=>`
     <li><button onclick="renderSettings(${i})" class="w-full text-left px-3 py-2 rounded-lg ${i===active?'bg-primary text-white':'hover:bg-slate-50'}">${s[0]}</button></li>`).join('');
   const t = SETTINGS_TABS[active];
+
+  if (active === 0){
+    $('#settingsPanel').innerHTML = `<h3 class="font-semibold text-lg">${t[0]}</h3><p class="text-sm text-gray-500 mb-5">${t[1]}</p><div id="flagsList" class="space-y-3"><div class="skel h-14"></div><div class="skel h-14"></div><div class="skel h-14"></div></div>`;
+    await loadFeatureFlags();
+    return;
+  }
+
   $('#settingsPanel').innerHTML = `
     <h3 class="font-semibold text-lg">${t[0]}</h3>
     <p class="text-sm text-gray-500 mb-5">${t[1]}</p>
@@ -1843,6 +1880,38 @@ function renderSettings(active=0){
     </div>
     <div class="mt-6 flex gap-2"><button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="toast('Settings saved','success')">Save changes</button>
       <button class="px-4 py-2 border rounded-lg text-sm">Cancel</button></div>`;
+}
+
+/* ====== Launch Controls (feature_flags) ======
+   Real, live toggles -- flipping one writes straight to the feature_flags
+   table that index.html / agent.html actually read from. No "Save" button,
+   no mock: the switch itself is the save. */
+async function loadFeatureFlags(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.from('feature_flags').select('key, enabled, label, description').order('key');
+  const el = document.getElementById('flagsList');
+  if (!el) return;
+  if (error){ el.innerHTML = `<p class="text-sm text-danger">Failed to load: ${error.message}</p>`; return; }
+  el.innerHTML = (data||[]).map(f => `
+    <div class="flex items-start justify-between border rounded-xl px-4 py-3 gap-4">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold">${f.label}</p>
+        <p class="text-xs text-gray-500 mt-0.5">${f.description || ''}</p>
+      </div>
+      <label class="inline-flex items-center cursor-pointer flex-shrink-0 mt-0.5">
+        <input type="checkbox" class="sr-only peer" ${f.enabled ? 'checked' : ''} onchange="toggleFeatureFlag('${f.key}', this.checked)">
+        <div class="w-10 h-6 bg-gray-200 peer-checked:bg-primary rounded-full relative transition">
+          <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition peer-checked:translate-x-4"></span></div>
+      </label>
+    </div>`).join('') || '<p class="text-sm text-gray-400">No flags configured.</p>';
+}
+
+async function toggleFeatureFlag(key, enabled){
+  const client = initAdminSupabase();
+  const { data: { user } } = await client.auth.getUser();
+  const { error } = await client.from('feature_flags').update({ enabled, updated_at: new Date().toISOString(), updated_by: user ? user.id : null }).eq('key', key);
+  if (error){ toast('Failed to update: ' + error.message, 'error'); await loadFeatureFlags(); return; }
+  toast(`${key.replace(/_/g,' ')} is now ${enabled ? 'ON' : 'OFF'} -- live immediately`, 'success');
 }
 
 function renderSecurity(){
@@ -1876,6 +1945,23 @@ function renderNotifPanel(){
 let charts = {};
 function destroyCharts(){ Object.values(charts).forEach(c=>{ if (c && c.destroy) c.destroy(); }); charts={}; }
 
+const _scriptLoadCache = {};
+function loadScriptOnce(src){
+  if (_scriptLoadCache[src]) return _scriptLoadCache[src];
+  _scriptLoadCache[src] = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => { delete _scriptLoadCache[src]; reject(new Error('Failed to load ' + src)); };
+    document.head.appendChild(s);
+  });
+  return _scriptLoadCache[src];
+}
+function ensureChartJs(){
+  if (window.Chart) return Promise.resolve();
+  return loadScriptOnce('https://cdn.jsdelivr.net/npm/chart.js');
+}
+
 function mkLine(id, labels, datasets){
   charts[id] = new Chart(document.getElementById(id),{
     type:'line', data:{labels, datasets}, options:{
@@ -1896,7 +1982,8 @@ function mkDoughnut(id, labels, data, colors){
   });
 }
 
-function renderDashboardCharts(){
+async function renderDashboardCharts(){
+  await ensureChartJs();
   destroyCharts();
   const series = (DASH && DASH.monthly_series) || [];
   const months = series.length ? series.map(s=>s.month) : ['-'];
@@ -1917,6 +2004,7 @@ function renderDashboardCharts(){
 }
 
 async function renderAnalyticsCharts(){
+  await ensureChartJs();
   const client = initAdminSupabase();
   const [{ data, error }, { data: health, error: healthErr }] = await Promise.all([
     client.rpc('get_admin_analytics_summary'),
@@ -2001,7 +2089,7 @@ const RENDER_MAP = {
   dashboard: async ()=>{
     renderKpis(); renderActivity(); renderPending(); // skeleton/empty state first
     await loadDashboardFromDB();
-    renderKpis(); renderActivity(); renderPending(); renderDashboardCharts();
+    renderKpis(); renderActivity(); renderPending(); await renderDashboardCharts();
     renderWelcomeMessage();
     refreshFeedbackBadge();
   },
@@ -2142,7 +2230,7 @@ async function loadPreviewsList(){
   if (!data || !data.length){ el.innerHTML = `<p class="text-sm text-gray-400">No previews uploaded yet -- the public gallery shows its empty state until you add one.</p>`; return; }
   el.innerHTML = data.map(p=>`
     <div class="flex items-center gap-3 p-2 border rounded-lg">
-      <img src="${p.image_url}" class="w-16 h-10 object-cover rounded" alt="${p.label}">
+      <img src="${p.image_url}" class="w-16 h-10 object-cover rounded" alt="${p.label}" loading="lazy" decoding="async">
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium truncate">${p.label}</p>
         <p class="text-xs text-gray-400">${p.is_published ? 'Published' : 'Hidden'} · order ${p.sort_order}</p>

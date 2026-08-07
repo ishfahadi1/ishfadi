@@ -29,8 +29,9 @@
 
   <!-- Same vendor libs as index.html — do not swap -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- QRCode and html2canvas are lazy-loaded on demand (see loadScriptOnce())
+       -- only needed when an agent actually opens their referral card, not
+       on every dashboard visit. -->
 
   <script>
     tailwind.config = {
@@ -180,13 +181,23 @@
       box-shadow: 0 30px 80px -20px rgba(30,58,95,.35);
       border: 1px solid #e5e7eb; position: relative; overflow: hidden;
     }
-    .refcard::before { content:""; position:absolute; inset:0 0 auto 0; height:120px; background: linear-gradient(135deg,#1e3a5f 0%, #254772 60%, #2c5687 100%); }
+    .refcard-headerbg { position:absolute; top:0; left:0; right:0; height:120px; background: linear-gradient(135deg,#1e3a5f 0%, #254772 60%, #2c5687 100%); }
     .refcard-inner { position: relative; z-index: 1; }
     .refcard-brand { display:flex; align-items:center; gap:12px; color:#fff; }
     .refcard-brand img { width: 64px; height: 64px; object-fit: contain; background:#fff; border-radius:12px; padding:2px; }
     .refcard-brand .b-name { font-size: 1.4rem; font-weight: 800; letter-spacing: .04em; }
     .refcard-brand .b-tag { font-size:.7rem; text-transform:uppercase; letter-spacing:.15em; color:rgba(255,255,255,.75); }
     .refcard-body { margin-top: 44px; background:#fff; border-radius: 18px; padding: 22px; border:1px solid #e5e7eb; box-shadow: 0 12px 30px rgba(15,23,42,.06); }
+    .refcard-profile { display:flex; align-items:center; gap:14px; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid #e5e7eb; }
+    .refcard-avatar { width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#1e3a5f; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; border:2px solid #e5e7eb; }
+    .refcard-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .refcard-profile-name { font-weight:800; font-size:1.05rem; color:#0f172a; word-break:break-word; }
+    .refcard-profile-country { font-size:.8rem; color:#64748b; margin-top:1px; }
+    .refcard-rank-badge { display:inline-block; margin-top:4px; padding:2px 10px; border-radius:999px; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; background:linear-gradient(135deg,#fde68a,#fcd34d); color:#78350f; }
+    .refcard-stats { display:flex; gap:10px; margin:14px 0; }
+    .refcard-stat { flex:1; text-align:center; background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; padding:8px 4px; }
+    .refcard-stat b { display:block; font-size:1.15rem; color:#1e3a5f; font-weight:800; }
+    .refcard-stat span { font-size:.65rem; color:#64748b; text-transform:uppercase; letter-spacing:.04em; }
     .refcard-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.7rem; font-weight: 800; color:#1e3a5f; letter-spacing: .1em; word-break: break-all; }
     .refcard-qr { display:flex; align-items:center; gap: 18px; margin-top: 20px; padding-top: 18px; border-top:1px dashed #e5e7eb; flex-wrap:wrap; }
     .refcard-qr .qr-box { width:130px; height:130px; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; direction:ltr; flex-shrink:0; }
@@ -235,6 +246,9 @@
     .verify-check[data-state="done"] .vc-title { color:#fff; }
     .verify-check[data-state="active"] { border-color:#d4a574; box-shadow: 0 6px 16px -8px rgba(212,165,116,.55); }
     .verify-check[data-state="active"] .vc-icon { background:#d4a574; color:#fff; border-color:#d4a574; }
+    .verify-check[data-state="paused"] { border-color:#e5e7eb; background:#fafaf9; opacity:.85; }
+    .verify-check[data-state="paused"] .vc-icon { background:#f3f4f6; color:#92600a; border-color:#e5e7eb; }
+    .verify-check[data-state="paused"] .vc-status { color:#92600a; }
 
     /* Pending page */
     .pending-illu {
@@ -290,7 +304,7 @@
     /* Mobile sidebar */
     #sideDrawer { transition: transform .28s ease; }
     @media (max-width: 1023px) {
-      #sideDrawer { position: fixed; inset: 0 auto 0 0; width: 18rem; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); }
+      #sideDrawer { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); z-index: 70; box-shadow: 20px 0 60px rgba(0,0,0,.2); }
       html[dir="rtl"] #sideDrawer { inset: 0 0 0 auto; transform: translateX(100%); }
       #sideDrawer.open { transform: translateX(0); }
       html[dir="rtl"] #sideDrawer.open { transform: translateX(0); }
@@ -690,6 +704,7 @@
               <!-- Downloadable referral card -->
               <div class="flex justify-center">
                 <div id="referralCard" class="refcard">
+                  <div class="refcard-headerbg" aria-hidden="true"></div>
                   <div class="refcard-inner">
                     <div class="refcard-brand">
                       <img src="/icons/logo.png" alt="ISHFADI logo" crossorigin="anonymous">
@@ -699,9 +714,20 @@
                       </div>
                     </div>
                     <div class="refcard-body">
+                      <div class="refcard-profile">
+                        <div class="refcard-avatar" id="cardAvatar"></div>
+                        <div class="min-w-0">
+                          <div class="refcard-profile-name" id="cardName">—</div>
+                          <div class="refcard-profile-country" id="cardCountry">—</div>
+                          <span class="refcard-rank-badge" id="cardRank">—</span>
+                        </div>
+                      </div>
+                      <div class="refcard-stats">
+                        <div class="refcard-stat"><b id="cardStatTotal">—</b><span data-i18n="stats.total">Total referrals</span></div>
+                        <div class="refcard-stat"><b id="cardStatVerified">—</b><span data-i18n="stats.verified">Verified</span></div>
+                      </div>
                       <div class="text-xs uppercase tracking-widest text-gray-500" data-i18n="referral.codeLabel">Permanent referral code</div>
                       <div class="refcard-code mt-1" id="cardCode">—</div>
-                      <div class="mt-3 text-sm text-gray-600" id="cardAgent">—</div>
                       <div class="refcard-qr">
                         <div class="qr-box" id="cardQr" aria-hidden="true"></div>
                         <div class="min-w-0">
@@ -1162,17 +1188,17 @@
           step: {
             email:'Email verification', emailD:'Confirm the email address you signed up with.',
             phone:'Phone verification', phoneD:'Verify your mobile number by SMS.',
-            nid:'National ID verification', nidD:'Government-issued ID checked by our team.',
+            nid:'National ID verification', nidD:'Government-issued ID checked by our team.', pausedD:'Temporarily paused during pre-launch — you don\u2019t need to do this yet. We\u2019ll email you when it reopens.',
             crim:'Criminal record verification', crimD:'Background check completed by our compliance team.',
             admin:'Admin review', adminD:'Final decision by an ISHFADI administrator.'
           },
-          status: { done:'Verified', pending:'Waiting', active:'In progress' }
+          status: { done:'Verified', pending:'Waiting', active:'In progress', paused:'Paused' }
         },
         footer: { about:'Building the future of global accommodation. Reserve your account today and sign in the moment we launch.',
           follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
           privacy:'Privacy Policy', terms:'Terms of Service', help:'Help Center', safety:'Safety Tips',
           tagline:'Building the future of global accommodation.' },
-        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.', comingSoon:'Coming soon — this step will be available shortly.', badPhotoType:'Please choose a JPG, PNG or WebP image.', photoTooLarge:'Image must be 5 MB or smaller.', photoSaved:'Profile photo updated.', photoSaveFail:"Photo uploaded, but we couldn't save it to your profile.", photoUploadFail:'Could not upload photo. Please try again.', prefsSaveFail:'Could not save preferences.' },
+        toast: { copyFail:'Could not copy to clipboard.', shareFail:'Sharing is not available on this device.', downloadFail:'Could not generate image. Please try again.', signedOut:'You have been signed out.', notAgent:'This account is not registered as an agent.', comingSoon:'Coming soon — this step will be available shortly.', verificationPaused:'Verification is paused during pre-launch to keep costs down — you don\u2019t need to do this yet. Keep inviting people; we\u2019ll notify you when it reopens.', badPhotoType:'Please choose a JPG, PNG or WebP image.', photoTooLarge:'Image must be 5 MB or smaller.', photoSaved:'Profile photo updated.', photoSaveFail:"Photo uploaded, but we couldn't save it to your profile.", photoUploadFail:'Could not upload photo. Please try again.', prefsSaveFail:'Could not save preferences.' },
         notif: { panelTitle:'Messages from ISHFADI Admin', empty:'No messages yet.', replyPlaceholder:'Reply…', send:'Send', sendFail:'Could not send. Please try again.' },
       },
       fr: {
@@ -1243,17 +1269,17 @@
           step: {
             email:"Vérification de l'e-mail", emailD:"Confirmez l'adresse utilisée à l'inscription.",
             phone:'Vérification du téléphone', phoneD:'Vérifiez votre numéro par SMS.',
-            nid:"Vérification de la pièce d'identité", nidD:"Pièce d'identité contrôlée par notre équipe.",
+            nid:"Vérification de la pièce d'identité", nidD:"Pièce d'identité contrôlée par notre équipe.", pausedD:"Suspendue temporairement avant le lancement — vous n'avez rien à faire pour l'instant. Nous vous préviendrons par e-mail à la réouverture.",
             crim:'Vérification du casier judiciaire', crimD:'Vérification effectuée par notre équipe conformité.',
             admin:'Revue administrateur', adminD:'Décision finale par un administrateur ISHFADI.'
           },
-          status: { done:'Validé', pending:'En attente', active:'En cours' }
+          status: { done:'Validé', pending:'En attente', active:'En cours', paused:'En pause' }
         },
         footer: { about:"Construire l'avenir de l'hébergement mondial. Réservez votre compte aujourd'hui et connectez-vous dès le lancement.",
           follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
           privacy:'Politique de confidentialité', terms:"Conditions d'utilisation", help:"Centre d'aide", safety:'Conseils de sécurité',
           tagline:"Construire l'avenir de l'hébergement mondial." },
-        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent.", comingSoon:'Bientôt disponible — cette étape sera activée prochainement.', badPhotoType:'Veuillez choisir une image JPG, PNG ou WebP.', photoTooLarge:"L'image doit faire 5 Mo maximum.", photoSaved:'Photo de profil mise à jour.', photoSaveFail:"Photo importée, mais impossible de l'enregistrer sur votre profil.", photoUploadFail:'Impossible de téléverser la photo. Veuillez réessayer.', prefsSaveFail:'Impossible d\'enregistrer les préférences.' },
+        toast: { copyFail:'Copie impossible.', shareFail:'Partage indisponible sur cet appareil.', downloadFail:"Impossible de générer l'image.", signedOut:'Vous êtes déconnecté.', notAgent:"Ce compte n'est pas enregistré comme agent.", comingSoon:'Bientôt disponible — cette étape sera activée prochainement.', verificationPaused:"La vérification est suspendue avant le lancement pour limiter les coûts — vous n'avez rien à faire pour l'instant. Continuez à inviter des gens ; nous vous préviendrons à la réouverture.", badPhotoType:'Veuillez choisir une image JPG, PNG ou WebP.', photoTooLarge:"L'image doit faire 5 Mo maximum.", photoSaved:'Photo de profil mise à jour.', photoSaveFail:"Photo importée, mais impossible de l'enregistrer sur votre profil.", photoUploadFail:'Impossible de téléverser la photo. Veuillez réessayer.', prefsSaveFail:'Impossible d\'enregistrer les préférences.' },
         notif: { panelTitle:"Messages de l'administrateur ISHFADI", empty:'Aucun message pour le moment.', replyPlaceholder:'Répondre…', send:'Envoyer', sendFail:"Impossible d'envoyer. Veuillez réessayer." },
       },
       ar: {
@@ -1324,17 +1350,17 @@
           step: {
             email:'التحقق من البريد الإلكتروني', emailD:'تأكيد بريدك المستخدم عند التسجيل.',
             phone:'التحقق من الهاتف', phoneD:'تحقّق من رقمك برسالة نصية.',
-            nid:'التحقق من الهوية الوطنية', nidD:'تحقق فريقنا من الهوية الرسمية.',
+            nid:'التحقق من الهوية الوطنية', nidD:'تحقق فريقنا من الهوية الرسمية.', pausedD:'موقوف مؤقتًا قبل الإطلاق — لا داعي للقيام بذلك الآن. سنُرسل لك بريدًا إلكترونيًا عند إعادة تفعيله.',
             crim:'التحقق من صحيفة الحالة الجنائية', crimD:'تحقّق فريق الامتثال من الخلفية.',
             admin:'مراجعة المسؤول', adminD:'قرار نهائي من إدارة ISHFADI.'
           },
-          status: { done:'مُنجز', pending:'بانتظار', active:'قيد التنفيذ' }
+          status: { done:'مُنجز', pending:'بانتظار', active:'قيد التنفيذ', paused:'موقوف مؤقتًا' }
         },
         footer: { about:'نبني مستقبل السكن العالمي. احجز حسابك اليوم وسجّل الدخول لحظة الإطلاق.',
           follow:'تابع ISHFADI', quickLinks:'روابط سريعة', contact:'اتصل بنا',
           privacy:'سياسة الخصوصية', terms:'شروط الخدمة', help:'مركز المساعدة', safety:'نصائح الأمان',
           tagline:'نبني مستقبل السكن العالمي.' },
-        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.', comingSoon:'قريبًا — ستتوفر هذه الخطوة عما قريب.', badPhotoType:'يرجى اختيار صورة بصيغة JPG أو PNG أو WebP.', photoTooLarge:'يجب ألا يتجاوز حجم الصورة 5 ميغابايت.', photoSaved:'تم تحديث صورة الملف الشخصي.', photoSaveFail:'تم رفع الصورة، لكن تعذّر حفظها في ملفك الشخصي.', photoUploadFail:'تعذّر رفع الصورة. يرجى المحاولة مرة أخرى.', prefsSaveFail:'تعذّر حفظ التفضيلات.' },
+        toast: { copyFail:'تعذّر النسخ.', shareFail:'المشاركة غير متاحة على هذا الجهاز.', downloadFail:'تعذّر إنشاء الصورة.', signedOut:'تم تسجيل الخروج.', notAgent:'هذا الحساب غير مسجل كوكيل.', comingSoon:'قريبًا — ستتوفر هذه الخطوة عما قريب.', verificationPaused:'التحقق موقوف مؤقتًا قبل الإطلاق لتقليل التكاليف — لا داعي للقيام بذلك الآن. استمر في دعوة الآخرين، وسنُعلمك عند إعادة تفعيله.', badPhotoType:'يرجى اختيار صورة بصيغة JPG أو PNG أو WebP.', photoTooLarge:'يجب ألا يتجاوز حجم الصورة 5 ميغابايت.', photoSaved:'تم تحديث صورة الملف الشخصي.', photoSaveFail:'تم رفع الصورة، لكن تعذّر حفظها في ملفك الشخصي.', photoUploadFail:'تعذّر رفع الصورة. يرجى المحاولة مرة أخرى.', prefsSaveFail:'تعذّر حفظ التفضيلات.' },
         notif: { panelTitle:'رسائل من إدارة إشفادي', empty:'لا توجد رسائل بعد.', replyPlaceholder:'الرد…', send:'إرسال', sendFail:'تعذّر الإرسال. يرجى المحاولة مرة أخرى.' },
       }
     };
@@ -1465,7 +1491,7 @@
         'welcomeName','welcomeAvatar','welcomeLocation','welcomeJoined','welcomeResId','welcomeRank',
         'quickRefLink',
         'refCode','refLink','copyCodeBtn','shareBtn','dlQrBtn','dlCardBtn','regenQrBtn',
-        'referralCard','cardCode','cardAgent','cardQr','cardLinkText',
+        'referralCard','cardCode','cardAvatar','cardName','cardCountry','cardRank','cardStatTotal','cardStatVerified','cardQr','cardLinkText',
         'refTbody','refEmpty','refSearch','pageInfo','prevPage','nextPage',
         'rankCurrent','rankEmoji','rankName','rankDescription','rankNext','rankPct','rankBar','rankBarWrap','rankRequirement',
         'profileForm','profileAvatar','profileSaveBtn','photoInput',
@@ -1509,6 +1535,7 @@
         const img = new Image();
         img.alt = name || 'Profile photo';
         img.loading = 'lazy';
+        img.crossOrigin = 'anonymous'; // required so html2canvas (agent card export) can read this image without tainting the canvas
         img.onerror = () => { node.textContent = initials(name); };
         img.src = url;
         node.appendChild(img);
@@ -1617,14 +1644,41 @@
 
     // --- Referral: QR + link + share + downloads ---
     let currentData = null;
+    // Defaults to true (verification treated as required/active) until the
+    // real flag loads -- fail-safe, so a network hiccup never silently
+    // pretends verification is paused when it isn't.
+    let verificationRequired = true;
+    async function loadVerificationFlag(){
+      try {
+        const { data } = await supabase.from('feature_flags').select('enabled').eq('key', 'verification_required').single();
+        if (data) verificationRequired = !!data.enabled;
+      } catch (e) { /* keep the safe default on failure */ }
+    }
 
-    function renderReferralQR(){
+    // Loads a <script src> once, caching the in-flight promise so repeat
+    // calls (e.g. re-rendering the QR after a language switch) don't inject
+    // duplicate tags or re-download.
+    const _scriptLoadCache = {};
+    function loadScriptOnce(src){
+      if (_scriptLoadCache[src]) return _scriptLoadCache[src];
+      _scriptLoadCache[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => { delete _scriptLoadCache[src]; reject(new Error('Failed to load ' + src)); };
+        document.head.appendChild(s);
+      });
+      return _scriptLoadCache[src];
+    }
+
+    async function renderReferralQR(){
       if (!currentData || !els.cardQr) return;
       const link = currentData.referral_link || buildReferralLink(currentData.agent_code);
-      if (window.QRCode){
-        els.cardQr.innerHTML = '';
-        try { new QRCode(els.cardQr, { text: link, width: 260, height: 260, colorDark:'#1e3a5f', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
-      }
+      try {
+        if (!window.QRCode) await loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js');
+      } catch (e) { return; } // silent -- QR is decorative, card still works without it
+      els.cardQr.innerHTML = '';
+      try { new QRCode(els.cardQr, { text: link, width: 260, height: 260, colorDark:'#1e3a5f', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
     }
     window.renderReferralQR = renderReferralQR;
 
@@ -1667,39 +1721,18 @@
       a.href = dataUrl; document.body.appendChild(a); a.click(); a.remove();
     }
     async function downloadRefCard(){
-      if (!els.referralCard || !window.html2canvas){ window.showToast(window.t('toast.downloadFail'),'error'); return; }
-      const node = els.referralCard;
-      // The card is width:100%; max-width:720px — on a phone it renders
-      // narrow and cramped (QR + CTA wrap awkwardly, text crowds). Force it
-      // to its true 720px design width via inline style right before
-      // capture — inline style always overrides width:100% regardless of
-      // screen size, so this is guaranteed rather than hoped-for. Moved
-      // off-screen during the brief resize so nothing visibly jumps.
-      const origStyle = {
-        position: node.style.position, top: node.style.top, left: node.style.left,
-        width: node.style.width, maxWidth: node.style.maxWidth
-      };
-      node.style.position = 'fixed';
-      node.style.top = '-10000px';
-      node.style.left = '0px';
-      node.style.width = '720px';
-      node.style.maxWidth = '720px';
+      if (!els.referralCard){ window.showToast(window.t('toast.downloadFail'),'error'); return; }
+      if (!window.html2canvas){
+        try { await loadScriptOnce('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'); }
+        catch (e) { window.showToast(window.t('toast.downloadFail'),'error'); return; }
+      }
       try {
-        const canvas = await window.html2canvas(node, {
-          scale: 2, backgroundColor:'#ffffff', useCORS: true, logging: false
-        });
+        const canvas = await window.html2canvas(els.referralCard, { scale: 2, backgroundColor:'#ffffff', useCORS: true, logging: false });
         const a = document.createElement('a');
         a.download = 'ISHFADI-agent-card-' + ((currentData && currentData.agent_code) || 'card') + '.png';
         a.href = canvas.toDataURL('image/png');
         document.body.appendChild(a); a.click(); a.remove();
       } catch(e){ window.showToast(window.t('toast.downloadFail'),'error'); }
-      finally {
-        node.style.position = origStyle.position;
-        node.style.top = origStyle.top;
-        node.style.left = origStyle.left;
-        node.style.width = origStyle.width;
-        node.style.maxWidth = origStyle.maxWidth;
-      }
     }
 
     // --- Referrals table (safe: no innerHTML from data) ---
@@ -1779,20 +1812,22 @@
         wrap.setAttribute('data-state', it.state);
         wrap.setAttribute('data-step', it.key);
 
-        // Clickable for steps whose real flow isn't built yet (everything except email)
+        // Clickable for steps whose real flow isn't built yet (everything except email),
+        // but paused steps get their own explanatory toast instead of generic "coming soon".
         const isActionable = interactive && it.key !== 'email' && !it.done;
         if (isActionable){
           wrap.classList.add('actionable');
           wrap.setAttribute('role','button');
           wrap.setAttribute('tabindex','0');
-          const showSoon = () => window.showToast(window.t('toast.comingSoon'), '');
-          wrap.addEventListener('click', showSoon);
-          wrap.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showSoon(); } });
+          const msg = it.state === 'paused' ? window.t('toast.verificationPaused') : window.t('toast.comingSoon');
+          const showMsg = () => window.showToast(msg, '');
+          wrap.addEventListener('click', showMsg);
+          wrap.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showMsg(); } });
         }
 
         const icon = document.createElement('span');
         icon.className = 'vc-icon';
-        icon.textContent = it.state === 'done' ? '✓' : String(idx+1);
+        icon.textContent = it.state === 'done' ? '✓' : it.state === 'paused' ? '⏸' : String(idx+1);
         icon.setAttribute('aria-hidden','true');
 
         const body = document.createElement('div');
@@ -1800,7 +1835,7 @@
         const title = document.createElement('p'); title.className = 'vc-title';
         title.textContent = window.t('pending.step.' + it.key);
         const desc = document.createElement('p'); desc.className = 'vc-desc';
-        desc.textContent = window.t('pending.step.' + it.key + 'D');
+        desc.textContent = it.state === 'paused' ? window.t('pending.step.pausedD') : window.t('pending.step.' + it.key + 'D');
         body.append(title, desc);
 
         const status = document.createElement('span');
@@ -1816,6 +1851,7 @@
     function renderPendingChecklist(){
       const steps = (currentData && currentData.verification_steps) || {};
       const admin = (steps.admin_review_status || 'pending').toLowerCase();
+      const pausableKeys = ['nid', 'crim'];
       const items = [
         { key:'email',  done: !!steps.email_verified },
         { key:'phone',  done: !!steps.phone_verified },
@@ -1827,6 +1863,7 @@
       const marked = items.map(it => {
         let state;
         if (it.done) state = 'done';
+        else if (!verificationRequired && pausableKeys.includes(it.key)) state = 'paused';
         else if (!activeAssigned) { state = 'active'; activeAssigned = true; }
         else state = 'pending';
         return { ...it, state };
@@ -1960,7 +1997,12 @@
       els.refLink.value = link;
       els.refCode.textContent = data.agent_code || '—';
       els.cardCode.textContent = data.agent_code || '—';
-      els.cardAgent.textContent = fullName + (p.country ? ' · ' + p.country : '');
+      setAvatar(els.cardAvatar, p.profile_photo_url, fullName);
+      els.cardName.textContent = fullName;
+      els.cardCountry.textContent = p.country || '—';
+      els.cardRank.textContent = data.rank_name || '—';
+      els.cardStatTotal.textContent = (data.total_referrals ?? '—');
+      els.cardStatVerified.textContent = (data.verified_referrals ?? '—');
       els.cardLinkText.textContent = link;
       renderReferralQR();
 
@@ -2315,7 +2357,10 @@
       const session = await requireSession();
       if (!session) return;
 
-      const data = await loadAgentDashboard(session.user.id);
+      const [data] = await Promise.all([
+        loadAgentDashboard(session.user.id),
+        loadVerificationFlag()
+      ]);
       if (!data){ renderError(); return; }
 
       const roles = (data.profile && data.profile.roles) || (data.agent_profile ? ['agent'] : []);
