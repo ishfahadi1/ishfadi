@@ -578,7 +578,7 @@
     <div class="bg-white rounded-2xl border overflow-hidden">
       <div class="p-5 border-b flex justify-between items-center">
         <h3 class="font-semibold">Active countries</h3>
-        <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg">+ Add country</button>
+        <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="openAddCountryModal()">+ Add country</button>
       </div>
       <div class="overflow-x-auto"><table class="enterprise">
         <thead><tr><th>Country</th><th>Users</th><th>Properties</th><th>Revenue</th><th>Growth</th><th>Status</th></tr></thead>
@@ -1003,14 +1003,6 @@ const DATA = {
     { title:'Alex Coast Villa',      city:'Alexandria', price:'$890K', status:'Pending',  img:'🏖️', owner:'Layla H.' },
   ],
   propTabs: ['All','Pending','Approved','Rejected','Featured','Expired','Hidden'],
-  agents: [
-    ['Amani Khalid','UAE','Gold',  48,'$28,400', 'Yes','Active'],
-    ['Yusuf Ahmed','Saudi Arabia','Platinum', 62,'$41,200','Yes','Active'],
-    ['Kareem N.','Qatar','Silver', 21,'$11,800','Yes','Active'],
-    ['Sara Lopez','Spain','Bronze',  8,'$3,600','No', 'Pending'],
-    ['Hassan Ali','Egypt','Gold',   37,'$22,500','Yes','Active'],
-    ['Nadia M.','Morocco','Silver', 19,'$9,400','Yes','Active'],
-  ],
   waiting: [
     ['Ali Mansour','ali@m.com','Buyer','UAE','Instagram','2025-06-12'],
     ['Fatma Y.','fatma@y.com','Seller','Egypt','Referral','2025-06-15'],
@@ -1031,15 +1023,6 @@ const DATA = {
     ['TX-10233','Layla Hassan','Listing fee','$120','Pending','2026-06-22'],
     ['TX-10234','Sara Lopez','Refund','-$49','Refunded','2026-06-23'],
     ['TX-10235','Kareem N.','Commission','$840','Paid','2026-06-24'],
-  ],
-  countries: [
-    ['🇦🇪 UAE',5420,1820,'$120k','+18%','Active'],
-    ['🇸🇦 Saudi Arabia',3210,1402,'$98k','+22%','Active'],
-    ['🇪🇬 Egypt',2840,940,'$42k','+11%','Active'],
-    ['🇶🇦 Qatar',1820,610,'$54k','+8%','Active'],
-    ['🇪🇸 Spain',1240,420,'$31k','+14%','Active'],
-    ['🇲🇦 Morocco',780,260,'$12k','+6%','Active'],
-    ['🇨🇳 China',640,180,'$22k','+9%','Pilot'],
   ],
   reports: [
     ['RP-501','Fraud','Suspicious listing #9921','Maya Chen','High','Open'],
@@ -1519,30 +1502,124 @@ function renderRevenue(){
     <td class="font-semibold">${t[3]}</td><td>${badgeFor(t[4])}</td><td class="text-gray-500">${t[5]}</td></tr>`).join('');
 }
 
-function renderReferrals(){
-  $('#refKpis').innerHTML = [
-    {l:'Total clicks',v:'48,290',c:'info',i:'🖱️'},
-    {l:'Signups',v:'5,420',c:'primary',i:'📝'},
-    {l:'Verified',v:'3,180',c:'success',i:'✅'},
-    {l:'Conversion',v:'6.6%',c:'gold',i:'🎯'}
-  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
-    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
-    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  const funnel=[['Link clicks',48290,100],['Signups',5420,11.2],['Verified',3180,6.6],['Active users',2410,5.0],['Paying',820,1.7]];
-  $('#refFunnel').innerHTML = funnel.map(f=>`
-    <div><div class="flex justify-between text-sm mb-1"><span>${f[0]}</span><span class="text-gray-500">${fmt(f[1])} · ${f[2]}%</span></div>
-    <div class="progress"><span style="width:${f[2]}%"></span></div></div>`).join('');
-  $('#topReferrers').innerHTML = DATA.agents.slice(0,5).map((a,i)=>`
+async function renderReferrals(){
+  $('#refKpis').innerHTML = Array.from({length:4}).map(()=>`<div class="bg-white rounded-2xl p-5 border"><div class="skel h-4 w-20 mb-3"></div><div class="skel h-7 w-16"></div></div>`).join('');
+  $('#refFunnel').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
+  $('#topReferrers').innerHTML = '';
+
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_referral_center');
+  if (error){
+    $('#refKpis').innerHTML = `<p class="text-sm text-danger col-span-4">Failed to load: ${error.message}</p>`;
+    $('#refFunnel').innerHTML = '';
+    return;
+  }
+
+  const k = data.kpis;
+  const kpiCards = [
+    { l:'Link clicks', v: null, c:'info', i:'🖱️', note:'Not tracked yet -- no click-analytics table built' },
+    { l:'Signups', v: k.signups.value, c:'primary', i:'📝' },
+    { l:'Verified', v: k.verified.value, c:'success', i:'✅' },
+    { l:'Conversion', v: k.conversion_pct.value === null ? null : k.conversion_pct.value + '%', c:'gold', i:'🎯' },
+  ];
+  $('#refKpis').innerHTML = kpiCards.map(kp => kp.v === null ? `
+    <div class="bg-white rounded-2xl p-5 border">
+      <div class="flex items-start justify-between">
+        <div><p class="text-xs text-gray-500">${kp.l}</p><p class="text-lg font-semibold mt-1 text-gray-400">Not live yet</p></div>
+        <div class="kpi-icon ${colorBg(kp.c)}">${kp.i}</div>
+      </div>
+      <p class="text-xs mt-2 text-gray-400">${kp.note || ''}</p>
+    </div>` : `
+    <div class="bg-white rounded-2xl p-5 border card-hover">
+      <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${kp.l}</p><p class="text-2xl font-bold mt-1">${fmt(kp.v)}</p></div>
+      <div class="kpi-icon ${colorBg(kp.c)}">${kp.i}</div></div>
+      <p class="text-xs mt-2 text-gray-400">Referred users only</p>
+    </div>`).join('');
+
+  $('#refFunnel').innerHTML = (data.funnel||[]).map(f => f.available === false ? `
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span class="capitalize text-gray-400">${f.stage}</span><span class="text-gray-400">Not live yet</span></div>
+      <div class="progress"><span style="width:0%"></span></div>
+    </div>` : `
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span class="capitalize">${f.stage}</span><span class="text-gray-500">${fmt(f.value)} · ${f.pct}%</span></div>
+      <div class="progress"><span style="width:${f.pct}%"></span></div>
+    </div>`).join('');
+
+  const top = data.top_referrers || [];
+  $('#topReferrers').innerHTML = top.length ? top.slice(0,5).map((a,i)=>`
     <div class="flex items-center gap-3"><span class="w-6 text-center font-bold ${i<3?'text-amber-600':'text-gray-400'}">${i+1}</span>
-      <div class="avatar w-9 h-9">${initials(a[0])}</div>
-      <div class="flex-1"><p class="text-sm font-medium">${a[0]}</p><p class="text-xs text-gray-500">${a[3]} referrals</p></div>
-      <span class="text-sm font-semibold">${a[4]}</span></div>`).join('');
+      ${avatarOrInitials(a.profile_photo_url, a.full_name, 'w-9 h-9')}
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${a.full_name}</p><p class="text-xs text-gray-500">${a.total_referrals} referrals · ${a.verified_referrals} verified</p></div>
+      <span class="text-sm font-semibold">${a.rank_name}</span></div>`).join('')
+    : '<p class="text-sm text-gray-400">No referrals recorded yet.</p>';
 }
 
-function renderCountries(){
-  $('#countriesTable').innerHTML = DATA.countries.map(r=>`<tr>
-    <td class="font-semibold">${r[0]}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td>
-    <td class="font-semibold">${r[3]}</td><td class="text-success">${r[4]}</td><td>${badgeFor(r[5])}</td></tr>`).join('');
+async function renderCountries(){
+  $('#countriesTable').innerHTML = `<tr><td colspan="6" class="text-center text-gray-400 py-6">Loading real data…</td></tr>`;
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_countries_overview');
+  if (error){ $('#countriesTable').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-6">Failed to load: ${error.message}</td></tr>`; return; }
+
+  if (!data || !data.length){
+    $('#countriesTable').innerHTML = `<tr><td colspan="6" class="text-center text-gray-400 py-6">No countries yet -- they'll appear here as soon as someone signs up or lists a property, or you can add one ahead of time.</td></tr>`;
+    return;
+  }
+
+  $('#countriesTable').innerHTML = data.map(c => {
+    const hasGrowth = c.growth_pct !== null && c.growth_pct !== undefined;
+    const isNeg = hasGrowth && c.growth_pct < 0;
+    return `<tr>
+      <td class="font-semibold">${c.country_name}</td>
+      <td>${fmt(c.users)}</td>
+      <td>${fmt(c.properties)}</td>
+      <td class="text-gray-400 text-sm">Not live yet <span class="text-xs">(Phase 3)</span></td>
+      <td class="${hasGrowth ? (isNeg ? 'text-danger' : 'text-success') : 'text-gray-400'}">${hasGrowth ? (isNeg?'':'+') + c.growth_pct + '%' : '—'}</td>
+      <td>
+        <select class="text-xs border rounded-lg px-2 py-1 ${c.status==='active' ? 'text-success' : 'text-amber-600'}" onchange="setCountryStatus('${c.country_code}', ${JSON.stringify(c.country_name)}, this.value)">
+          <option value="pilot" ${c.status==='pilot'?'selected':''}>Pilot</option>
+          <option value="active" ${c.status==='active'?'selected':''}>Active</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function setCountryStatus(countryCode, countryName, status){
+  const client = initAdminSupabase();
+  const { error } = await client.rpc('admin_set_country_market_status', { p_country_code: countryCode, p_country_name: countryName, p_status: status });
+  if (error){ toast('Failed to update: ' + error.message, 'error'); await renderCountries(); return; }
+  toast(`${countryName} marked as ${status}`, 'success');
+}
+
+function openAddCountryModal(){
+  openModal(`
+    <h3 class="text-lg font-bold mb-1">🌍 Add a country</h3>
+    <p class="text-sm text-gray-500 mb-4">Mark a country as an active or upcoming market even before any real signups or properties exist there.</p>
+    <label class="text-sm font-medium">Country name</label>
+    <input id="newCountryName" class="mt-1 w-full px-3 py-2 border rounded-lg text-sm mb-3" placeholder="e.g. Kenya" />
+    <label class="text-sm font-medium">Country code <span class="text-gray-400 font-normal">(ISO-2, e.g. KE)</span></label>
+    <input id="newCountryCode" maxlength="2" class="mt-1 w-full px-3 py-2 border rounded-lg text-sm mb-3 uppercase" placeholder="KE" />
+    <label class="text-sm font-medium">Status</label>
+    <select id="newCountryStatus" class="mt-1 w-full px-3 py-2 border rounded-lg text-sm mb-4">
+      <option value="pilot">Pilot</option>
+      <option value="active">Active</option>
+    </select>
+    <button class="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="submitAddCountry()">Add country</button>
+  `);
+}
+
+async function submitAddCountry(){
+  const name = document.getElementById('newCountryName').value.trim();
+  const code = document.getElementById('newCountryCode').value.trim().toUpperCase();
+  const status = document.getElementById('newCountryStatus').value;
+  if (!name || code.length !== 2){ toast('Enter a name and a 2-letter country code', 'error'); return; }
+  const client = initAdminSupabase();
+  const { error } = await client.rpc('admin_set_country_market_status', { p_country_code: code, p_country_name: name, p_status: status });
+  if (error){ toast('Failed to add: ' + error.message, 'error'); return; }
+  closeModal();
+  toast(`${name} added as a ${status} market`, 'success');
+  await renderCountries();
 }
 
 function renderRankings(){
