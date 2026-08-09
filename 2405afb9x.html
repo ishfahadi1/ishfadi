@@ -251,7 +251,6 @@
     <a class="nav-link" data-section="properties"><span class="nav-emoji">🏡</span><span data-i18n="nav.properties">Properties</span></a>
     <a class="nav-link" data-section="verification"><span class="nav-emoji">✅</span><span data-i18n="nav.verification">Verification</span></a>
     <a class="nav-link" data-section="countries"><span class="nav-emoji">🌍</span><span data-i18n="nav.countries">Countries</span></a>
-    <a class="nav-link" data-section="rankings"><span class="nav-emoji">🏆</span><span data-i18n="nav.rankings">Rankings</span></a>
 
     <div class="nav-group-label" data-i18n="navGroup.operations">Operations</div>
     <a class="nav-link" data-section="revenue"><span class="nav-emoji">💰</span><span data-i18n="nav.revenue">Revenue</span></a>
@@ -475,7 +474,17 @@
   <!-- PROPERTIES -->
   <section data-pane="properties" class="p-4 sm:p-6">
     <div class="flex flex-wrap gap-2 mb-4" id="propTabs"></div>
-    <div id="propGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <div id="propGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6"></div>
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-4">Agent ranking tiers</h3>
+        <div id="rankTiers" class="space-y-3"></div>
+      </div>
+      <div class="bg-white rounded-2xl border p-6">
+        <h3 class="font-semibold mb-4">Top properties</h3>
+        <div id="topProps" class="space-y-3"></div>
+      </div>
+    </div>
   </section>
 
   <!-- AGENTS -->
@@ -584,20 +593,6 @@
         <thead><tr><th>Country</th><th>Users</th><th>Properties</th><th>Revenue</th><th>Growth</th><th>Status</th></tr></thead>
         <tbody id="countriesTable"></tbody>
       </table></div>
-    </div>
-  </section>
-
-  <!-- RANKINGS -->
-  <section data-pane="rankings" class="p-4 sm:p-6">
-    <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-4">Agent ranking tiers</h3>
-        <div id="rankTiers" class="space-y-3"></div>
-      </div>
-      <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-4">Top properties</h3>
-        <div id="topProps" class="space-y-3"></div>
-      </div>
     </div>
   </section>
 
@@ -991,18 +986,6 @@ const DATA = {
   // users: populated at runtime by renderUsers() from get_admin_users_list().
   users: [],
   usersLoaded: false,
-  properties: [
-    { title:'Marina Heights #2104', city:'Dubai', price:'$1.2M', status:'Pending',  img:'🏙️', owner:'Layla H.' },
-    { title:'Palm Villa 14',         city:'Abu Dhabi', price:'$3.4M', status:'Approved', img:'🏝️', owner:'Yusuf A.' },
-    { title:'Cairo Loft 7B',         city:'Cairo', price:'$320K', status:'Featured', img:'🏢', owner:'Omar I.' },
-    { title:'Riyadh Tower 19',       city:'Riyadh', price:'$2.1M', status:'Rejected', img:'🌆', owner:'Kareem N.' },
-    { title:'Madrid Suite 3',        city:'Madrid', price:'$540K', status:'Approved', img:'🏘️', owner:'Sara L.' },
-    { title:'Beijing Skyhome',       city:'Beijing', price:'$1.8M', status:'Expired',  img:'🌇', owner:'Maya C.' },
-    { title:'Casablanca Estate',     city:'Casablanca', price:'$760K', status:'Hidden',   img:'🏛️', owner:'Omar I.' },
-    { title:'Doha Pearl 88',         city:'Doha', price:'$2.6M', status:'Approved', img:'🌉', owner:'Kareem N.' },
-    { title:'Alex Coast Villa',      city:'Alexandria', price:'$890K', status:'Pending',  img:'🏖️', owner:'Layla H.' },
-  ],
-  propTabs: ['All','Pending','Approved','Rejected','Featured','Expired','Hidden'],
   waiting: [
     ['Ali Mansour','ali@m.com','Buyer','UAE','Instagram','2025-06-12'],
     ['Fatma Y.','fatma@y.com','Seller','Egypt','Referral','2025-06-15'],
@@ -1316,6 +1299,26 @@ async function renderProps(){
         </div>
       </div>
     </div>`).join('') : '<p class="p-6 text-center text-gray-400 col-span-full">Queue is empty — nothing pending review.</p>';
+
+  const tiers = data.rank_tiers || [];
+  $('#rankTiers').innerHTML = tiers.length ? tiers.map(t=>`
+    <div class="p-3 border rounded-xl flex items-center gap-3">
+      <span class="text-2xl">${RANK_ICONS[t.rank_name] || '🏅'}</span>
+      <div class="flex-1"><p class="font-semibold">${t.rank_name}</p>
+        <div class="progress mt-1"><span style="width:${t.pct}%"></span></div></div>
+      <span class="text-sm text-gray-500">${t.agent_count} · ${t.pct}%</span></div>`).join('')
+    : '<p class="text-sm text-gray-400">No agents yet.</p>';
+
+  const topProps = data.top_properties || [];
+  $('#topProps').innerHTML = topProps.length ? topProps.map((p,i)=>`
+    <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+      <span class="w-6 text-center font-bold text-gray-400">${i+1}</span>
+      ${p.cover_image_url
+        ? `<img src="${p.cover_image_url}" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" alt="${p.title}" loading="lazy" decoding="async">`
+        : `<span class="text-2xl">🏡</span>`}
+      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${p.title || '(untitled)'}</p><p class="text-xs text-gray-500">${p.city || ''}${p.city && p.country ? ', ' : ''}${p.country || ''}</p></div>
+      <span class="font-semibold text-primary">$${Number(p.pricing_amount).toLocaleString()}</span></div>`).join('')
+    : '<p class="text-sm text-gray-400">No verified listings with a fixed price yet.</p>';
 }
 
 async function handlePropDecision(propertyId, decision, btn) {
@@ -1622,21 +1625,7 @@ async function submitAddCountry(){
   await renderCountries();
 }
 
-function renderRankings(){
-  const tiers=[['Platinum','🏆',95],['Gold','🥇',72],['Silver','🥈',55],['Bronze','🥉',30]];
-  $('#rankTiers').innerHTML = tiers.map(t=>`
-    <div class="p-3 border rounded-xl flex items-center gap-3">
-      <span class="text-2xl">${t[1]}</span>
-      <div class="flex-1"><p class="font-semibold">${t[0]}</p>
-        <div class="progress mt-1"><span style="width:${t[2]}%"></span></div></div>
-      <span class="text-sm text-gray-500">${t[2]}%</span></div>`).join('');
-  $('#topProps').innerHTML = DATA.properties.slice(0,6).map((p,i)=>`
-    <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
-      <span class="w-6 text-center font-bold text-gray-400">${i+1}</span>
-      <span class="text-2xl">${p.img}</span>
-      <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${p.title}</p><p class="text-xs text-gray-500">${p.city}</p></div>
-      <span class="font-semibold text-primary">${p.price}</span></div>`).join('');
-}
+const RANK_ICONS = { Starter:'🌱', Bronze:'🥉', Silver:'🥈', Gold:'🥇', Diamond:'💎', Elite:'⭐', Master:'👑', Global:'🌍', Founder:'🏆' };
 
 function renderReports(){
   $('#reportKpis').innerHTML = [
@@ -2179,7 +2168,6 @@ const RENDER_MAP = {
   revenue: ()=>{ renderRevenue(); renderRevCharts(); },
   referrals: renderReferrals,
   countries: renderCountries,
-  rankings: renderRankings,
   reports: renderReports,
   cms: renderCMS,
   notifications: renderBroadcasts,
@@ -2192,7 +2180,7 @@ const RENDER_MAP = {
 const TITLES = {
   dashboard:'Dashboard', analytics:'Analytics', users:'Users', properties:'Properties',
   agents:'Agents', waiting:'Waiting List', verification:'Verification Center', revenue:'Revenue',
-  referrals:'Referral Center', countries:'Countries', rankings:'Rankings', reports:'Reports',
+  referrals:'Referral Center', countries:'Countries', reports:'Reports',
   cms:'CMS', notifications:'Notifications', communication:'Communication', feedback:'ISHFADI Talk',
   export:'Export Center', settings:'Settings', security:'Security'
 };
@@ -2403,7 +2391,7 @@ function setDate(){
       meta:{ title:'ISHFADI Admin' },
       topbar:{ adminRoot:'Admin', searchPlaceholder:'Search users, properties, agents, reports…' },
       navGroup:{ overview:'Overview', people:'People', inventory:'Inventory', operations:'Operations', system:'System' },
-      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', verification:'Verification', countries:'Countries', rankings:'Rankings', revenue:'Revenue', reports:'Reports', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
+      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', verification:'Verification', countries:'Countries', revenue:'Revenue', reports:'Reports', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
       sidebar:{ superAdmin:'Super Admin', signOut:'Sign out' },
       notif:{ title:'Notifications', markAll:'Mark all read', viewAll:'View all' },
       feedback:{ title:'ISHFADI Talk — feature requests & bug reports', subtitle:'Submitted by users and guests from the floating widget on every page.', filterAll:'All statuses', filterNew:'New', filterReview:'In review', filterResolved:'Resolved', filterDismissed:'Dismissed' }
