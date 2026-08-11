@@ -249,6 +249,7 @@
 
     <div class="nav-group-label" data-i18n="navGroup.inventory">Inventory</div>
     <a class="nav-link" data-section="properties"><span class="nav-emoji">🏡</span><span data-i18n="nav.properties">Properties</span></a>
+    <a class="nav-link" data-section="rankings"><span class="nav-emoji">🏆</span><span data-i18n="nav.rankings">Rankings</span></a>
     <a class="nav-link" data-section="verification"><span class="nav-emoji">✅</span><span data-i18n="nav.verification">Verification</span></a>
     <a class="nav-link" data-section="countries"><span class="nav-emoji">🌍</span><span data-i18n="nav.countries">Countries</span></a>
 
@@ -475,15 +476,17 @@
   <section data-pane="properties" class="p-4 sm:p-6">
     <div class="flex flex-wrap gap-2 mb-4" id="propTabs"></div>
     <div id="propGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6"></div>
-    <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-4">Agent ranking tiers</h3>
-        <div id="rankTiers" class="space-y-3"></div>
-      </div>
-      <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-4">Top properties</h3>
-        <div id="topProps" class="space-y-3"></div>
-      </div>
+    <div class="bg-white rounded-2xl border p-6">
+      <h3 class="font-semibold mb-4">Top properties</h3>
+      <div id="topProps" class="space-y-3"></div>
+    </div>
+  </section>
+
+  <!-- RANKINGS -->
+  <section data-pane="rankings" class="p-4 sm:p-6">
+    <div class="bg-white rounded-2xl border p-6">
+      <h3 class="font-semibold mb-4">Agent ranking tiers</h3>
+      <div id="rankTiers" class="space-y-3"></div>
     </div>
   </section>
 
@@ -548,16 +551,6 @@
   <!-- REVENUE -->
   <section data-pane="revenue" class="p-4 sm:p-6">
     <div class="grid sm:grid-cols-4 gap-4 mb-6" id="revKpis"></div>
-    <div class="grid lg:grid-cols-3 gap-6 mb-6">
-      <div class="lg:col-span-2 bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-3">Revenue trend</h3>
-        <canvas id="revTrend" height="120"></canvas>
-      </div>
-      <div class="bg-white rounded-2xl border p-6">
-        <h3 class="font-semibold mb-3">Revenue mix</h3>
-        <canvas id="revMix" height="180"></canvas>
-      </div>
-    </div>
     <div class="bg-white rounded-2xl border overflow-hidden">
       <div class="p-5 border-b"><h3 class="font-semibold">Latest transactions</h3></div>
       <div class="overflow-x-auto"><table class="enterprise">
@@ -711,7 +704,7 @@
       <div class="lg:col-span-2 bg-white rounded-2xl border overflow-hidden">
         <div class="p-5 border-b"><h3 class="font-semibold">Audit log</h3></div>
         <div class="overflow-x-auto"><table class="enterprise">
-          <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>IP</th></tr></thead>
+          <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th></tr></thead>
           <tbody id="auditTable"></tbody>
         </table></div>
       </div>
@@ -968,12 +961,10 @@ window.adminSignOut = adminSignOut;
   }
 })();
 
-</script>
-<script>
 /* ============================================================
-   ISHFADI ADMIN — Frontend only
-   Hardcoded enterprise demo data, structured so swapping to
-   Supabase later is a one-line change per loader function.
+   ISHFADI ADMIN
+   DATA below is a runtime cache populated from real Supabase RPCs
+   (see loadDashboardFromDB, renderUsers, etc.) -- not mock data.
    ============================================================ */
 const DATA = {
   // kpis/activity/pending for the Dashboard pane are no longer mock data --
@@ -1300,15 +1291,6 @@ async function renderProps(){
       </div>
     </div>`).join('') : '<p class="p-6 text-center text-gray-400 col-span-full">Queue is empty — nothing pending review.</p>';
 
-  const tiers = data.rank_tiers || [];
-  $('#rankTiers').innerHTML = tiers.length ? tiers.map(t=>`
-    <div class="p-3 border rounded-xl flex items-center gap-3">
-      <span class="text-2xl">${RANK_ICONS[t.rank_name] || '🏅'}</span>
-      <div class="flex-1"><p class="font-semibold">${t.rank_name}</p>
-        <div class="progress mt-1"><span style="width:${t.pct}%"></span></div></div>
-      <span class="text-sm text-gray-500">${t.agent_count} · ${t.pct}%</span></div>`).join('')
-    : '<p class="text-sm text-gray-400">No agents yet.</p>';
-
   const topProps = data.top_properties || [];
   $('#topProps').innerHTML = topProps.length ? topProps.map((p,i)=>`
     <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
@@ -1319,6 +1301,21 @@ async function renderProps(){
       <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${p.title || '(untitled)'}</p><p class="text-xs text-gray-500">${p.city || ''}${p.city && p.country ? ', ' : ''}${p.country || ''}</p></div>
       <span class="font-semibold text-primary">$${Number(p.pricing_amount).toLocaleString()}</span></div>`).join('')
     : '<p class="text-sm text-gray-400">No verified listings with a fixed price yet.</p>';
+}
+
+async function renderRankings(){
+  $('#rankTiers').innerHTML = '<p class="text-sm text-gray-400">Loading real data…</p>';
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_properties_queue');
+  if (error) { $('#rankTiers').innerHTML = '<p class="text-sm text-red-500">Failed to load: '+error.message+'</p>'; return; }
+  const tiers = data.rank_tiers || [];
+  $('#rankTiers').innerHTML = tiers.length ? tiers.map(t=>`
+    <div class="p-3 border rounded-xl flex items-center gap-3">
+      <span class="text-2xl">${RANK_ICONS[t.rank_name] || '🏅'}</span>
+      <div class="flex-1"><p class="font-semibold">${t.rank_name}</p>
+        <div class="progress mt-1"><span style="width:${t.pct}%"></span></div></div>
+      <span class="text-sm text-gray-500">${t.agent_count} · ${t.pct}%</span></div>`).join('')
+    : '<p class="text-sm text-gray-400">No agents yet.</p>';
 }
 
 async function handlePropDecision(propertyId, decision, btn) {
@@ -1492,17 +1489,13 @@ async function handleVerifDecision(kind, userId, requestId, decision, btn) {
 window.handleVerifDecision = handleVerifDecision;
 
 function renderRevenue(){
-  $('#revKpis').innerHTML = [
-    {l:'Total revenue',v:'$2.84M',c:'success',i:'💰'},
-    {l:'MTD income',v:'$284k',c:'primary',i:'📈'},
-    {l:'Projected (mo)',v:'$320k',c:'info',i:'🎯'},
-    {l:'Refunds',v:'$1.2k',c:'danger',i:'↩️'},
-  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
-    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
-    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  $('#txTable').innerHTML = DATA.transactions.map(t=>`<tr>
-    <td class="font-mono text-xs">${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td>
-    <td class="font-semibold">${t[3]}</td><td>${badgeFor(t[4])}</td><td class="text-gray-500">${t[5]}</td></tr>`).join('');
+  $('#revKpis').innerHTML = `
+    <div class="col-span-full bg-white rounded-2xl border border-dashed p-10 text-center">
+      <div class="text-4xl mb-3">🚧</div>
+      <p class="font-semibold text-gray-700">Revenue isn't connected to real data yet</p>
+      <p class="text-sm text-gray-500 mt-1 max-w-md mx-auto">Payments is a later phase of the build — there is no transactions table yet, so nothing real to show. This will connect once payments ships.</p>
+    </div>`;
+  $('#txTable').innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">No payments backend yet.</td></tr>';
 }
 
 async function renderReferrals(){
@@ -1628,16 +1621,13 @@ async function submitAddCountry(){
 const RANK_ICONS = { Starter:'🌱', Bronze:'🥉', Silver:'🥈', Gold:'🥇', Diamond:'💎', Elite:'⭐', Master:'👑', Global:'🌍', Founder:'🏆' };
 
 function renderReports(){
-  $('#reportKpis').innerHTML = [
-    {l:'Open',v:7,c:'danger',i:'🚩'},{l:'In review',v:12,c:'warning',i:'🔍'},
-    {l:'Resolved (mo)',v:84,c:'success',i:'✅'},{l:'Avg response',v:'4.2h',c:'info',i:'⏱️'}
-  ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
-    <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
-    <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  $('#reportTable').innerHTML = DATA.reports.map(r=>`<tr>
-    <td class="font-mono text-xs">${r[0]}</td><td>${badgeFor(r[1]==='Fraud'?'High':'Medium').replace(/High|Medium/,r[1])}</td>
-    <td>${r[2]}</td><td class="text-gray-500">${r[3]}</td><td>${badgeFor(r[4])}</td><td>${badgeFor(r[5])}</td>
-    <td><button class="text-primary hover:underline text-sm">Resolve</button></td></tr>`).join('');
+  $('#reportKpis').innerHTML = `
+    <div class="col-span-full bg-white rounded-2xl border border-dashed p-10 text-center">
+      <div class="text-4xl mb-3">🚧</div>
+      <p class="font-semibold text-gray-700">Reports isn't connected to real data yet</p>
+      <p class="text-sm text-gray-500 mt-1 max-w-md mx-auto">There is no user-reports/flagging table in the database yet. Tell me if you want this built — it needs a real table plus a review workflow.</p>
+    </div>`;
+  $('#reportTable').innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-10">No reports backend yet.</td></tr>';
 }
 
 function renderCMS(){
@@ -1851,6 +1841,8 @@ async function renderFeedbackInbox(){
               <option value="resolved" ${f.status==='resolved'?'selected':''}>Resolved</option>
               <option value="dismissed" ${f.status==='dismissed'?'selected':''}>Dismissed</option>
             </select>
+            <button class="px-2 py-1 border rounded-lg text-xs hover:bg-slate-50" onclick="openFeedbackThread('${f.id}')">💬 Reply</button>
+            <button class="px-2 py-1 border rounded-lg text-xs text-danger hover:bg-danger/5" onclick="deleteFeedback('${f.id}')">🗑 Delete</button>
           </div>
         </div>`).join('');
     }
@@ -1868,7 +1860,7 @@ async function renderFeedbackInbox(){
 async function updateFeedbackStatus(id, status){
   const client = initAdminSupabase();
   try {
-    const { error } = await client.rpc('admin_update_feedback', { p_id: id, p_status: status });
+    const { error } = await client.rpc('admin_update_feedback', { p_id: id, p_status: status, p_note: null });
     if (error) throw error;
     toast('Status updated', 'success');
     await renderFeedbackInbox();
@@ -1876,6 +1868,62 @@ async function updateFeedbackStatus(id, status){
     toast('Failed to update: ' + e.message, 'error');
   }
 }
+
+async function openFeedbackThread(id){
+  const client = initAdminSupabase();
+  openModal('<p class="text-sm text-gray-400">Loading real data…</p>');
+  const { data, error } = await client.rpc('admin_get_feedback_thread', { p_feedback_id: id });
+  if (error) { openModal('<p class="text-sm text-danger">Failed to load: ' + escapeHtml(error.message) + '</p>'); return; }
+
+  const s = data.submission;
+  const isGuest = !s.user_id;
+  const replies = data.replies || [];
+  const repliesHtml = replies.length ? replies.map(r => `
+    <div class="p-3 rounded-xl bg-primary/5 border border-primary/10">
+      <div class="flex justify-between text-xs text-gray-500 mb-1">
+        <span class="font-semibold text-primary">${escapeHtml(r.admin_name || 'Admin')}</span>
+        <span>${fmtFeedbackDate(r.created_at)}${r.delivered_in_app ? ' · delivered in-app' : ' · not delivered (guest, no account)'}</span>
+      </div>
+      <p class="text-sm whitespace-pre-wrap">${escapeHtml(r.body)}</p>
+    </div>`).join('') : '<p class="text-sm text-gray-400">No replies yet.</p>';
+
+  openModal(`
+    <h3 class="text-lg font-bold mb-1">${s.type === 'bug' ? '🐞 Bug report' : '💡 Feature request'}</h3>
+    <p class="text-xs text-gray-500 mb-3">${s.submitter_name ? escapeHtml(s.submitter_name) + (s.submitter_email ? ' · ' + escapeHtml(s.submitter_email) : '') : (s.guest_email ? 'Guest · ' + escapeHtml(s.guest_email) : 'Anonymous guest')}${s.page_url ? ' · ' + escapeHtml(s.page_url) : ''}</p>
+    <div class="p-3 rounded-xl bg-slate-50 border mb-4"><p class="text-sm whitespace-pre-wrap">${escapeHtml(s.message)}</p></div>
+    <div class="space-y-2 mb-4 max-h-64 overflow-y-auto">${repliesHtml}</div>
+    ${isGuest ? `<p class="text-xs text-amber-600 mb-2">This was submitted by a guest with no account — your reply is saved here, but the only way to actually reach them is by emailing ${s.guest_email ? escapeHtml(s.guest_email) : 'them (no email was given)'} yourself.</p>` : ''}
+    <textarea id="feedbackReplyBody" rows="3" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Write a reply…"></textarea>
+    <div class="mt-3 flex gap-2 justify-end">
+      <button class="px-4 py-2 border rounded-lg text-sm" onclick="closeModal()">Close</button>
+      ${isGuest && s.guest_email ? `<a class="px-4 py-2 border rounded-lg text-sm" href="mailto:${escapeHtml(s.guest_email)}?subject=Re: your ISHFADI ${s.type === 'bug' ? 'bug report' : 'feature request'}">✉ Email instead</a>` : ''}
+      <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="sendFeedbackReply('${id}')">Send reply</button>
+    </div>`);
+}
+window.openFeedbackThread = openFeedbackThread;
+
+async function sendFeedbackReply(id){
+  const ta = $('#feedbackReplyBody');
+  const body = ta ? ta.value.trim() : '';
+  if (!body) { toast('Write a reply first', 'error'); return; }
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('admin_reply_to_feedback', { p_feedback_id: id, p_body: body });
+  if (error) { toast('Failed: ' + error.message, 'error'); return; }
+  toast(data && data.delivered_in_app ? 'Reply sent — delivered in their ISHFADI Talk inbox' : 'Reply saved (guest has no account to deliver it to)', 'success');
+  closeModal();
+  renderFeedbackInbox();
+}
+window.sendFeedbackReply = sendFeedbackReply;
+
+async function deleteFeedback(id){
+  if (!confirm('Delete this submission permanently? This cannot be undone.')) return;
+  const client = initAdminSupabase();
+  const { error } = await client.rpc('admin_delete_feedback', { p_feedback_id: id });
+  if (error) { toast('Failed: ' + error.message, 'error'); return; }
+  toast('Submission deleted', 'success');
+  renderFeedbackInbox();
+}
+window.deleteFeedback = deleteFeedback;
 
 async function refreshFeedbackBadge(){
   const client = initAdminSupabase();
@@ -1891,21 +1939,62 @@ async function refreshFeedbackBadge(){
 }
 
 function renderExport(){
-  const items=[
-    {t:'Users export',d:'CSV · All users with status & country.',i:'👥'},
-    {t:'Properties',d:'CSV · Listings with status & price.',i:'🏡'},
-    {t:'Agents',d:'XLSX · Performance & commission.',i:'🤝'},
-    {t:'Revenue',d:'XLSX · Transactions for selected period.',i:'💰'},
-    {t:'Waiting list',d:'CSV · Pre-signup contacts.',i:'⏳'},
-    {t:'Audit log',d:'JSON · Admin activity & IPs.',i:'🔐'},
+  const items = [
+    {t:'Users export', d:'CSV · Real users, from the Users tab data.', i:'👥', fn:'exportUsers'},
+    {t:'Agents export', d:'CSV · Real agent directory, from the Agents tab.', i:'🤝', fn:'exportAgents'},
+    {t:'Waiting list export', d:'CSV · Real waiting-list entries.', i:'⏳', fn:'exportWaiting'},
+    {t:'Audit log export', d:'JSON · Real admin activity log.', i:'🔐', fn:'exportAudit'},
   ];
   $('#exportGrid').innerHTML = items.map(c=>`
     <div class="bg-white rounded-2xl p-5 border card-hover">
       <div class="kpi-icon ${colorBg('info')} mb-3">${c.i}</div>
       <p class="font-semibold">${c.t}</p><p class="text-sm text-gray-500 mt-1">${c.d}</p>
-      <button class="mt-4 px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="toast('Export queued','success')">⤓ Download</button>
-    </div>`).join('');
+      <button class="mt-4 px-3 py-1.5 bg-primary text-white text-sm rounded-lg" onclick="${c.fn}()">⤓ Download</button>
+    </div>` ).join('') + `
+    <div class="col-span-full bg-white rounded-2xl border border-dashed p-6 text-center text-sm text-gray-500">
+      Revenue and CMS exports aren't listed here yet — those features have no real backend to export from.
+    </div>`;
 }
+
+function downloadCSV(filename, rows, headers){
+  const esc = v => '"' + String(v==null?'':v).replace(/"/g,'""') + '"';
+  const csv = [headers.map(esc).join(',')].concat(rows.map(r => headers.map(h=>esc(r[h])).join(','))).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  URL.revokeObjectURL(a.href);
+}
+async function exportUsers(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_users_list', { p_limit: 5000 });
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  downloadCSV('ishfadi-users.csv', (data.rows||[]).map(r=>({...r, roles:(r.roles||[]).join('|')})), ['full_name','email','roles','country','status','created_at']);
+  toast('Export ready', 'success');
+}
+async function exportAgents(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_agents_overview');
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  downloadCSV('ishfadi-agents.csv', data.directory||[], ['full_name','email','rank_name','agent_code','sales','status']);
+  toast('Export ready', 'success');
+}
+async function exportWaiting(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_waiting_list', { p_limit: 5000 });
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  downloadCSV('ishfadi-waiting-list.csv', (data.entries||[]).map(r=>({...r, roles:(r.roles||[]).join('|')})), ['full_name','email','roles','country','source','joined_at']);
+  toast('Export ready', 'success');
+}
+async function exportAudit(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_audit_log', { p_limit: 5000 });
+  if (error) { toast('Failed: '+error.message, 'error'); return; }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ishfadi-audit-log.json'; a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Export ready', 'success');
+}
+window.exportUsers = exportUsers; window.exportAgents = exportAgents; window.exportWaiting = exportWaiting; window.exportAudit = exportAudit;
 
 const SETTINGS_TABS = [
   ['Launch controls','Feature flags that control pre-launch access -- real, live toggles.'],
@@ -1980,31 +2069,51 @@ async function toggleFeatureFlag(key, enabled){
   toast(`${key.replace(/_/g,' ')} is now ${enabled ? 'ON' : 'OFF'} -- live immediately`, 'success');
 }
 
-function renderSecurity(){
+async function renderSecurity(){
+  $('#secKpis').innerHTML = '<p class="text-sm text-gray-400 col-span-4">Loading real data…</p>';
+  $('#auditTable').innerHTML = '';
+  $('#permMatrix').innerHTML = '';
+  const client = initAdminSupabase();
+  const [auditRes, adminsRes] = await Promise.all([
+    client.rpc('get_admin_audit_log', { p_limit: 50 }),
+    client.rpc('get_admin_admins_list')
+  ]);
+  if (auditRes.error) { $('#secKpis').innerHTML = '<p class="text-sm text-red-500 col-span-4">Failed to load: '+auditRes.error.message+'</p>'; return; }
+
+  const audit = auditRes.data || [];
+  const admins = adminsRes.error ? [] : (adminsRes.data || []);
   $('#secKpis').innerHTML = [
-    {l:'Active sessions',v:42,c:'primary',i:'🖥️'},
-    {l:'Failed logins (24h)',v:18,c:'warning',i:'🚨'},
-    {l:'Suspicious IPs',v:3,c:'danger',i:'🌐'},
-    {l:'2FA enabled',v:'92%',c:'success',i:'🔐'}
+    {l:'Admin users',v:admins.length,c:'primary',i:'🔐'},
+    {l:'Active admins',v:admins.filter(a=>a.is_active).length,c:'success',i:'✅'},
+    {l:'Audit entries logged',v:audit.length,c:'info',i:'📋'},
   ].map(k=>`<div class="bg-white rounded-2xl p-5 border card-hover">
     <div class="flex items-start justify-between"><div><p class="text-xs text-gray-500">${k.l}</p><p class="text-2xl font-bold mt-1">${k.v}</p></div>
     <div class="kpi-icon ${colorBg(k.c)}">${k.i}</div></div></div>`).join('');
-  $('#auditTable').innerHTML = DATA.audit.map(r=>`<tr>
-    <td class="text-gray-500">${r[0]}</td><td class="font-medium">${r[1]}</td>
-    <td>${r[2]}</td><td class="text-gray-500">${r[3]}</td><td class="font-mono text-xs">${r[4]}</td></tr>`).join('');
-  $('#permMatrix').innerHTML = DATA.perms.map(p=>`
+
+  $('#auditTable').innerHTML = audit.length ? audit.map(r=>`<tr>
+    <td class="text-gray-500">${fmtFeedbackDate(r.created_at)}</td><td class="font-medium">${r.admin_name}</td>
+    <td>${(r.action||'').replace(/_/g,' ')}</td><td class="text-gray-500">${r.target_name || '—'}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="text-center text-gray-400 py-6">No audit entries yet.</td></tr>';
+
+  $('#permMatrix').innerHTML = admins.length ? admins.map(p=>`
     <div class="flex items-center justify-between p-2 rounded-lg border">
-      <span class="font-medium">${p[0]}</span><span class="text-xs text-gray-500">${p[1]}</span></div>`).join('');
+      <span class="font-medium">${p.full_name}</span>
+      ${badgeFor(p.is_active ? 'Active' : 'Suspended')}
+    </div>`).join('') : '<p class="text-gray-400 text-sm">No admin users found.</p>';
 }
 
-function renderNotifPanel(){
-  $('#notifList').innerHTML = DATA.notifs.map(n=>`
+async function renderNotifPanel(){
+  const client = initAdminSupabase();
+  const { data, error } = await client.rpc('get_admin_dashboard_summary');
+  if (error) { $('#notifList').innerHTML = '<p class="p-4 text-sm text-red-500">Failed to load.</p>'; return; }
+  const items = data.recent_activity || [];
+  $('#notifList').innerHTML = items.length ? items.slice(0,8).map(n=>`
     <div class="p-4 hover:bg-slate-50">
       <div class="flex justify-between items-start gap-2">
-        <p class="text-sm font-semibold">${n.t}</p><span class="text-xs text-gray-400">${n.when}</span>
+        <p class="text-sm font-semibold">${(n.action||'').replace(/_/g,' ')}</p><span class="text-xs text-gray-400">${fmtFeedbackDate(n.time)}</span>
       </div>
-      <p class="text-xs text-gray-500 mt-1">${n.d}</p>
-    </div>`).join('');
+      <p class="text-xs text-gray-500 mt-1">${n.admin_name}${n.target_name ? ' · ' + n.target_name : ''}</p>
+    </div>`).join('') : '<p class="p-6 text-center text-sm text-gray-400">No recent activity.</p>';
 }
 
 /* ====== Charts ====== */
@@ -2144,28 +2253,24 @@ function renderWaitChart(){
   mkLine('waitChart', ['W1','W2','W3','W4','W5','W6','W7','W8'], [{label:'Joins', data:[12,18,24,31,42,48,55,62], borderColor:'#d4a574', backgroundColor:'rgba(212,165,116,.15)', tension:.35, fill:true}]);
   mkDoughnut('waitRoleChart', ['Buyers','Sellers','Agents'],[180,90,42], ['#1e3a5f','#d4a574','#22c55e']);
 }
-function renderRevCharts(){
-  const months=['Jan','Feb','Mar','Apr','May','Jun'];
-  mkLine('revTrend', months,[{label:'Revenue',data:[138,162,190,221,254,284],borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.12)',tension:.35,fill:true}]);
-  mkDoughnut('revMix', ['Subscriptions','Commission','Listing fees','Featured'],[120,98,42,24],['#1e3a5f','#d4a574','#22c55e','#f59e0b']);
-}
-
 /* ====== Section routing ====== */
 const RENDER_MAP = {
   dashboard: async ()=>{
     renderKpis(); renderActivity(); renderPending(); // skeleton/empty state first
     await loadDashboardFromDB();
-    renderKpis(); renderActivity(); renderPending(); await renderDashboardCharts();
+    renderKpis(); renderActivity(); renderPending();
+    try { await renderDashboardCharts(); } catch(e) { /* chart CDN may be blocked (ad-blocker, firewall, flaky connection) — don't let that stall the rest of the dashboard */ }
     renderWelcomeMessage();
     refreshFeedbackBadge();
   },
-  analytics: renderAnalyticsCharts,
+  analytics: async ()=>{ try { await renderAnalyticsCharts(); } catch(e) { toast('Could not load charts (Chart.js failed to load — check your connection or ad-blocker)', 'error'); } },
   users: renderUsers,
   properties: ()=>renderProps(),
+  rankings: renderRankings,
   agents: renderAgents,
   waiting: renderWaiting,
   verification: renderVerif,
-  revenue: ()=>{ renderRevenue(); renderRevCharts(); },
+  revenue: renderRevenue,
   referrals: renderReferrals,
   countries: renderCountries,
   reports: renderReports,
@@ -2391,7 +2496,7 @@ function setDate(){
       meta:{ title:'ISHFADI Admin' },
       topbar:{ adminRoot:'Admin', searchPlaceholder:'Search users, properties, agents, reports…' },
       navGroup:{ overview:'Overview', people:'People', inventory:'Inventory', operations:'Operations', system:'System' },
-      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', verification:'Verification', countries:'Countries', revenue:'Revenue', reports:'Reports', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
+      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', rankings:'Rankings', verification:'Verification', countries:'Countries', revenue:'Revenue', reports:'Reports', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
       sidebar:{ superAdmin:'Super Admin', signOut:'Sign out' },
       notif:{ title:'Notifications', markAll:'Mark all read', viewAll:'View all' },
       feedback:{ title:'ISHFADI Talk — feature requests & bug reports', subtitle:'Submitted by users and guests from the floating widget on every page.', filterAll:'All statuses', filterNew:'New', filterReview:'In review', filterResolved:'Resolved', filterDismissed:'Dismissed' }
