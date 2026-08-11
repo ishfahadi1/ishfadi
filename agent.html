@@ -605,7 +605,8 @@
             </div>
 
             <!-- Stat cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" data-stat-group="1">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4" data-stat-group="1">
+              <div class="stat-card"><div class="stat-num" data-stat="clicks" style="color:#1e3a5f">—</div><div class="stat-lbl" data-i18n="stats.clicks">Link clicks</div></div>
               <div class="stat-card"><div class="stat-num" data-stat="total">—</div><div class="stat-lbl" data-i18n="stats.total">Total referrals</div></div>
               <div class="stat-card"><div class="stat-num" data-stat="verified" style="color:#15803d">—</div><div class="stat-lbl" data-i18n="stats.verified">Verified</div></div>
               <div class="stat-card"><div class="stat-num" data-stat="pending"  style="color:#b45309">—</div><div class="stat-lbl" data-i18n="stats.pending">Pending</div></div>
@@ -746,7 +747,8 @@
             </div>
 
             <!-- Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" data-stat-group="2">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4" data-stat-group="2">
+              <div class="stat-card"><div class="stat-num" data-stat="clicks" style="color:#1e3a5f">—</div><div class="stat-lbl" data-i18n="stats.clicks">Link clicks</div></div>
               <div class="stat-card"><div class="stat-num" data-stat="total">—</div><div class="stat-lbl" data-i18n="stats.total">Total referrals</div></div>
               <div class="stat-card"><div class="stat-num" data-stat="verified" style="color:#15803d">—</div><div class="stat-lbl" data-i18n="stats.verified">Verified</div></div>
               <div class="stat-card"><div class="stat-num" data-stat="pending"  style="color:#b45309">—</div><div class="stat-lbl" data-i18n="stats.pending">Pending</div></div>
@@ -1134,7 +1136,7 @@
           loading:'Loading…', leaderboardUnavailable:'Leaderboard unavailable.', leaderboardLoadError:"Couldn't load the leaderboard right now.",
           leaderboardEmpty:'No referrals yet this week — be the first!', agentFallback:'Agent', verifiedShort:'verified'
         },
-        stats: { total:'Total referrals', verified:'Verified', pending:'Pending', rejected:'Rejected' },
+        stats: { clicks:'Link clicks', total:'Total referrals', verified:'Verified', pending:'Pending', rejected:'Rejected' },
         referral: {
           quickTitle:'Your permanent referral link', quickSub:'Share it anywhere. Every reservation using it is tied to you.',
           openFull:'Open referral center',
@@ -1215,7 +1217,7 @@
           loading:'Chargement…', leaderboardUnavailable:'Classement indisponible.', leaderboardLoadError:'Impossible de charger le classement pour le moment.',
           leaderboardEmpty:'Aucun parrainage cette semaine — soyez le premier !', agentFallback:'Agent', verifiedShort:'vérifié(s)'
         },
-        stats: { total:'Parrainages', verified:'Vérifiés', pending:'En attente', rejected:'Rejetés' },
+        stats: { clicks:'Clics sur le lien', total:'Parrainages', verified:'Vérifiés', pending:'En attente', rejected:'Rejetés' },
         referral: {
           quickTitle:'Votre lien de parrainage permanent', quickSub:'Partagez-le partout. Chaque réservation via ce lien vous est attribuée.',
           openFull:'Ouvrir le centre',
@@ -1296,7 +1298,7 @@
           loading:'جارٍ التحميل…', leaderboardUnavailable:'المتصدرون غير متاحين حاليًا.', leaderboardLoadError:'تعذّر تحميل قائمة المتصدرين الآن.',
           leaderboardEmpty:'لا توجد إحالات هذا الأسبوع بعد — كن الأول!', agentFallback:'وكيل', verifiedShort:'موثّقة'
         },
-        stats: { total:'إجمالي الإحالات', verified:'موثّقة', pending:'قيد المراجعة', rejected:'مرفوضة' },
+        stats: { clicks:'نقرات الرابط', total:'إجمالي الإحالات', verified:'موثّقة', pending:'قيد المراجعة', rejected:'مرفوضة' },
         referral: {
           quickTitle:'رابط الإحالة الدائم الخاص بك', quickSub:'شاركه في أي مكان. كل حجز عبر هذا الرابط مرتبط بك.',
           openFull:'فتح مركز الإحالة',
@@ -1988,7 +1990,8 @@
         total:    data.total_referrals,
         verified: data.verified_referrals,
         pending:  data.pending_referrals,
-        rejected: data.rejected_referrals
+        rejected: data.rejected_referrals,
+        clicks:   data.total_clicks
       });
 
       // Referral
