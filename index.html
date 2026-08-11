@@ -45,8 +45,11 @@
 
   <!-- Vendor libs -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- QRCode and html2canvas are NOT loaded here anymore -- they're only needed
+       when a visitor actually reserves an account and views/downloads their
+       card, not on every single page load. They're lazy-loaded on demand
+       (see loadScriptOnce()) so first paint doesn't pay for code most
+       visitors never trigger. -->
 
   <script>
     tailwind.config = {
@@ -278,7 +281,7 @@
       box-shadow: 0 30px 80px -20px rgba(30,58,95,.35);
       border: 1px solid #e5e7eb; position: relative; overflow: hidden;
     }
-    .rescard::before { content:""; position:absolute; inset:0 0 auto 0; height:120px; background: linear-gradient(135deg,#1e3a5f 0%, #254772 60%, #2c5687 100%); }
+    .rescard-headerbg { position:absolute; top:0; left:0; right:0; height:120px; background: linear-gradient(135deg,#1e3a5f 0%, #254772 60%, #2c5687 100%); }
     .rescard-inner { position: relative; z-index: 1; }
     .rescard-brand { display:flex; align-items:center; gap:12px; color:#fff; }
     .rescard-brand img { width: 64px; height: 64px; object-fit: contain; background:#fff; border-radius:12px; padding:2px; }
@@ -286,10 +289,10 @@
     .rescard-brand .b-tag { font-size:.7rem; text-transform:uppercase; letter-spacing:.15em; color:rgba(255,255,255,.75); }
     .rescard-body { margin-top: 44px; background:#fff; border-radius: 18px; padding: 22px; border:1px solid #e5e7eb; box-shadow: 0 12px 30px rgba(15,23,42,.06); }
     .rescard-title { font-size: 1rem; color:#64748b; font-weight: 500; }
-    .rescard-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.7rem; font-weight: 800; color:#1e3a5f; letter-spacing: .05em; }
+    .rescard-id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.7rem; font-weight: 800; color:#1e3a5f; letter-spacing: .05em; word-break: break-word; }
     .rescard-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-top: 18px; font-size:.9rem; }
     .rescard-grid dt { color:#64748b; font-size:.75rem; text-transform: uppercase; letter-spacing:.06em; }
-    .rescard-grid dd { color:#0f172a; font-weight:600; margin-top:2px; }
+    .rescard-grid dd { color:#0f172a; font-weight:600; margin-top:2px; word-break: break-word; overflow-wrap: break-word; }
     .rescard-qr { display:flex; align-items:center; gap: 18px; margin-top: 20px; padding-top: 18px; border-top:1px dashed #e5e7eb; }
     .rescard-qr .qr-box { width:110px; height:110px; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; direction:ltr; }
     .rescard-qr .qr-box canvas, .rescard-qr .qr-box img { width:100%; height:100%; display:block; }
@@ -480,9 +483,10 @@
           <!-- Downloadable reservation card -->
           <div class="flex justify-center mb-5">
             <div id="reservationCard" class="rescard">
+              <div class="rescard-headerbg" aria-hidden="true"></div>
               <div class="rescard-inner">
                 <div class="rescard-brand">
-                  <img src="/icons/logo.png" alt="ISHFADI logo">
+                  <img src="/icons/logo.png" alt="ISHFADI logo" crossorigin="anonymous">
                   <div>
                     <div class="b-name">ISHFADI</div>
                     <div class="b-tag" data-i18n="rescard.tag">Pre-launch Reservation</div>
@@ -1762,8 +1766,26 @@
       return roles.map(r => window.t('form.role' + (r==='buyer'?'Buyer':r==='host'?'Host':'Agent'))).join(', ');
     }
 
-    function renderQR(text) {
-      const box = document.getElementById('rcQr'); if (!box || !window.QRCode) return;
+    // Loads a <script src> once and caches the in-flight promise, so multiple
+    // call sites can await the same load without injecting duplicate tags.
+    const _scriptLoadCache = {};
+    function loadScriptOnce(src){
+      if (_scriptLoadCache[src]) return _scriptLoadCache[src];
+      _scriptLoadCache[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => { delete _scriptLoadCache[src]; reject(new Error('Failed to load ' + src)); };
+        document.head.appendChild(s);
+      });
+      return _scriptLoadCache[src];
+    }
+
+    async function renderQR(text) {
+      const box = document.getElementById('rcQr'); if (!box) return;
+      try {
+        if (!window.QRCode) await loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js');
+      } catch (e) { return; } // silent -- QR is decorative, card still works without it
       box.innerHTML = '';
       try { new QRCode(box, { text, width: 220, height: 220, colorDark: '#1e3a5f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
     }
@@ -1874,7 +1896,11 @@
     async function downloadReservationCard() {
       const btn = document.getElementById('downloadIdBtn');
       const node = document.getElementById('reservationCard');
-      if (!node || !window.html2canvas) { window.showToast(window.t('success.downloadFail'),'error'); return; }
+      if (!node) { window.showToast(window.t('success.downloadFail'),'error'); return; }
+      if (!window.html2canvas) {
+        try { await loadScriptOnce('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'); }
+        catch (e) { window.showToast(window.t('success.downloadFail'),'error'); return; }
+      }
 
       // Gate: must be email-verified
       if (!lastInfo || !lastInfo.verified) {
@@ -1890,32 +1916,9 @@
       }
 
       btn.disabled = true;
-
-      // Force the card to its real 720px design width for the capture,
-      // regardless of how narrow the actual screen is. An inline style
-      // always overrides the responsive `width:100%` rule (that's basic
-      // CSS specificity, not dependent on any html2canvas option), so
-      // this is guaranteed to work rather than hoped to work. Positioned
-      // off-screen during the brief resize so nothing visibly jumps on
-      // the page while this happens.
-      const origStyle = {
-        position: node.style.position, top: node.style.top, left: node.style.left,
-        width: node.style.width, maxWidth: node.style.maxWidth
-      };
-      node.style.position = 'fixed';
-      node.style.top = '-10000px';
-      node.style.left = '0px';
-      node.style.width = '720px';
-      node.style.maxWidth = '720px';
-
       try {
-        // 1. Capture the card at its true, forced 720px width — no longer
-        //    dependent on whatever width it happened to be on-screen.
-        //    That mismatch (mobile capturing at ~350px, cramped/wrapped,
-        //    then getting scaled up) is what caused the cutoff/overlap.
-        const cardCanvas = await window.html2canvas(node, {
-          scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false
-        });
+        // 1. Capture the on-screen card exactly as it looks (landscape ID-card shape).
+        const cardCanvas = await window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
 
         // 2. Compose it into a real 9:16 portrait "story" frame (1080x1920) —
         //    the raw card alone is landscape, so a plain screenshot would not
@@ -1941,21 +1944,24 @@
         ctx.font = '600 30px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
         ctx.fillText(window.t('rescard.tag') || 'Pre-launch Reservation', W / 2, 236);
 
-        // The captured card, scaled to fit width with rounded-corner clipping + shadow.
-        // Defensive clamp: even a well-formed card should never be allowed to
-        // push into the caption area — if it would, shrink to fit instead.
-        const cardY = 320, radius = 28;
-        const captionReserve = 200; // space needed below the card for the caption
-        const maxCardH = H - cardY - captionReserve;
-        let cardTargetW = 900;
-        let scale = cardTargetW / cardCanvas.width;
-        let cardTargetH = cardCanvas.height * scale;
-        if (cardTargetH > maxCardH) {
-          scale = maxCardH / cardCanvas.height;
-          cardTargetH = maxCardH;
-          cardTargetW = cardCanvas.width * scale;
-        }
-        const cardX = (W - cardTargetW) / 2;
+        // The captured card, scaled to fit width -- but ALSO clamped to fit
+        // the remaining vertical space above the caption, so a taller card
+        // (long country name, multiple roles, translated text, etc.) can
+        // never get physically cut off by the bottom of the 1920px frame.
+        const cardTargetW = 900;
+        const cardY = 320;
+        const captionBudget = 220; // headline + CTA lines + breathing room
+        const bottomMargin = 60;
+        const maxCardH = H - cardY - captionBudget - bottomMargin;
+
+        const scaleByWidth = cardTargetW / cardCanvas.width;
+        const naturalH = cardCanvas.height * scaleByWidth;
+        const scale = naturalH > maxCardH ? (maxCardH / cardCanvas.height) : scaleByWidth;
+
+        const cardFinalW = cardCanvas.width * scale;
+        const cardFinalH = cardCanvas.height * scale;
+        const cardX = (W - cardFinalW) / 2;
+        const radius = 28;
 
         ctx.save();
         ctx.shadowColor = 'rgba(0,0,0,.35)';
@@ -1963,17 +1969,17 @@
         ctx.shadowOffsetY = 24;
         ctx.beginPath();
         ctx.moveTo(cardX + radius, cardY);
-        ctx.arcTo(cardX + cardTargetW, cardY, cardX + cardTargetW, cardY + cardTargetH, radius);
-        ctx.arcTo(cardX + cardTargetW, cardY + cardTargetH, cardX, cardY + cardTargetH, radius);
-        ctx.arcTo(cardX, cardY + cardTargetH, cardX, cardY, radius);
-        ctx.arcTo(cardX, cardY, cardX + cardTargetW, cardY, radius);
+        ctx.arcTo(cardX + cardFinalW, cardY, cardX + cardFinalW, cardY + cardFinalH, radius);
+        ctx.arcTo(cardX + cardFinalW, cardY + cardFinalH, cardX, cardY + cardFinalH, radius);
+        ctx.arcTo(cardX, cardY + cardFinalH, cardX, cardY, radius);
+        ctx.arcTo(cardX, cardY, cardX + cardFinalW, cardY, radius);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(cardCanvas, cardX, cardY, cardTargetW, cardTargetH);
+        ctx.drawImage(cardCanvas, cardX, cardY, cardFinalW, cardFinalH);
         ctx.restore();
 
         // Caption below the card
-        const captionY = cardY + cardTargetH + 90;
+        const captionY = cardY + cardFinalH + 90;
         ctx.fillStyle = '#ffffff';
         ctx.font = '700 42px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
         ctx.fillText('🎉 ' + (window.t('rescard.storyHeadline') || "I just reserved my spot on ISHFADI"), W / 2, captionY, W - 140);
@@ -1987,14 +1993,7 @@
         document.body.appendChild(link); link.click(); link.remove();
       } catch(e) {
         window.showToast(window.t('success.downloadFail'), 'error');
-      } finally {
-        node.style.position = origStyle.position;
-        node.style.top = origStyle.top;
-        node.style.left = origStyle.left;
-        node.style.width = origStyle.width;
-        node.style.maxWidth = origStyle.maxWidth;
-        btn.disabled = false;
-      }
+      } finally { btn.disabled = false; }
     }
 
     async function resendVerification() {
@@ -2473,21 +2472,7 @@
         if (ref) {
           sessionStorage.setItem(REF_STORAGE_KEY, ref);
           renderReferralNote(ref);
-          logReferralClick(ref);
         }
-      } catch (e) {}
-    }
-
-    // Fire-and-forget: logs this click against the real referral_clicks
-    // table (via log_referral_click, which silently ignores unknown codes).
-    // Only ever called once per new ?ref= capture above — the existing
-    // session-lock logic already prevents this from re-firing on repeat
-    // visits within the same session, so clicks aren't double-counted.
-    function logReferralClick(code) {
-      try {
-        if (!window.supabase || !window.ISHFADI_CONFIG) return;
-        const client = window.supabase.createClient(window.ISHFADI_CONFIG.SUPABASE_URL, window.ISHFADI_CONFIG.SUPABASE_ANON_KEY);
-        client.rpc('log_referral_click', { p_agent_code: code }).then(() => {}).catch(() => {});
       } catch (e) {}
     }
 
