@@ -1513,7 +1513,7 @@ async function renderReferrals(){
 
   const k = data.kpis;
   const kpiCards = [
-    { l:'Link clicks', v: null, c:'info', i:'🖱️', note:'Not tracked yet -- no click-analytics table built' },
+    { l:'Link clicks', v: k.clicks.value, c:'info', i:'🖱️' },
     { l:'Signups', v: k.signups.value, c:'primary', i:'📝' },
     { l:'Verified', v: k.verified.value, c:'success', i:'✅' },
     { l:'Conversion', v: k.conversion_pct.value === null ? null : k.conversion_pct.value + '%', c:'gold', i:'🎯' },
