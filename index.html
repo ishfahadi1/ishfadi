@@ -2420,6 +2420,21 @@
     function showManualBtn(show) { const b = document.getElementById('pwaInstallBtn'); if (b) b.classList.toggle('show', !!show); }
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; showManualBtn(true); });
     window.addEventListener('appinstalled', () => { deferredPrompt = null; showManualBtn(false); });
+
+    // Safari on iOS NEVER fires beforeinstallprompt -- Apple simply doesn't
+    // implement that event, on any iOS browser (they all use WebKit under
+    // the hood). Without this check the Install button stayed hidden
+    // forever on iPhone/iPad, even though the manual "tap Share > Add to
+    // Home Screen" instructions below were already written and correct --
+    // there was just no visible button left to click to trigger them.
+    // Also skip showing it if the app is already installed/running standalone.
+    (function initIOSInstallVisibility(){
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isStandalone = window.navigator.standalone === true
+        || window.matchMedia('(display-mode: standalone)').matches;
+      if (isIOS && !isStandalone) showManualBtn(true);
+    })();
+
     window.__pwa = {
       promptInstall: async () => {
         if (!deferredPrompt) {
