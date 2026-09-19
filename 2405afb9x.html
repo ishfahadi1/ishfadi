@@ -254,8 +254,10 @@
     <a class="nav-link" data-section="countries"><span class="nav-emoji">🌍</span><span data-i18n="nav.countries">Countries</span></a>
 
     <div class="nav-group-label" data-i18n="navGroup.operations">Operations</div>
+    <div class="nav-group-label" data-i18n="navGroup.community">Community</div>
+    <a class="nav-link" data-section="community"><span class="nav-emoji">🗣️</span><span data-i18n="nav.community">My Experience</span></a>
     <a class="nav-link" data-section="revenue"><span class="nav-emoji">💰</span><span data-i18n="nav.revenue">Revenue</span></a>
-    <a class="nav-link" data-section="reports"><span class="nav-emoji">📝</span><span data-i18n="nav.reports">Reports</span> <span class="ml-auto badge badge-muted" id="navBadgeReports" title="Reports table not built yet">—</span></a>
+    <a class="nav-link" data-section="reports"><span class="nav-emoji">📝</span><span data-i18n="nav.reports">Reports</span> <span class="ml-auto badge badge-muted" id="navBadgeReports" title="Open community reports">—</span></a>
     <a class="nav-link" data-section="communication"><span class="nav-emoji">💬</span><span data-i18n="nav.communication">Communication</span></a>
     <a class="nav-link" data-section="feedback"><span class="nav-emoji">💧</span><span data-i18n="nav.feedback">ISHFADI Talk</span> <span class="ml-auto badge badge-gold hidden" id="navBadgeFeedback">0</span></a>
     <a class="nav-link" data-section="notifications"><span class="nav-emoji">📢</span><span data-i18n="nav.notifications">Notifications</span></a>
@@ -596,12 +598,36 @@
       <div class="p-5 border-b flex flex-wrap justify-between items-center gap-3">
         <h3 class="font-semibold">Open reports</h3>
         <div class="flex gap-2">
-          <select class="px-3 py-2 border rounded-lg text-sm"><option>All types</option><option>Fraud</option><option>Property</option><option>User</option><option>Agent</option></select>
+          <select id="reportStatusFilter" class="px-3 py-2 border rounded-lg text-sm" onchange="renderReports()">
+            <option value="open">Open</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="dismissed">Dismissed</option>
+            <option value="actioned">Actioned</option>
+            <option value="">All</option>
+          </select>
         </div>
       </div>
       <div class="overflow-x-auto"><table class="enterprise">
-        <thead><tr><th>ID</th><th>Type</th><th>Subject</th><th>Reporter</th><th>Severity</th><th>Status</th><th>Action</th></tr></thead>
+        <thead><tr><th>Reported by</th><th>Reason</th><th>Target</th><th>Content</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="reportTable"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- COMMUNITY — "My Experience" flyers -->
+  <section data-pane="community" class="p-4 sm:p-6">
+    <div class="grid sm:grid-cols-3 gap-4 mb-6" id="storageKpis"></div>
+    <div class="bg-white rounded-2xl border overflow-hidden">
+      <div class="p-5 border-b flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h3 class="font-semibold">My Experience — flyers</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Prompts posted to the public "My Experience" section for the community to respond to. This is a research/validation layer, not the final product.</p>
+        </div>
+        <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="openNewFlyerModal()">＋ New flyer</button>
+      </div>
+      <div class="overflow-x-auto"><table class="enterprise">
+        <thead><tr><th>Flyer</th><th>Likes</th><th>Comments</th><th>Size</th><th>Status</th><th>Posted</th><th>Action</th></tr></thead>
+        <tbody id="communityPostsTable"><tr><td colspan="7" class="text-center text-gray-400 py-10">Loading…</td></tr></tbody>
       </table></div>
     </div>
   </section>
@@ -1620,14 +1646,51 @@ async function submitAddCountry(){
 
 const RANK_ICONS = { Starter:'🌱', Bronze:'🥉', Silver:'🥈', Gold:'🥇', Diamond:'💎', Elite:'⭐', Master:'👑', Global:'🌍', Founder:'🏆' };
 
-function renderReports(){
+async function renderReports(){
+  const client = initAdminSupabase();
+  const statusSel = document.getElementById('reportStatusFilter');
+  const status = statusSel ? (statusSel.value || null) : 'open';
+  $('#reportTable').innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">Loading…</td></tr>';
+  const { data, error } = await client.rpc('admin_list_community_reports', { p_status: status });
+  if (error){
+    $('#reportKpis').innerHTML = `<div class="col-span-full bg-white rounded-2xl border p-6 text-danger text-sm">Failed to load reports: ${escapeHtml(error.message)}</div>`;
+    $('#reportTable').innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">—</td></tr>';
+    return;
+  }
+  const rows = data || [];
+  const openCount = rows.filter(r => r.status === 'open').length;
   $('#reportKpis').innerHTML = `
-    <div class="col-span-full bg-white rounded-2xl border border-dashed p-10 text-center">
-      <div class="text-4xl mb-3">🚧</div>
-      <p class="font-semibold text-gray-700">Reports isn't connected to real data yet</p>
-      <p class="text-sm text-gray-500 mt-1 max-w-md mx-auto">There is no user-reports/flagging table in the database yet. Tell me if you want this built — it needs a real table plus a review workflow.</p>
-    </div>`;
-  $('#reportTable').innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-10">No reports backend yet.</td></tr>';
+    <div class="bg-white rounded-2xl border p-5"><p class="text-xs text-gray-500">Showing</p><p class="text-2xl font-bold">${rows.length}</p></div>
+    <div class="bg-white rounded-2xl border p-5"><p class="text-xs text-gray-500">Open (this filter)</p><p class="text-2xl font-bold ${openCount ? 'text-danger' : ''}">${openCount}</p></div>
+  `;
+  if (!rows.length){
+    $('#reportTable').innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-10">No reports for this filter.</td></tr>';
+    return;
+  }
+  $('#reportTable').innerHTML = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.reported_by_name)}</td>
+      <td><span class="badge badge-muted">${escapeHtml(r.reason)}</span></td>
+      <td>${r.post_id ? 'Flyer' : 'Comment'} by ${escapeHtml(r.target_author_name)}</td>
+      <td class="max-w-xs truncate" title="${escapeHtml(r.target_body || '')}">${escapeHtml((r.target_body || '').slice(0,80))}${(r.target_body||'').length>80?'…':''}</td>
+      <td>${badgeFor(r.status)}</td>
+      <td class="flex gap-1 flex-wrap">
+        ${r.status === 'open' || r.status === 'reviewed' ? `
+          <button class="text-xs px-2 py-1 border rounded-lg hover:bg-slate-50" onclick="reviewCommunityReport('${r.id}','dismissed',null)">Dismiss</button>
+          <button class="text-xs px-2 py-1 border rounded-lg text-danger hover:bg-red-50" onclick="reviewCommunityReport('${r.id}','actioned','${r.post_id ? 'hide_post' : 'hide_comment'}')">Hide</button>
+          <button class="text-xs px-2 py-1 border rounded-lg text-danger hover:bg-red-50" onclick="reviewCommunityReport('${r.id}','actioned','${r.post_id ? 'delete_post' : 'delete_comment'}')">Delete</button>
+        ` : '<span class="text-xs text-gray-400">Reviewed</span>'}
+      </td>
+    </tr>`).join('');
+}
+
+async function reviewCommunityReport(reportId, status, action){
+  if (action && action.startsWith('delete_') && !confirm('This permanently deletes the reported content. Continue?')) return;
+  const client = initAdminSupabase();
+  const { error } = await client.rpc('admin_review_report', { p_report_id: reportId, p_status: status, p_action: action });
+  if (error){ toast('Failed: ' + error.message, 'error'); return; }
+  toast('Report updated', 'success');
+  renderReports();
 }
 
 function renderCMS(){
@@ -1937,6 +2000,19 @@ async function refreshFeedbackBadge(){
     }
   } catch(e){ /* non-critical */ }
 }
+
+async function refreshReportsBadge(){
+  const badge = document.getElementById('navBadgeReports');
+  if (!badge) return;
+  const client = initAdminSupabase();
+  const { data } = await client.rpc('admin_list_community_reports', { p_status: 'open' });
+  const count = (data || []).length;
+  badge.textContent = count;
+  badge.classList.toggle('badge-gold', count > 0);
+  badge.classList.toggle('badge-muted', count === 0);
+}
+
+
 
 function renderExport(){
   const items = [
@@ -2262,6 +2338,7 @@ const RENDER_MAP = {
     try { await renderDashboardCharts(); } catch(e) { /* chart CDN may be blocked (ad-blocker, firewall, flaky connection) — don't let that stall the rest of the dashboard */ }
     renderWelcomeMessage();
     refreshFeedbackBadge();
+    refreshReportsBadge();
   },
   analytics: async ()=>{ try { await renderAnalyticsCharts(); } catch(e) { toast('Could not load charts (Chart.js failed to load — check your connection or ad-blocker)', 'error'); } },
   users: renderUsers,
@@ -2274,6 +2351,7 @@ const RENDER_MAP = {
   referrals: renderReferrals,
   countries: renderCountries,
   reports: renderReports,
+  community: renderCommunityPosts,
   cms: renderCMS,
   notifications: renderBroadcasts,
   communication: renderThreads,
@@ -2285,7 +2363,7 @@ const RENDER_MAP = {
 const TITLES = {
   dashboard:'Dashboard', analytics:'Analytics', users:'Users', properties:'Properties',
   agents:'Agents', waiting:'Waiting List', verification:'Verification Center', revenue:'Revenue',
-  referrals:'Referral Center', countries:'Countries', reports:'Reports',
+  referrals:'Referral Center', countries:'Countries', reports:'Reports', community:'My Experience',
   cms:'CMS', notifications:'Notifications', communication:'Communication', feedback:'ISHFADI Talk',
   export:'Export Center', settings:'Settings', security:'Security'
 };
@@ -2369,6 +2447,142 @@ async function uploadPreviewToCloudinary(file){
   if (!json || !json.secure_url) throw new Error('Upload response missing secure_url');
   return { url: json.secure_url, publicId: json.public_id };
 }
+
+async function uploadFlyerImageToCloudinary(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CMS_CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch(CMS_CLOUDINARY_ENDPOINT, { method:'POST', body: fd });
+  if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+  const json = await res.json();
+  if (!json || !json.secure_url) throw new Error('Upload response missing secure_url');
+  return { url: json.secure_url, publicId: json.public_id, bytes: json.bytes || 0 };
+}
+
+function formatBytes(n){
+  if (!n || n <= 0) return '0 B';
+  const units = ['B','KB','MB','GB'];
+  let i = 0; let val = n;
+  while (val >= 1024 && i < units.length - 1) { val /= 1024; i++; }
+  return val.toFixed(val >= 10 || i === 0 ? 0 : 1) + ' ' + units[i];
+}
+
+async function renderCommunityPosts(){
+  const client = initAdminSupabase();
+  const { data: storage } = await client.rpc('admin_get_storage_overview');
+  if (storage && storage[0]){
+    const s = storage[0];
+    const pct = Math.min(100, Math.round((s.db_size_bytes / s.db_size_limit_bytes) * 100));
+    document.getElementById('storageKpis').innerHTML = `
+      <div class="bg-white rounded-2xl border p-5">
+        <p class="text-xs text-gray-500">Database size</p>
+        <p class="text-2xl font-bold ${pct > 80 ? 'text-danger' : ''}">${formatBytes(s.db_size_bytes)} <span class="text-sm font-normal text-gray-400">/ ${formatBytes(s.db_size_limit_bytes)}</span></p>
+        <div class="w-full h-2 bg-gray-100 rounded-full mt-2 overflow-hidden"><div class="h-full ${pct > 80 ? 'bg-danger' : 'bg-primary'}" style="width:${pct}%"></div></div>
+      </div>
+      <div class="bg-white rounded-2xl border p-5"><p class="text-xs text-gray-500">Cloudinary storage used (flyers + comments)</p><p class="text-2xl font-bold">${formatBytes(s.cloudinary_bytes_used)}</p></div>
+      <div class="bg-white rounded-2xl border p-5"><p class="text-xs text-gray-500">Flyers / Comments</p><p class="text-2xl font-bold">${s.post_count} / ${s.comment_count}</p></div>
+    `;
+  }
+  $('#communityPostsTable').innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-10">Loading…</td></tr>';
+  const { data, error } = await client.rpc('admin_list_community_posts', { p_limit: 100, p_offset: 0 });
+  if (error){
+    $('#communityPostsTable').innerHTML = `<tr><td colspan="7" class="text-center text-danger py-10">Failed to load: ${escapeHtml(error.message)}</td></tr>`;
+    return;
+  }
+  const rows = data || [];
+  if (!rows.length){
+    $('#communityPostsTable').innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-10">No flyers posted yet — use "New flyer" to post the first prompt.</td></tr>';
+    return;
+  }
+  $('#communityPostsTable').innerHTML = rows.map(p => `
+    <tr>
+      <td class="max-w-sm truncate" title="${escapeHtml(p.body)}">${escapeHtml(p.body.slice(0,90))}${p.body.length>90?'…':''}</td>
+      <td>${p.likes_count}</td>
+      <td>${p.comments_count}</td>
+      <td>${formatBytes(p.total_bytes)}</td>
+      <td>${badgeFor(p.status === 'published' ? 'verified' : 'rejected')}</td>
+      <td class="text-xs text-gray-500">${new Date(p.created_at).toLocaleDateString()}</td>
+      <td class="flex gap-1 flex-wrap">
+        <button class="text-xs px-2 py-1 border rounded-lg hover:bg-slate-50" onclick="toggleFlyerStatus('${p.id}','${p.status === 'published' ? 'hidden' : 'published'}')">${p.status === 'published' ? 'Hide' : 'Publish'}</button>
+        <button class="text-xs px-2 py-1 border rounded-lg text-danger hover:bg-red-50" onclick="deleteFlyerPost('${p.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function toggleFlyerStatus(postId, newStatus){
+  const client = initAdminSupabase();
+  const { error } = await client.from('community_posts').update({ status: newStatus }).eq('id', postId);
+  if (error){ toast('Failed: ' + error.message, 'error'); return; }
+  toast(newStatus === 'published' ? 'Flyer published' : 'Flyer hidden', 'success');
+  renderCommunityPosts();
+}
+
+async function deleteFlyerPost(postId){
+  if (!confirm('Permanently delete this flyer, all its comments, and its image (Cloudinary storage is freed automatically)? This cannot be undone.')) return;
+  const client = initAdminSupabase();
+  const { error } = await client.from('community_posts').delete().eq('id', postId);
+  if (error){ toast('Failed: ' + error.message, 'error'); return; }
+  toast('Flyer deleted', 'success');
+  renderCommunityPosts();
+}
+
+let flyerPendingImage = null;
+
+function openNewFlyerModal(){
+  flyerPendingImage = null;
+  openModal(`
+    <h3 class="text-lg font-bold mb-1">🗣️ New "My Experience" flyer</h3>
+    <p class="text-sm text-gray-500 mb-4">Posted under your admin account. This is the prompt members will comment on — e.g. "Have you ever relocated? What platforms did you use? What would have helped you know before moving?"</p>
+    <textarea id="flyerBodyInput" rows="5" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Write the flyer text…"></textarea>
+    <label class="text-sm font-medium mt-3 block">Photo (optional)</label>
+    <input id="flyerImageInput" type="file" accept="image/png,image/jpeg,image/webp" class="text-sm mt-1">
+    <p id="flyerImageStatus" class="text-xs text-gray-400 mt-1"></p>
+    <div class="mt-5 flex gap-2 justify-end">
+      <button class="px-4 py-2 border rounded-lg text-sm" onclick="closeModal()">Cancel</button>
+      <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold" onclick="submitNewFlyer()">Publish</button>
+    </div>
+  `);
+}
+
+async function submitNewFlyer(){
+  const body = (document.getElementById('flyerBodyInput').value || '').trim();
+  if (body.length < 10){ toast('Write at least a couple of sentences.', 'error'); return; }
+  const client = initAdminSupabase();
+  const { data: { user } } = await client.auth.getUser();
+  if (!user){ toast('Not signed in.', 'error'); return; }
+  const payload = {
+    user_id: user.id, body,
+    image_url: flyerPendingImage ? flyerPendingImage.url : null,
+    image_public_id: flyerPendingImage ? flyerPendingImage.publicId : null,
+    image_bytes: flyerPendingImage ? flyerPendingImage.bytes : null
+  };
+  const { error } = await client.from('community_posts').insert(payload);
+  flyerPendingImage = null;
+  if (error){ toast('Failed: ' + error.message, 'error'); return; }
+  closeModal();
+  toast('Flyer posted', 'success');
+  renderCommunityPosts();
+}
+
+// The preview manager handles its image via a submit button (no shared
+// 'change' listener for upload inputs), so the flyer image gets its own
+// dedicated delegated listener, following the existing delegated-listener pattern.
+document.addEventListener('change', async e => {
+  if (!(e.target && e.target.id === 'flyerImageInput')) return;
+  const file = e.target.files && e.target.files[0];
+  const status = document.getElementById('flyerImageStatus');
+  if (!file) return;
+  if (!CMS_ALLOWED_IMAGE_TYPES.includes(file.type)){ toast('Use a JPG, PNG or WebP image', 'error'); e.target.value=''; return; }
+  if (file.size > CMS_MAX_IMAGE_BYTES){ toast('Image must be 8MB or smaller', 'error'); e.target.value=''; return; }
+  status.textContent = 'Uploading to Cloudinary…';
+  try {
+    flyerPendingImage = await uploadFlyerImageToCloudinary(file);
+    status.textContent = 'Image attached (' + formatBytes(flyerPendingImage.bytes) + ').';
+  } catch(err){
+    status.textContent = '';
+    toast('Upload failed: ' + err.message, 'error');
+  }
+});
 
 async function openPreviewsManager(){
   openModal(`
@@ -2495,8 +2709,8 @@ function setDate(){
     en: {
       meta:{ title:'ISHFADI Admin' },
       topbar:{ adminRoot:'Admin', searchPlaceholder:'Search users, properties, agents, reports…' },
-      navGroup:{ overview:'Overview', people:'People', inventory:'Inventory', operations:'Operations', system:'System' },
-      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', rankings:'Rankings', verification:'Verification', countries:'Countries', revenue:'Revenue', reports:'Reports', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
+      navGroup:{ overview:'Overview', people:'People', inventory:'Inventory', operations:'Operations', community:'Community', system:'System' },
+      nav:{ dashboard:'Dashboard', analytics:'Analytics', users:'Users', agents:'Agents', waiting:'Waiting List', referrals:'Referral Center', properties:'Properties', rankings:'Rankings', verification:'Verification', countries:'Countries', revenue:'Revenue', reports:'Reports', community:'My Experience', communication:'Communication', feedback:'ISHFADI Talk', notifications:'Notifications', export:'Export Center', cms:'CMS', security:'Security', settings:'Settings' },
       sidebar:{ superAdmin:'Super Admin', signOut:'Sign out' },
       notif:{ title:'Notifications', markAll:'Mark all read', viewAll:'View all' },
       feedback:{ title:'ISHFADI Talk — feature requests & bug reports', subtitle:'Submitted by users and guests from the floating widget on every page.', filterAll:'All statuses', filterNew:'New', filterReview:'In review', filterResolved:'Resolved', filterDismissed:'Dismissed' }

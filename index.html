@@ -243,6 +243,23 @@
     .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .gallery-item .g-label { position: absolute; left: .75rem; bottom: .6rem; right: .75rem; color: #fff; font-size: .8rem; font-weight: 600; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
     .gallery-empty { grid-column: 1 / -1; border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 3rem 1.5rem; text-align: center; color: #64748b; background: #fff; }
+    .flyer-row { display:flex; gap:1rem; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:.5rem; -webkit-overflow-scrolling:touch; }
+    .flyer-row::-webkit-scrollbar { height:8px; }
+    .flyer-row::-webkit-scrollbar-thumb { background:#d4a574; border-radius:99px; }
+    .flyer-card { flex:0 0 auto; scroll-snap-align:start; width:300px; background:#fff; border:1px solid #e5e7eb; border-radius:1rem; overflow:hidden; display:flex; flex-direction:column; }
+    .flyer-card img { width:100%; height:150px; object-fit:cover; }
+    .flyer-card-noimg { width:100%; height:90px; background:linear-gradient(135deg,#1e3a5f,#254772); display:flex; align-items:center; justify-content:center; font-size:1.75rem; }
+    .flyer-body { padding:1rem; display:flex; flex-direction:column; gap:.5rem; flex:1; }
+    .flyer-author { font-weight:700; font-size:.85rem; color:#1e3a5f; }
+    .flyer-context { font-size:.75rem; color:#64748b; }
+    .flyer-text { font-size:.85rem; color:#334155; line-height:1.5; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+    .flyer-meta { margin-top:auto; display:flex; gap:.9rem; font-size:.78rem; color:#94a3b8; padding-top:.5rem; border-top:1px solid #f1f5f9; }
+    .flyer-empty { color:#9ca3af; padding:2rem; text-align:center; width:100%; }
+    .flyer-comment { background:#f8fafc; border-radius:.85rem; padding:.6rem .8rem; }
+    .flyer-comment-reply { margin-inline-start:1.75rem; margin-top:.5rem; }
+    .flyer-comment-actions { display:flex; gap:.75rem; font-size:.72rem; color:#94a3b8; margin-top:.3rem; }
+    .flyer-comment-actions button { font-weight:700; color:#1e3a5f; background:none; border:none; cursor:pointer; padding:0; }
+    .flyer-comment-actions .liked { color:#e35b6b; }
 
     /* Lightbox */
     .lb-overlay { position: fixed; inset: 0; background: rgba(3,10,25,.94); z-index: 300; display: none; align-items: center; justify-content: center; padding: 1rem; }
@@ -315,21 +332,21 @@
 </head>
 <body class="bg-gray-50 text-slate-800">
 
-  <a href="#reserve" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:bg-white focus:text-primary focus:px-3 focus:py-2 focus:rounded-lg focus:shadow" data-i18n="a11y.skip">Skip to reservation form</a>
+  <button type="button" id="skipToReserveBtn" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:bg-white focus:text-primary focus:px-3 focus:py-2 focus:rounded-lg focus:shadow" data-i18n="a11y.skip">Skip to reservation form</button>
 
   <!-- NAV -->
   <nav class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50" aria-label="Primary">
     <div class="container mx-auto px-4 h-20 flex items-center justify-between gap-3">
       <a href="#home" class="flex items-center gap-2.5 shrink-0" aria-label="ISHFADI home">
         <span class="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-xl bg-white ring-1 ring-primary/15 shadow-sm p-1 shrink-0">
-          <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
+          <img src="/icons/logo.png?v=ishfadi" alt="" class="w-full h-full object-contain" aria-hidden="true">
         </span>
         <span class="text-2xl md:text-3xl font-bold text-primary tracking-tight whitespace-nowrap">ISHFADI</span>
       </a>
 
       <div class="hidden md:flex items-center gap-6 shrink-0">
         <a href="#home" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.home">Home</a>
-        <a href="#glimpse" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.glimpse">A Glimpse</a>
+        <a href="#glimpse" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.glimpse">My Experience</a>
         <a href="#faq" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.faq">FAQ</a>
         <a href="#contact" class="text-gray-600 hover:text-primary transition-colors whitespace-nowrap" data-i18n="nav.contact">Contact</a>
       </div>
@@ -351,7 +368,7 @@
 
         <button type="button" id="openSignInBtn" class="hidden md:inline-flex px-3 md:px-4 py-2 border border-primary/30 text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors text-sm md:text-base" data-i18n="nav.signIn">Sign In</button>
 
-        <a href="#reserve" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.reserve">Reserve Account</a>
+        <button type="button" id="openReserveBtn" class="px-3 md:px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-sm md:text-base" data-i18n="nav.reserve">Reserve Account</button>
 
         <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-primary hover:bg-primary/5" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -362,11 +379,11 @@
     <div id="mobileMenu" class="md:hidden hidden border-t bg-white">
       <div class="container mx-auto px-4 py-4 space-y-3">
         <a href="#home" class="block py-2 text-gray-700" data-i18n="nav.home">Home</a>
-        <a href="#glimpse" class="block py-2 text-gray-700" data-i18n="nav.glimpse">A Glimpse</a>
+        <a href="#glimpse" class="block py-2 text-gray-700" data-i18n="nav.glimpse">My Experience</a>
         <a href="#faq" class="block py-2 text-gray-700" data-i18n="nav.faq">FAQ</a>
         <a href="#contact" class="block py-2 text-gray-700" data-i18n="nav.contact">Contact</a>
         <button type="button" id="openSignInBtnMobile" class="block w-full text-left py-2 font-semibold text-primary" data-i18n="nav.signIn">Sign In</button>
-        <a href="#reserve" class="block py-2 font-semibold text-primary" data-i18n="nav.reserve">Reserve Account</a>
+        <button type="button" id="openReserveBtnMobile" class="block py-2 font-semibold text-primary" data-i18n="nav.reserve">Reserve Account</button>
         <div class="pt-3 border-t">
           <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2" data-i18n="lang.label">Language</p>
           <div class="lang-switcher w-full" id="langSwitcherMobile">
@@ -393,32 +410,23 @@
       <div class="max-w-3xl mx-auto text-center fade-in">
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
           <span class="w-2 h-2 bg-success rounded-full" style="animation:pulse 2s infinite" aria-hidden="true"></span>
-          <span class="text-sm" data-i18n="hero.badge">Pre-launch · Early Access</span>
+          <span class="text-sm" data-i18n="hero.badge">Real People. Real Relocations.</span>
         </div>
 
         <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4">
-          <span data-i18n="hero.title1">Reserve Your ISHFADI Account</span>
+          <span data-i18n="hero.title1">What Would You Want To Know</span>
           <br>
-          <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-secondary" data-i18n="hero.title2">Today</span>
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-secondary" data-i18n="hero.title2">Before Moving Somewhere New?</span>
         </h1>
 
         <p class="text-lg md:text-xl text-white/85 mb-8 max-w-2xl mx-auto" data-i18n="hero.subtitle">
-          Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.
+          ISHFADI is building the future of relocation infrastructure — grounded in real experiences from real people. Explore what others faced, share your own story, and reserve your account for launch.
         </p>
 
-        <div class="mb-8" aria-label="Launch countdown">
-          <p class="text-sm uppercase tracking-widest text-white/60 mb-3" data-i18n="hero.countdownLabel">Launching in</p>
-          <div class="countdown-grid" id="countdown" role="timer" aria-live="polite">
-            <div class="countdown-cell"><div class="countdown-num" data-cd="days">--</div><div class="countdown-lbl" data-i18n="hero.days">Days</div></div>
-            <div class="countdown-cell"><div class="countdown-num" data-cd="hours">--</div><div class="countdown-lbl" data-i18n="hero.hours">Hours</div></div>
-            <div class="countdown-cell"><div class="countdown-num" data-cd="minutes">--</div><div class="countdown-lbl" data-i18n="hero.minutes">Minutes</div></div>
-            <div class="countdown-cell"><div class="countdown-num" data-cd="seconds">--</div><div class="countdown-lbl" data-i18n="hero.seconds">Seconds</div></div>
-          </div>
-        </div>
 
         <div class="flex flex-wrap items-center justify-center gap-3">
-          <a href="#reserve" class="btn-primary bg-white !text-primary hover:!bg-white/95" data-i18n="hero.ctaReserve">Reserve My Account</a>
-          <a href="#why" class="btn-secondary bg-transparent !text-white border-white/40 hover:!bg-white/10" data-i18n="hero.ctaLearn">Learn More</a>
+          <button type="button" id="openReserveBtnHero" class="btn-primary bg-white !text-primary hover:!bg-white/95" data-i18n="hero.ctaReserve">Reserve Your Account</button>
+          <a href="#why" class="btn-secondary bg-transparent !text-white border-white/40 hover:!bg-white/10" data-i18n="hero.ctaLearn">Why ISHFADI</a>
         </div>
       </div>
     </div>
@@ -428,42 +436,27 @@
   <section id="glimpse" class="py-16 features-bg">
     <div class="container mx-auto px-4">
       <div class="max-w-2xl mx-auto text-center mb-10">
-        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-secondary/15 text-secondary mb-3" data-i18n="glimpse.badge">A glimpse</span>
-        <h2 class="text-3xl md:text-4xl font-bold text-primary mb-3" data-i18n="glimpse.title">A glimpse of the ISHFADI platform</h2>
-        <p class="text-gray-600" data-i18n="glimpse.subtitle">Previews of the pages, dashboards and flows we're building for launch. Tap any image to view in full.</p>
+        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-secondary/15 text-secondary mb-3" data-i18n="glimpse.badge">Share your experience</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-primary mb-3" data-i18n="glimpse.title">My Experience</h2>
+        <p class="text-gray-600" data-i18n="glimpse.subtitle">Real stories from people who've relocated — what they used, what worked, and what they wish they'd known.</p>
       </div>
-
-      <div id="galleryGrid" class="gallery-grid max-w-6xl mx-auto" role="list" aria-label="ISHFADI platform previews">
-        <div class="gallery-empty" data-i18n="glimpse.empty">Screenshots will appear here as they are added. Drop images into <code>/public/assets/previews/</code> and list them in <code>index.json</code>.</div>
+      <div id="flyerRow" class="flyer-row max-w-6xl mx-auto" role="list" aria-label="ISHFADI community experiences">
+        <div class="flyer-empty" data-i18n="glimpse.empty">No experiences shared yet — check back soon.</div>
       </div>
     </div>
   </section>
 
   <!-- LIVE STATISTICS -->
-  <section class="py-16">
-    <div class="container mx-auto px-4">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl font-bold text-primary mb-2" data-i18n="stats.title">Reservations so far</h2>
-        <p class="text-gray-600" data-i18n="stats.subtitle">Live count of the ISHFADI early community.</p>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
-        <div class="stat-card"><div class="stat-num" data-counter="reserved">0</div><div class="stat-lbl" data-i18n="stats.reserved">Reserved Accounts</div></div>
-        <div class="stat-card"><div class="stat-num" data-counter="countries">0</div><div class="stat-lbl" data-i18n="stats.countries">Countries</div></div>
-        <div class="stat-card"><div class="stat-num" data-counter="cities">0</div><div class="stat-lbl" data-i18n="stats.cities">Cities</div></div>
-        <div class="stat-card"><div class="stat-num" data-counter="buyers">0</div><div class="stat-lbl" data-i18n="stats.buyers">Future Buyers</div></div>
-        <div class="stat-card"><div class="stat-num" data-counter="hosts">0</div><div class="stat-lbl" data-i18n="stats.hosts">Future Hosts</div></div>
-        <div class="stat-card"><div class="stat-num" data-counter="agents">0</div><div class="stat-lbl" data-i18n="stats.agents">Future Agents</div></div>
-      </div>
-    </div>
-  </section>
 
   <!-- RESERVATION FORM -->
-  <section id="reserve" class="py-16 bg-white">
-    <div class="container mx-auto px-4">
+  <div id="reserveModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="reserveModalTitle">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-reserve-dismiss></div>
+    <div id="reservePanel" class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 md:p-8 my-8 transition-all" style="max-height:90vh; overflow-y:auto;">
+      <button type="button" class="absolute top-3 end-3 w-9 h-9 rounded-full text-slate-500 hover:bg-slate-100 z-10" data-reserve-dismiss aria-label="Close">✕</button>
       <div class="max-w-2xl mx-auto">
         <div class="text-center mb-8">
           <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-secondary/15 text-secondary mb-3" data-i18n="reserve.badge">Reserve now</span>
-          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-2" data-i18n="reserve.title">Reserve your ISHFADI account</h2>
+          <h2 id="reserveModalTitle" class="text-3xl md:text-4xl font-bold text-primary mb-2" data-i18n="reserve.title">Reserve your ISHFADI account</h2>
           <p class="text-gray-600" data-i18n="reserve.subtitle">Takes less than a minute. Verify your email, and you're in.</p>
         </div>
 
@@ -482,7 +475,7 @@
             <div id="reservationCard" class="rescard">
               <div class="rescard-inner">
                 <div class="rescard-brand">
-                  <img src="/icons/logo.png" alt="ISHFADI logo">
+                  <img src="/icons/logo.png?v=ishfadi" alt="ISHFADI logo">
                   <div>
                     <div class="b-name">ISHFADI</div>
                     <div class="b-tag" data-i18n="rescard.tag">Pre-launch Reservation</div>
@@ -674,7 +667,7 @@
         </form>
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- WHY JOIN EARLY -->
   <section id="why" class="py-16 features-bg">
@@ -699,14 +692,14 @@
     <div class="container mx-auto px-4 max-w-3xl">
       <div class="text-center mb-10">
         <h2 class="text-3xl font-bold text-primary mb-2" data-i18n="faq.title">Frequently asked questions</h2>
-        <p class="text-gray-600" data-i18n="faq.subtitle">Everything you need to know before launch.</p>
+        <p class="text-gray-600" data-i18n="faq.subtitle">Everything you need to know about ISHFADI and My Experience.</p>
       </div>
       <div>
-        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q1">Will I need to register again after launch?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a1">No. Your account has already been reserved. When ISHFADI officially launches, simply sign in using the same email and password you created today. Please keep your login credentials safe.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q1">Do I need an account to use ISHFADI?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a1">No — you can browse My Experience and read real relocation experiences without an account. To comment, reply, like a post, or reserve your account for launch, you'll need to sign up.</div></details>
         <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q2">Can I have multiple roles?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a2">Yes. ISHFADI allows one account to be a buyer, host and agent at the same time — any combination.</div></details>
         <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q3">When will verification happen?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a3">Email verification happens now, right after reservation. Identity verification for hosts, companies and agents takes place after launch inside your dashboard — you will upload the required documents for review by the ISHFADI administration.</div></details>
-        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q4">Can I edit my information later?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a4">Yes. Once the platform launches, you'll be able to update your profile from your dashboard at any time.</div></details>
-        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q5">How will I know when ISHFADI launches?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a5">You'll receive an email announcement at the address you reserved with, and our social channels will go live the same day. If you've installed ISHFADI on your phone, you'll be able to open it directly from your home screen.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q4">Can I edit or delete what I share in My Experience?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a4">You can delete your own comments and replies at any time. If something needs correcting or removing beyond that, use the report option or contact us and we'll help.</div></details>
+        <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q5">What is My Experience?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a5">My Experience is ISHFADI's community space — real relocation experiences shared by real people, discussed openly. It's not the final product; it's how we're learning what ISHFADI actually needs to build.</div></details>
         <details class="faq-item"><summary class="faq-trigger"><span data-i18n="faq.q6">Can companies register?</span><svg class="w-5 h-5 faq-chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></summary><div class="faq-body" data-i18n="faq.a6">Yes. Select "Become a Host" and choose "Company", then enter your company name. You will upload company registration documents after launch, inside the host dashboard.</div></details>
       </div>
     </div>
@@ -719,7 +712,7 @@
         <div class="md:col-span-2">
           <div class="flex items-center gap-3 mb-4">
             <span class="inline-flex items-center justify-center w-14 h-14 bg-white rounded-xl p-0.5 shrink-0">
-              <img src="/icons/logo.png" alt="" class="w-full h-full object-contain" aria-hidden="true">
+              <img src="/icons/logo.png?v=ishfadi" alt="" class="w-full h-full object-contain" aria-hidden="true">
             </span>
             <span class="text-2xl font-bold">ISHFADI</span>
           </div>
@@ -743,8 +736,8 @@
           <h4 class="footer-heading" data-i18n="footer.quickLinks">Quick Links</h4>
           <ul class="footer-list">
             <li><a href="#home" data-i18n="nav.home">Home</a></li>
-            <li><a href="#reserve" data-i18n="nav.reserve">Reserve Account</a></li>
-            <li><a href="#glimpse" data-i18n="nav.glimpse">A Glimpse</a></li>
+            <li><button type="button" id="openReserveBtnFooter" class="hover:text-white transition-colors" data-i18n="nav.reserve">Reserve Account</button></li>
+            <li><a href="#glimpse" data-i18n="nav.glimpse">My Experience</a></li>
             <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
             <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
             <li><a href="#" data-i18n="footer.privacy">Privacy Policy</a></li>
@@ -771,6 +764,36 @@
 
   <!-- Toast host -->
   <div id="toastContainer" class="fixed top-20 end-4 z-[200] flex flex-col gap-2 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Lightbox -->
+  <div id="flyerModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="flyerModalAuthor">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-flyer-dismiss></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl my-8 transition-all" style="max-height:90vh; overflow-y:auto;">
+      <button type="button" class="absolute top-3 end-3 w-9 h-9 rounded-full bg-white/90 text-slate-500 hover:bg-slate-100 z-10" data-flyer-dismiss aria-label="Close">✕</button>
+      <div id="flyerModalMedia"></div>
+      <div class="p-6">
+        <p id="flyerModalAuthor" class="font-bold text-primary"></p>
+        <p id="flyerModalContext" class="text-xs text-slate-500 mb-2"></p>
+        <p id="flyerModalBody" class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap mb-4"></p>
+        <div class="flex items-center gap-2 border-t border-b border-slate-100 py-3 mb-4">
+          <button type="button" id="flyerLikeBtn" class="flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-rose-500 px-2 py-1 rounded-lg">
+            <span id="flyerLikeIcon">🤍</span> <span id="flyerLikeCount">0</span>
+          </button>
+          <button type="button" id="flyerShareBtn" class="flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-primary px-2 py-1 rounded-lg ms-auto">
+            🔗 <span>Share</span>
+          </button>
+        </div>
+        <div id="flyerCommentsList" class="space-y-3 mb-4"></div>
+        <div id="flyerSignInPrompt" class="hidden text-sm text-slate-500 border border-dashed rounded-xl p-4 text-center">
+          Sign in to comment, reply, or like.
+        </div>
+        <div id="flyerComposer" class="flex items-start gap-2">
+          <textarea id="flyerCommentInput" rows="2" class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm" placeholder="Add a comment or ask a question…"></textarea>
+          <button type="button" id="flyerCommentSubmit" class="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Lightbox -->
   <div class="lb-overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview">
@@ -824,7 +847,7 @@
         meta:{ title:'ISHFADI Launch Portal — Reserve Your Account', description:'Reserve your ISHFADI account before launch. Sign in on day one with the same credentials.' },
         lang:{ label:'Language' },
         a11y:{ skip:'Skip to reservation form' },
-        nav:{ home:'Home', glimpse:'A Glimpse', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account', signIn:'Sign In' },
+        nav:{ home:'Home', glimpse:'My Experience', faq:'FAQ', contact:'Contact', install:'Install', reserve:'Reserve Account', signIn:'Sign In' },
         signIn:{ title:'Sign In', subtitle:'Welcome back. Use the same email and password you reserved with.', emailLabel:'Email', passwordLabel:'Password', submit:'Sign In', cancel:'Cancel', close:'Close' },
         roleScreen:{
           title:'Welcome back',
@@ -846,11 +869,11 @@
           buyer:{ title:'Buyer', tagline:'Discover verified accommodations and relocation opportunities anywhere in the world.',
             soon:'Your Buyer Dashboard launches when we open Buyer accounts platform-wide.' }
         },
-        hero:{ badge:'Pre-launch · Early Access', title1:'Reserve Your ISHFADI Account', title2:'Today',
-          subtitle:'Users who reserve their account today will simply sign in after the official launch using the same email and password — no need to register again.',
+        hero:{ badge:'Real People. Real Relocations.', title1:'What Would You Want To Know', title2:'Before Moving Somewhere New?',
+          subtitle:'ISHFADI is building the future of relocation infrastructure — grounded in real experiences from real people. Explore what others faced, share your own story, and reserve your account for launch.',
           countdownLabel:'Launching in', days:'Days', hours:'Hours', minutes:'Minutes', seconds:'Seconds',
-          ctaReserve:'Reserve My Account', ctaLearn:'Learn More' },
-        glimpse:{ badge:'A glimpse', title:'A glimpse of the ISHFADI platform', subtitle:"Previews of the pages, dashboards and flows we're building for launch. Tap any image to view in full.", empty:'Screenshots will appear here as they are added.' },
+          ctaReserve:'Reserve Your Account', ctaLearn:'Why ISHFADI' },
+        glimpse:{ badge:'Share your experience', title:'My Experience', subtitle:"Real stories from people who've relocated — what they used, what worked, and what they wish they'd known.", empty:'No experiences shared yet — check back soon.' },
         stats:{ title:'Reservations so far', subtitle:'Live count of the ISHFADI early community.', reserved:'Reserved Accounts', countries:'Countries', cities:'Cities', buyers:'Future Buyers', hosts:'Future Hosts', agents:'Future Agents' },
         reserve:{ badge:'Reserve now', title:'Reserve your ISHFADI account', subtitle:"Takes less than a minute. Verify your email, and you're in." },
         form:{ fullName:'Full Name', email:'Email Address', phone:'Phone Number', country:'Country', selectCountry:'Select a country', city:'City', password:'Password', confirmPassword:'Confirm Password', rolesTitle:'I want to (select all that apply)',
@@ -891,12 +914,12 @@
           f4t:'Global opportunities', f4d:'Discover accommodations and clients across borders, cities and continents.',
           f5t:'Trusted hosts & verified agents', f5d:'A community where hosts and agents are verified for real trust.',
           f6t:'Faster onboarding at launch', f6d:'Skip the queue on day one. Sign in and start using ISHFADI immediately.' },
-        faq:{ title:'Frequently asked questions', subtitle:'Everything you need to know before launch.',
-          q1:'Will I need to register again after launch?', a1:'No. Your account has already been reserved. When ISHFADI officially launches, simply sign in using the same email and password you created today. Please keep your login credentials safe.',
+        faq:{ title:'Frequently asked questions', subtitle:'Everything you need to know about ISHFADI and تجربتي.',
+          q1:'Do I need an account to use ISHFADI?', a1:"No — you can browse تجربتي and read real relocation experiences without an account. To comment, reply, like a post, or reserve your account for launch, you'll need to sign up.",
           q2:'Can I have multiple roles?', a2:'Yes. ISHFADI allows one account to be a buyer, host and agent at the same time — any combination.',
           q3:'When will verification happen?', a3:'Email verification happens now, right after reservation. Identity verification for hosts, companies and agents takes place after launch inside your dashboard — you will upload the required documents for review by the ISHFADI administration.',
-          q4:'Can I edit my information later?', a4:"Yes. Once the platform launches, you'll be able to update your profile from your dashboard at any time.",
-          q5:'How will I know when ISHFADI launches?', a5:"You'll receive an email announcement at the address you reserved with, and our social channels will go live the same day. If you've installed ISHFADI on your phone, you'll be able to open it directly from your home screen.",
+          q4:'Can I edit or delete what I share on تجربتي?', a4:'You can delete your own comments and replies at any time. If something needs correcting or removing beyond that, use the report option or contact us and we\'ll help.',
+          q5:'What is تجربتي?', a5:"تجربتي is ISHFADI's community space — real relocation experiences shared by real people, discussed openly. It's not the final product; it's how we're learning what ISHFADI actually needs to build.",
           q6:'Can companies register?', a6:'Yes. Select "Become a Host" and choose "Company", then enter your company name. You will upload company registration documents after launch, inside the host dashboard.' },
         footer:{ about:'Building the future of global accommodation. Reserve your account today and sign in the moment we launch.',
           follow:'Follow ISHFADI', quickLinks:'Quick Links', contact:'Contact',
@@ -909,7 +932,7 @@
         meta:{ title:'Portail de lancement ISHFADI — Réservez votre compte', description:'Réservez votre compte ISHFADI avant le lancement. Connectez-vous dès le premier jour avec les mêmes identifiants.' },
         lang:{ label:'Langue' },
         a11y:{ skip:'Aller au formulaire de réservation' },
-        nav:{ home:'Accueil', glimpse:'Aperçu', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte', signIn:'Se connecter' },
+        nav:{ home:'Accueil', glimpse:'Mon Expérience', faq:'FAQ', contact:'Contact', install:'Installer', reserve:'Réserver un compte', signIn:'Se connecter' },
         signIn:{ title:'Se connecter', subtitle:'Bon retour. Utilisez le même e-mail et mot de passe que lors de votre réservation.', emailLabel:'E-mail', passwordLabel:'Mot de passe', submit:'Se connecter', cancel:'Annuler', close:'Fermer' },
         roleScreen:{
           title:'Bon retour',
@@ -931,11 +954,11 @@
           buyer:{ title:'Acheteur', tagline:'Découvrez des logements vérifiés et des opportunités de relocalisation partout dans le monde.',
             soon:"Votre tableau de bord Acheteur sera lancé à l'ouverture mondiale des comptes Acheteur." }
         },
-        hero:{ badge:'Pré-lancement · Accès anticipé', title1:'Réservez votre compte ISHFADI', title2:"aujourd'hui",
-          subtitle:"Les personnes qui réservent leur compte aujourd'hui pourront simplement se connecter après le lancement officiel avec le même e-mail et mot de passe — aucune nouvelle inscription requise.",
+        hero:{ badge:'Des gens réels. Des relocalisations réelles.', title1:'Que voudriez-vous savoir', title2:'avant de déménager quelque part de nouveau ?',
+          subtitle:"ISHFADI construit l'avenir de l'infrastructure de relocalisation — ancrée dans de vraies expériences de vraies personnes. Découvrez ce que d'autres ont vécu, partagez votre histoire, et réservez votre compte pour le lancement.",
           countdownLabel:'Lancement dans', days:'Jours', hours:'Heures', minutes:'Minutes', seconds:'Secondes',
-          ctaReserve:'Réserver mon compte', ctaLearn:'En savoir plus' },
-        glimpse:{ badge:'Aperçu', title:'Un aperçu de la plateforme ISHFADI', subtitle:'Aperçus des pages, tableaux de bord et parcours que nous construisons pour le lancement. Touchez une image pour la voir en plein écran.', empty:'Les captures apparaîtront ici au fur et à mesure.' },
+          ctaReserve:'Réserver votre compte', ctaLearn:'Pourquoi ISHFADI' },
+        glimpse:{ badge:'Partagez votre expérience', title:'Mon Expérience', subtitle:"Des histoires vraies de personnes qui ont déménagé — ce qu'elles ont utilisé, ce qui a fonctionné et ce qu'elles auraient aimé savoir.", empty:'Aucune expérience partagée pour le moment — revenez bientôt.' },
         stats:{ title:'Réservations à ce jour', subtitle:'Compteur en direct de la communauté ISHFADI.', reserved:'Comptes réservés', countries:'Pays', cities:'Villes', buyers:'Futurs acheteurs', hosts:'Futurs hôtes', agents:'Futurs agents' },
         reserve:{ badge:'Réservez maintenant', title:'Réservez votre compte ISHFADI', subtitle:"En moins d'une minute. Vérifiez votre e-mail et c'est prêt." },
         form:{ fullName:'Nom complet', email:'Adresse e-mail', phone:'Numéro de téléphone', country:'Pays', selectCountry:'Sélectionnez un pays', city:'Ville', password:'Mot de passe', confirmPassword:'Confirmez le mot de passe',
@@ -980,12 +1003,12 @@
           f4t:'Opportunités mondiales', f4d:'Découvrez biens et clients à travers le monde.',
           f5t:'Hôtes et agents vérifiés', f5d:"Une communauté où hôtes et agents sont vérifiés.",
           f6t:'Onboarding accéléré', f6d:"Sautez la file d'attente le jour J." },
-        faq:{ title:'Questions fréquentes', subtitle:'Tout ce qu\'il faut savoir avant le lancement.',
-          q1:"Devrai-je m'inscrire à nouveau après le lancement ?", a1:"Non. Votre compte est déjà réservé. Connectez-vous simplement avec le même e-mail et mot de passe créés aujourd'hui. Conservez vos identifiants en lieu sûr.",
+        faq:{ title:'Questions fréquentes', subtitle:"Tout ce qu\'il faut savoir sur ISHFADI et تجربتي.",
+          q1:"Ai-je besoin d'un compte pour utiliser ISHFADI ?", a1:"Non — vous pouvez consulter تجربتي et lire de vraies expériences de relocalisation sans compte. Pour commenter, répondre, aimer une publication ou réserver votre compte pour le lancement, une inscription est nécessaire.",
           q2:'Puis-je avoir plusieurs rôles ?', a2:'Oui. ISHFADI permet à un seul compte d\'être acheteur, hôte et agent en même temps — toutes les combinaisons sont possibles.',
           q3:"Quand aura lieu la vérification ?", a3:"La vérification de l'e-mail a lieu maintenant, juste après la réservation. La vérification d'identité pour les hôtes, sociétés et agents se fera après le lancement depuis votre tableau de bord.",
-          q4:'Puis-je modifier mes informations plus tard ?', a4:'Oui. Après le lancement, vous pourrez mettre à jour votre profil à tout moment.',
-          q5:"Comment saurai-je que le lancement d'ISHFADI est effectif ?", a5:"Vous recevrez un e-mail à l'adresse de votre réservation, et nos réseaux sociaux seront activés le même jour. Si vous avez installé ISHFADI sur votre téléphone, vous pourrez l'ouvrir directement.",
+          q4:"Puis-je modifier ou supprimer ce que je partage sur تجربتي ?", a4:"Vous pouvez supprimer vos propres commentaires et réponses à tout moment. Pour toute autre correction ou suppression, utilisez le signalement ou contactez-nous.",
+          q5:"Qu'est-ce qu'تجربتي ?", a5:"تجربتي est l'espace communautaire d'ISHFADI — de vraies expériences de relocalisation partagées par de vraies personnes, discutées ouvertement. Ce n'est pas le produit final ; c'est ainsi que nous apprenons ce qu'ISHFADI doit réellement construire.",
           q6:'Les sociétés peuvent-elles s\'inscrire ?', a6:'Oui. Sélectionnez « Devenir hôte » puis « Société » et saisissez le nom de votre société. Vous téléverserez les documents après le lancement.' },
         footer:{ about:"Nous construisons l'avenir du logement mondial. Réservez votre compte aujourd'hui et connectez-vous dès le lancement.",
           follow:'Suivre ISHFADI', quickLinks:'Liens rapides', contact:'Contact',
@@ -998,7 +1021,7 @@
         meta:{ title:'بوابة إطلاق إشفادي — احجز حسابك', description:'احجز حسابك في إشفادي قبل الإطلاق. سجّل الدخول في اليوم الأول بنفس بيانات الاعتماد.' },
         lang:{ label:'اللغة' },
         a11y:{ skip:'انتقل إلى نموذج الحجز' },
-        nav:{ home:'الرئيسية', glimpse:'لمحة', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا', signIn:'تسجيل الدخول' },
+        nav:{ home:'الرئيسية', glimpse:'تجربتي', faq:'الأسئلة الشائعة', contact:'تواصل', install:'تثبيت', reserve:'احجز حسابًا', signIn:'تسجيل الدخول' },
         signIn:{ title:'تسجيل الدخول', subtitle:'مرحباً بعودتك. استخدم نفس البريد وكلمة المرور اللذين حجزت بهما.', emailLabel:'البريد الإلكتروني', passwordLabel:'كلمة المرور', submit:'تسجيل الدخول', cancel:'إلغاء', close:'إغلاق' },
         roleScreen:{
           title:'مرحباً بعودتك',
@@ -1020,11 +1043,11 @@
           buyer:{ title:'مشترٍ', tagline:'اكتشف مساكن موثّقة وفرص انتقال في أي مكان في العالم.',
             soon:'ستُطلق لوحة المشتري عند فتح حسابات المشترين على المنصة عالمياً.' }
         },
-        hero:{ badge:'قبل الإطلاق · وصول مبكر', title1:'احجز حسابك في إشفادي', title2:'اليوم',
-          subtitle:'من يحجز حسابه اليوم يمكنه ببساطة تسجيل الدخول بعد الإطلاق الرسمي بنفس البريد وكلمة المرور — دون الحاجة للتسجيل من جديد.',
+        hero:{ badge:'أشخاص حقيقيون. تجارب انتقال حقيقية.', title1:'ماذا تريد أن تعرف', title2:'قبل الانتقال إلى مكان جديد؟',
+          subtitle:'يبني ISHFADI مستقبل البنية التحتية للانتقال — انطلاقًا من تجارب حقيقية لأشخاص حقيقيين. اكتشف ما واجهه الآخرون، شارك قصتك، واحجز حسابك استعدادًا للإطلاق.',
           countdownLabel:'يتم الإطلاق خلال', days:'أيام', hours:'ساعات', minutes:'دقائق', seconds:'ثوانٍ',
-          ctaReserve:'احجز حسابي', ctaLearn:'اعرف المزيد' },
-        glimpse:{ badge:'لمحة', title:'لمحة عن منصة إشفادي', subtitle:'صور من الصفحات ولوحات التحكم والتدفقات التي نبنيها للإطلاق. اضغط على أي صورة لعرضها بالحجم الكامل.', empty:'ستظهر لقطات الشاشة هنا فور إضافتها.' },
+          ctaReserve:'احجز حسابك', ctaLearn:'لماذا ISHFADI' },
+        glimpse:{ badge:'شارك تجربتك', title:'تجربتي', subtitle:'قصص حقيقية من أشخاص انتقلوا — ما الذي استخدموه، وما الذي نجح، وما تمنوا لو عرفوه.', empty:'لا توجد تجارب مشتركة بعد — تحقق مرة أخرى قريبًا.' },
         stats:{ title:'الحجوزات حتى الآن', subtitle:'عدّاد مباشر لمجتمع إشفادي المبكر.', reserved:'الحسابات المحجوزة', countries:'دول', cities:'مدن', buyers:'مشترون مستقبليون', hosts:'مضيفون مستقبليون', agents:'وكلاء مستقبليون' },
         reserve:{ badge:'احجز الآن', title:'احجز حسابك في إشفادي', subtitle:'أقل من دقيقة. تحقّق من بريدك وستكون جاهزًا.' },
         form:{ fullName:'الاسم الكامل', email:'البريد الإلكتروني', phone:'رقم الهاتف', country:'الدولة', selectCountry:'اختر دولة', city:'المدينة', password:'كلمة المرور', confirmPassword:'تأكيد كلمة المرور',
@@ -1066,12 +1089,12 @@
           f4t:'فرص عالمية', f4d:'اكتشف مساكن وعملاء عبر الحدود.',
           f5t:'مضيفون ووكلاء موثوقون', f5d:'مجتمع موثّق من المضيفين والوكلاء.',
           f6t:'انضمام أسرع عند الإطلاق', f6d:'تجاوز الطابور في اليوم الأول.' },
-        faq:{ title:'الأسئلة الشائعة', subtitle:'كل ما تحتاج معرفته قبل الإطلاق.',
-          q1:'هل سأحتاج للتسجيل مجددًا بعد الإطلاق؟', a1:'لا. حسابك محجوز بالفعل. عند إطلاق إشفادي، سجّل الدخول ببساطة بنفس البريد وكلمة المرور اللذين أنشأتهما اليوم. احتفظ بيانات الدخول بأمان.',
+        faq:{ title:'الأسئلة الشائعة', subtitle:'كل ما تحتاج معرفته عن ISHFADI و تجربتي.',
+          q1:'هل أحتاج إلى حساب لاستخدام ISHFADI؟', a1:'لا — يمكنك تصفح تجربتي وقراءة تجارب انتقال حقيقية دون الحاجة لحساب. للتعليق أو الرد أو الإعجاب بمنشور أو حجز حسابك للإطلاق، ستحتاج إلى إنشاء حساب.',
           q2:'هل يمكنني اختيار عدة أدوار؟', a2:'نعم. يسمح إشفادي لحساب واحد بأن يكون مشتريًا ومضيفًا ووكيلًا في نفس الوقت — بأي تركيبة.',
           q3:'متى تتم عملية التحقق؟', a3:'يتم التحقق من البريد الآن مباشرة بعد الحجز. أما التحقق من الهوية للمضيفين والشركات والوكلاء فيتم بعد الإطلاق من داخل لوحة التحكم عبر رفع المستندات المطلوبة للمراجعة.',
-          q4:'هل يمكنني تعديل بياناتي لاحقًا؟', a4:'نعم. بعد إطلاق المنصة يمكنك تحديث ملفك الشخصي في أي وقت.',
-          q5:'كيف سأعرف بموعد إطلاق إشفادي؟', a5:'ستصلك رسالة بريد إلى العنوان الذي حجزت به، وستنشط قنواتنا الاجتماعية في اليوم نفسه. إذا كنت قد ثبّت إشفادي على هاتفك، ستتمكن من فتحه مباشرة من الشاشة الرئيسية.',
+          q4:'هل يمكنني تعديل أو حذف ما أشاركه في تجربتي؟', a4:'يمكنك حذف تعليقاتك وردودك في أي وقت. لأي تصحيح أو حذف آخر، استخدم خيار الإبلاغ أو تواصل معنا.',
+          q5:'ما هو تجربتي؟', a5:'تجربتي هو مساحة مجتمع ISHFADI — تجارب انتقال حقيقية يشاركها أشخاص حقيقيون وتُناقش بصراحة. إنه ليس المنتج النهائي؛ إنه الطريقة التي نتعلم بها ما الذي يجب أن يبنيه ISHFADI فعلاً.',
           q6:'هل يمكن للشركات التسجيل؟', a6:'نعم. اختر "أن أصبح مضيفًا" ثم "شركة"، وأدخل اسم شركتك. ستُرفع مستندات تسجيل الشركة بعد الإطلاق من لوحة تحكم المضيف.' },
         footer:{ about:'نبني مستقبل الإقامة العالمية. احجز حسابك اليوم وسجّل الدخول لحظة الإطلاق.',
           follow:'تابع إشفادي', quickLinks:'روابط سريعة', contact:'تواصل',
@@ -1452,24 +1475,11 @@
     window.renderCountries = renderCountries;
     function countryEnglishName(code) { const row = COUNTRIES.find(c => c[0] === code); return row ? row[1] : code; }
 
-    // ----- Countdown -----
-    function initCountdown() {
-      const target = new Date(window.ISHFADI_CONFIG.LAUNCH_DATE_ISO).getTime();
-      if (isNaN(target)) return;
-      const cells = { days: document.querySelector('[data-cd="days"]'), hours: document.querySelector('[data-cd="hours"]'), minutes: document.querySelector('[data-cd="minutes"]'), seconds: document.querySelector('[data-cd="seconds"]') };
-      const pad = n => String(n).padStart(2,'0');
-      function tick() {
-        const diff = Math.max(0, target - Date.now());
-        const d = Math.floor(diff / 86400000);
-        const h = Math.floor((diff % 86400000) / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        if (cells.days) cells.days.textContent = pad(d);
-        if (cells.hours) cells.hours.textContent = pad(h);
-        if (cells.minutes) cells.minutes.textContent = pad(m);
-        if (cells.seconds) cells.seconds.textContent = pad(s);
-      }
-      tick(); setInterval(tick, 1000);
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     // ----- Gallery + Lightbox -----
@@ -1510,6 +1520,217 @@
         grid.appendChild(el);
       });
     }
+
+    async function loadFlyers() {
+      const row = document.getElementById('flyerRow');
+      if (!row) return;
+      try {
+        const client = initSupabase();
+        if (!client) return;
+        const { data, error } = await client.rpc('get_community_feed', { p_limit: 12, p_offset: 0 });
+        if (error || !Array.isArray(data) || !data.length) return; // keep empty-state placeholder
+        row.innerHTML = '';
+        data.forEach(post => {
+          const card = document.createElement('div');
+          card.className = 'flyer-card';
+          card.setAttribute('role', 'listitem');
+          const context = post.to_country_name
+            ? ('→ ' + (post.to_city ? post.to_city + ', ' : '') + post.to_country_name)
+            : '';
+          const media = post.image_url
+            ? `<img src="${post.image_url}" alt="" loading="lazy">`
+            : `<div class="flyer-card-noimg">🗺️</div>`;
+          card.innerHTML = `
+            ${media}
+            <div class="flyer-body">
+              <div class="flyer-author">${escapeHtml(post.author_name || 'ISHFADI member')}</div>
+              ${context ? `<div class="flyer-context">${escapeHtml(context)}</div>` : ''}
+              <div class="flyer-text">${escapeHtml(post.body || '')}</div>
+              <div class="flyer-meta">
+                <span>❤ ${post.likes_count || 0}</span>
+                <span>💬 ${post.comments_count || 0}</span>
+              </div>
+            </div>`;
+          row.appendChild(card);
+        });
+      } catch (e) { /* silent -- keep empty-state placeholder */ }
+    }
+
+    let flyerModalState = { postId: null, liked: false, likeCount: 0 };
+
+    function flyerContextLine(p) {
+      const from = p.from_country_name ? (p.from_city ? p.from_city + ', ' + p.from_country_name : p.from_country_name) : '';
+      const to = p.to_country_name ? (p.to_city ? p.to_city + ', ' + p.to_country_name : p.to_country_name) : '';
+      if (from && to) return 'Relocated from ' + from + ' to ' + to;
+      if (to) return 'Relocated to ' + to;
+      if (from) return 'Relocated from ' + from;
+      return '';
+    }
+
+    async function getSignedInUser() {
+      const client = initSupabase();
+      if (!client) return null;
+      const { data } = await client.auth.getUser();
+      return data && data.user ? data.user : null;
+    }
+
+    async function openFlyerModal(post) {
+      flyerModalState.postId = post.id;
+      flyerModalState.liked = !!post.liked_by_me;
+      flyerModalState.likeCount = post.likes_count || 0;
+      document.getElementById('flyerModalMedia').innerHTML = post.image_url
+        ? `<img src="${post.image_url}" alt="" style="width:100%;max-height:280px;object-fit:cover;">`
+        : '';
+      document.getElementById('flyerModalAuthor').textContent = post.author_name || 'ISHFADI member';
+      document.getElementById('flyerModalContext').textContent = flyerContextLine(post);
+      document.getElementById('flyerModalBody').textContent = post.body || '';
+      updateFlyerLikeUI();
+      const modal = document.getElementById('flyerModal');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      await refreshFlyerAuthUI();
+      await loadFlyerComments(post.id);
+    }
+
+    function closeFlyerModal() {
+      const modal = document.getElementById('flyerModal');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    function updateFlyerLikeUI() {
+      document.getElementById('flyerLikeIcon').textContent = flyerModalState.liked ? '❤️' : '🤍';
+      document.getElementById('flyerLikeCount').textContent = flyerModalState.likeCount;
+    }
+
+    async function refreshFlyerAuthUI() {
+      const user = await getSignedInUser();
+      document.getElementById('flyerSignInPrompt').classList.toggle('hidden', !!user);
+      document.getElementById('flyerComposer').classList.toggle('hidden', !user);
+    }
+
+    async function toggleFlyerLike() {
+      const user = await getSignedInUser();
+      if (!user) { if (window.openSignInModal) window.openSignInModal(); return; }
+      const client = initSupabase();
+      const wasLiked = flyerModalState.liked;
+      flyerModalState.liked = !wasLiked;
+      flyerModalState.likeCount += wasLiked ? -1 : 1;
+      updateFlyerLikeUI();
+      try {
+        if (wasLiked) {
+          await client.from('community_likes').delete().eq('post_id', flyerModalState.postId).eq('user_id', user.id);
+        } else {
+          await client.from('community_likes').insert({ post_id: flyerModalState.postId, user_id: user.id });
+        }
+      } catch (e) {
+        flyerModalState.liked = wasLiked;
+        flyerModalState.likeCount += wasLiked ? 1 : -1;
+        updateFlyerLikeUI();
+      }
+    }
+
+    function shareFlyer() {
+      const url = window.location.origin + window.location.pathname + '#glimpse';
+      if (navigator.share) {
+        navigator.share({ title: 'ISHFADI — My Experience', text: document.getElementById('flyerModalBody').textContent.slice(0, 120), url }).catch(() => {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url);
+        alert('Link copied.');
+      }
+    }
+
+    function renderFlyerComment(c, isReply) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flyer-comment' + (isReply ? ' flyer-comment-reply' : '');
+      wrap.innerHTML = `
+        <p class="font-bold text-xs text-primary">${escapeHtml(c.author_name)}</p>
+        <p class="text-sm text-slate-700 whitespace-pre-wrap">${escapeHtml(c.body)}</p>
+        <div class="flyer-comment-actions">
+          <button type="button" class="flyer-comment-like ${c.liked_by_me ? 'liked' : ''}" data-comment-id="${c.id}">
+            ${c.liked_by_me ? '❤️' : '🤍'} <span class="like-count">${c.likes_count || 0}</span>
+          </button>
+          ${!isReply ? `<button type="button" class="flyer-comment-reply-toggle" data-comment-id="${c.id}">Reply</button>` : ''}
+        </div>
+        ${!isReply ? `<div class="hidden mt-2 flex gap-2" id="replyBox-${c.id}">
+          <textarea rows="1" class="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs" placeholder="Write a reply…" id="replyInput-${c.id}"></textarea>
+          <button type="button" class="text-xs font-bold text-white bg-primary px-2 py-1 rounded-lg flyer-reply-submit" data-parent-id="${c.id}">Reply</button>
+        </div>` : ''}
+      `;
+      return wrap;
+    }
+
+    async function loadFlyerComments(postId) {
+      const list = document.getElementById('flyerCommentsList');
+      list.innerHTML = '<p class="text-xs text-slate-400">Loading…</p>';
+      const client = initSupabase();
+      const { data, error } = await client.rpc('get_community_comments', { p_post_id: postId });
+      list.innerHTML = '';
+      if (error) return;
+      const top = (data || []).filter(c => !c.parent_id);
+      const byParent = {};
+      (data || []).filter(c => c.parent_id).forEach(c => { (byParent[c.parent_id] = byParent[c.parent_id] || []).push(c); });
+      if (!top.length) { list.innerHTML = '<p class="text-xs text-slate-400">No comments yet — be the first to respond.</p>'; return; }
+      top.forEach(c => {
+        list.appendChild(renderFlyerComment(c, false));
+        (byParent[c.id] || []).forEach(r => list.appendChild(renderFlyerComment(r, true)));
+      });
+    }
+
+    async function submitFlyerComment(parentId) {
+      const user = await getSignedInUser();
+      if (!user) { if (window.openSignInModal) window.openSignInModal(); return; }
+      const input = parentId ? document.getElementById('replyInput-' + parentId) : document.getElementById('flyerCommentInput');
+      const body = (input.value || '').trim();
+      if (body.length < 1) return;
+      const client = initSupabase();
+      const payload = { post_id: flyerModalState.postId, user_id: user.id, body };
+      if (parentId) payload.parent_id = parentId;
+      const { error } = await client.from('community_comments').insert(payload);
+      if (!error) { input.value = ''; loadFlyerComments(flyerModalState.postId); }
+    }
+
+    async function toggleFlyerCommentLike(commentId, btn) {
+      const user = await getSignedInUser();
+      if (!user) { if (window.openSignInModal) window.openSignInModal(); return; }
+      const client = initSupabase();
+      const wasLiked = btn.classList.contains('liked');
+      const countEl = btn.querySelector('.like-count');
+      let count = parseInt(countEl.textContent, 10) || 0;
+      btn.classList.toggle('liked');
+      countEl.textContent = wasLiked ? Math.max(0, count - 1) : count + 1;
+      btn.firstChild.textContent = wasLiked ? '🤍 ' : '❤️ ';
+      try {
+        if (wasLiked) await client.from('community_comment_likes').delete().eq('comment_id', commentId).eq('user_id', user.id);
+        else await client.from('community_comment_likes').insert({ comment_id: commentId, user_id: user.id });
+      } catch (e) { loadFlyerComments(flyerModalState.postId); }
+    }
+
+    function wireFlyerInteractions() {
+      document.getElementById('flyerRow').addEventListener('click', async (e) => {
+        const card = e.target.closest('.flyer-card');
+        if (!card) return;
+        const client = initSupabase();
+        const { data } = await client.rpc('get_community_feed', { p_limit: 12, p_offset: 0 });
+        const idx = Array.from(card.parentElement.children).indexOf(card);
+        if (data && data[idx]) openFlyerModal(data[idx]);
+      });
+      document.querySelectorAll('[data-flyer-dismiss]').forEach(el => el.addEventListener('click', closeFlyerModal));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFlyerModal(); });
+      document.getElementById('flyerLikeBtn').addEventListener('click', toggleFlyerLike);
+      document.getElementById('flyerShareBtn').addEventListener('click', shareFlyer);
+      document.getElementById('flyerCommentSubmit').addEventListener('click', () => submitFlyerComment(null));
+      document.getElementById('flyerCommentsList').addEventListener('click', (e) => {
+        const likeBtn = e.target.closest('.flyer-comment-like');
+        if (likeBtn) { toggleFlyerCommentLike(likeBtn.dataset.commentId, likeBtn); return; }
+        const replyToggle = e.target.closest('.flyer-comment-reply-toggle');
+        if (replyToggle) { document.getElementById('replyBox-' + replyToggle.dataset.commentId).classList.toggle('hidden'); return; }
+        const replySubmit = e.target.closest('.flyer-reply-submit');
+        if (replySubmit) { submitFlyerComment(replySubmit.dataset.parentId); return; }
+      });
+    }
+
+
 
     function openLightbox(i) {
       if (!galleryItems.length) return;
@@ -1578,22 +1799,6 @@
       return supabase;
     }
 
-    // ----- Stats -----
-    function animateCount(el, target) {
-      const start = parseInt(el.textContent, 10) || 0;
-      const dur = 900; const t0 = performance.now();
-      function step(t) { const p = Math.min(1, (t - t0) / dur); el.textContent = String(Math.round(start + (target - start) * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(step); }
-      requestAnimationFrame(step);
-    }
-    async function refreshStats() {
-      const els = { reserved: document.querySelector('[data-counter="reserved"]'), countries: document.querySelector('[data-counter="countries"]'), cities: document.querySelector('[data-counter="cities"]'), buyers: document.querySelector('[data-counter="buyers"]'), hosts: document.querySelector('[data-counter="hosts"]'), agents: document.querySelector('[data-counter="agents"]') };
-      const client = initSupabase(); if (!client) return;
-      try {
-        const { data, error } = await client.rpc('get_reservation_stats').single();
-        if (error || !data) return;
-        Object.keys(els).forEach(k => { if (els[k] && data[k] != null) animateCount(els[k], Number(data[k])); });
-      } catch(e) { /* silent */ }
-    }
 
     // ----- Turnstile -----
     let turnstileWidgetId = null;
@@ -1751,7 +1956,6 @@
           verified: false
         });
 
-        refreshStats();
       } catch (err) {
         window.showToast(window.t('errors.generic'), 'error');
         btn.disabled = false; btn.innerHTML = originalHTML;
@@ -2062,6 +2266,7 @@
         document.body.style.overflow = 'hidden';
         setTimeout(() => emailEl && emailEl.focus(), 30);
       }
+      window.openSignInModal = open;
       function close() {
         modal.classList.add('hidden'); modal.classList.remove('flex');
         document.body.style.overflow = '';
@@ -2323,17 +2528,33 @@
         });
       }
 
-      function escapeHtml(s) {
-        return String(s == null ? '' : s)
-          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-      }
-
       const ROLE_ICONS = {
         agent: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
         host:  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 9v11h14V9"/></svg>',
         buyer: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'
       };
+    }
+
+    // ----- Reserve modal -----
+    function wireReserve() {
+      const modal   = document.getElementById('reserveModal');
+      const panel   = document.getElementById('reservePanel');
+      if (!modal) return;
+      const openers = ['openReserveBtn','openReserveBtnMobile','openReserveBtnHero','openReserveBtnFooter','skipToReserveBtn']
+        .map(id => document.getElementById(id)).filter(Boolean);
+      function open() {
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        // Deliberately do NOT reset the form on close — it can be long,
+        // and closing by accident shouldn't wipe what someone typed.
+        modal.classList.add('hidden'); modal.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+      openers.forEach(b => b.addEventListener('click', open));
+      modal.querySelectorAll('[data-reserve-dismiss]').forEach(el => el.addEventListener('click', close));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
     }
 
 
@@ -2524,10 +2745,10 @@
     document.addEventListener('DOMContentLoaded', () => {
       captureReferralCode();
       renderCountries();
-      initCountdown();
       wireRolesUI();
       wirePasswordToggles();
       wireSignIn();
+      wireReserve();
       document.querySelectorAll('input[name="hostType"]').forEach(r => r.addEventListener('change', toggleCompanyBlock));
       document.getElementById('reservationForm').addEventListener('submit', handleSubmit);
 
@@ -2540,9 +2761,10 @@
 
       loadTurnstile();
       loadGallery();
+      loadFlyers();
+      wireFlyerInteractions();
       wireLightbox();
       wireSmoothScroll();
-      refreshStats();
       handleVerifiedParam();
     });
   })();
@@ -2731,12 +2953,12 @@
   </style>
 
   <button type="button" id="ishfadiTalkBtn" aria-label="ISHFADI Talk — report a bug or request a feature" aria-haspopup="dialog">
-    <img src="/icons/logo.png" alt="" aria-hidden="true">
+    <img src="/icons/logo.png?v=ishfadi" alt="" aria-hidden="true">
   </button>
 
   <div id="ishfadiTalkPanel" role="dialog" aria-modal="false" aria-label="ISHFADI Talk">
     <div class="itk-head">
-      <img src="/icons/logo.png" alt="">
+      <img src="/icons/logo.png?v=ishfadi" alt="">
       <strong style="font-size:.95rem;" id="itkPanelTitle">ISHFADI Talk</strong>
       <button type="button" class="itk-close" id="itkCloseBtn" aria-label="Close">✕</button>
     </div>
